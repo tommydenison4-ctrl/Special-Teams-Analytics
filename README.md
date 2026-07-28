@@ -1,40 +1,43 @@
-# Special Teams Intelligence V6.6
+# Special Teams Intelligence V6.7 Persistent Build
 
-This is the GitHub and Vercel build. It includes a real server-side roster importer at `api/import-roster.js`.
+This build saves the loaded PFF data, connected roster, team settings, looks and assignments in Supabase. A shared URL containing `?project=...` loads the same saved project for another user.
 
-## Deploy
+## 1. Create Supabase storage
 
-1. Create a new GitHub repository.
-2. Upload every file and folder from this package. Keep the `api` folder at the repository root.
-3. In Vercel, choose **Add New Project** and import the GitHub repository.
-4. Leave Framework Preset as **Other** and deploy. No build command is required.
-5. Open the Vercel deployment URL, not the local `index.html` file.
-6. Open **Roster / Team Settings** in the platform.
-7. Enter the university, nickname, exact PFF team code, and official roster URL.
-8. Click **Connect Roster URL**.
+1. Create a Supabase project.
+2. Open SQL Editor.
+3. Run `supabase_setup.sql`.
+4. In Supabase Project Settings > API, copy the Project URL and service-role key.
 
-## Required repository structure
+Never place the service-role key in `index.html` or commit a real `.env` file to GitHub.
 
-```text
-index.html
-api/
-  import-roster.js
-package.json
-vercel.json
-sample_pff_special_teams.csv
-roster_template.csv
-```
+## 2. Add Vercel environment variables
 
-## What the roster URL imports
+In Vercel Project Settings > Environment Variables add:
 
-The importer reads common Sidearm Sports roster pages and returns player name, number, position, height, weight, class, hometown, high school, previous school, image URL, and official profile URL when those fields are present.
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
-The roster supplies player identity and biography links. The PFF CSV supplies performance statistics. The exact PFF team code must match the code in the PFF export.
+Add both to Production, Preview and Development, then redeploy.
 
-## Test the API
+## 3. Deploy
 
-After deployment, open `/api/import-roster` on the Vercel domain. You should see a small JSON response showing that the service is running. The actual roster import uses POST requests from the platform.
+Upload the complete folder to GitHub and import the repository into Vercel. Keep the `api` folder at the repository root.
 
-## Local use
+## 4. Use
 
-Double-clicking `index.html` will still display the platform, but URL roster importing requires the Vercel deployment. CSV and JSON roster uploads remain available locally.
+1. Open the deployed Vercel URL.
+2. Load the PFF CSV.
+3. Connect or upload the roster.
+4. Set the team and exact PFF team code.
+5. Click **Save Project**.
+6. Click **Copy Share Link**.
+
+The first save creates a project ID and a private edit key stored only in the creator's browser. People opening the share link can view the saved project but cannot overwrite it.
+
+## Important
+
+- Changes are not shared until **Save Project** is clicked again.
+- The share URL does not contain the edit key.
+- Clearing browser storage removes that browser's ability to overwrite the project, but the shared project remains viewable.
+- The included roster URL importer still runs through `/api/import-roster`.
