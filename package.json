@@ -1,0 +1,15 @@
+{
+  "name": "special-teams-intelligence-v6-6",
+  "version": "6.6.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check api/import-roster.js"
+  },
+  "dependencies": {
+    "cheerio": "1.1.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
