@@ -1,170 +1,180 @@
-import * as cheerio from 'cheerio';
-import dns from 'node:dns/promises';
-import net from 'node:net';
+import crypto from 'node:crypto';
 
-function send(res, status, body) {
-  res.status(status);
+function sendJson(res, status, body) {
+  res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(body));
 }
 
-function clean(value = '') {
-  return String(value).replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
-}
+async function readJsonBody(req) {
+  if (req.body && typeof req.body === 'object') return req.body;
+  if (typeof req.body === 'string' && req.body.trim()) return JSON.parse(req.body);
 
-function absolute(value, base) {
-  if (!value) return '';
-  try { return new URL(value, base).href; } catch { return ''; }
-}
-
-function firstText($root, selectors) {
-  for (const selector of selectors) {
-    const value = clean($root.find(selector).first().text());
-    if (value) return value;
+  let raw = '';
+  for await (const chunk of req) {
+    raw += chunk;
+    if (raw.length > 4_000_000) throw new Error('Request is too large for Vercel.');
   }
-  return '';
+  return raw.trim() ? JSON.parse(raw) : {};
 }
 
-function firstAttr($root, selectors, attrs) {
-  for (const selector of selectors) {
-    const el = $root.find(selector).first();
-    if (!el.length) continue;
-    for (const attr of attrs) {
-      let value = el.attr(attr);
-      if (!value) continue;
-      if (attr === 'srcset') value = value.split(',').pop().trim().split(/\s+/)[0];
-      return clean(value);
-    }
+function environment() {
+  const url = process.env.SUPABASE_URL?.replace(/\/$/, '');
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Vercel.');
   }
-  return '';
+  return { url, key };
 }
 
-function fieldFromLabels($root, labels) {
-  const wanted = labels.map(x => x.toLowerCase());
-  let answer = '';
-  $root.find('dt, .sidearm-roster-player-label, .sidearm-roster-player-details-label, strong').each((_, el) => {
-    if (answer) return;
-    const label = clean(cheerio.load(el).text()).replace(/:$/, '').toLowerCase();
-    if (!wanted.some(x => label === x || label.includes(x))) return;
-    const $el = $root.find(el);
-    answer = clean($el.next('dd, span, div').first().text());
-    if (!answer) answer = clean($el.parent().text()).replace(new RegExp('^' + label + '\\s*:?\\s*', 'i'), '');
-  });
-  return answer;
+function supabaseHeaders(key, extra = {}) {
+  return {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+    ...extra
+  };
 }
 
-function parseRoster(html, baseUrl) {
-  const $ = cheerio.load(html);
-  const cards = $('.sidearm-roster-player, li.sidearm-roster-player, .roster-player, [data-player-id]').toArray();
-  const players = [];
-  const seen = new Set();
+function newId() {
+  return crypto.randomBytes(9).toString('base64url');
+}
 
-  for (const card of cards) {
-    const $card = $(card);
-    const name = firstText($card, [
-      '.sidearm-roster-player-name h3',
-      '.sidearm-roster-player-name',
-      '.roster-player-name',
-      'h3 a[href*="/roster/"]',
-      'a[href*="/roster/"]'
-    ]).replace(/^\d+\s+/, '');
-    if (!name || name.length > 100) continue;
+function newSecret() {
+  return crypto.randomBytes(24).toString('base64url');
+}
 
-    const number = firstText($card, [
-      '.sidearm-roster-player-jersey-number',
-      '.sidearm-roster-player-jersey',
-      '.roster-player-number'
-    ]).replace(/[^0-9]/g, '');
+function hash(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
 
-    const position = firstText($card, ['.sidearm-roster-player-position', '.roster-player-position']) || fieldFromLabels($card, ['position', 'pos']);
-    const height = firstText($card, ['.sidearm-roster-player-height']) || fieldFromLabels($card, ['height', 'ht']);
-    const weight = (firstText($card, ['.sidearm-roster-player-weight']) || fieldFromLabels($card, ['weight', 'wt'])).replace(/\s*lbs?\.?$/i, '');
-    const academicClass = firstText($card, ['.sidearm-roster-player-academic-year', '.sidearm-roster-player-year', '.sidearm-roster-player-class']) || fieldFromLabels($card, ['class', 'year', 'academic year']);
-    const hometown = firstText($card, ['.sidearm-roster-player-hometown']) || fieldFromLabels($card, ['hometown']);
-    const highSchool = firstText($card, ['.sidearm-roster-player-highschool', '.sidearm-roster-player-high-school']) || fieldFromLabels($card, ['high school']);
-    const previousSchool = firstText($card, ['.sidearm-roster-player-previous-school']) || fieldFromLabels($card, ['previous school', 'last school']);
-    const profileRaw = firstAttr($card, ['a[href*="/roster/"]'], ['href']);
-    const imageRaw = firstAttr($card, ['.sidearm-roster-player-image img', '.sidearm-roster-player-photo img', 'img'], ['data-src', 'data-original', 'data-lazy-src', 'srcset', 'src']);
-    const key = `${number}|${name.toLowerCase()}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    players.push({
-      number,
-      name,
-      position,
-      height,
-      weight,
-      class: academicClass,
-      hometown,
-      highSchool,
-      previousSchool,
-      image: absolute(imageRaw, baseUrl),
-      profile: absolute(profileRaw, baseUrl),
-      bio: ''
-    });
+async function supabaseError(response, fallback) {
+  const text = await response.text();
+  if (!text) return fallback;
+  try {
+    const parsed = JSON.parse(text);
+    return parsed.message || parsed.error || text;
+  } catch {
+    return text;
   }
-  return players;
-}
-
-function isPrivateAddress(ip) {
-  if (!net.isIP(ip)) return true;
-  if (ip === '::1' || ip === '0.0.0.0') return true;
-  if (ip.startsWith('10.') || ip.startsWith('127.') || ip.startsWith('169.254.') || ip.startsWith('192.168.')) return true;
-  const match = ip.match(/^172\.(\d+)\./);
-  if (match && Number(match[1]) >= 16 && Number(match[1]) <= 31) return true;
-  const lower = ip.toLowerCase();
-  return lower.startsWith('fc') || lower.startsWith('fd') || lower.startsWith('fe80:');
-}
-
-async function validateUrl(raw) {
-  let url;
-  try { url = new URL(raw); } catch { throw new Error('Enter a valid roster URL.'); }
-  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Only http and https roster URLs are allowed.');
-  if (!url.hostname || url.username || url.password) throw new Error('The roster URL is not allowed.');
-  const records = await dns.lookup(url.hostname, { all: true });
-  if (!records.length || records.some(record => isPrivateAddress(record.address))) throw new Error('That roster host is not publicly reachable.');
-  return url;
 }
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    return send(res, 200, { ok: true, service: 'roster-importer', method: 'POST', version: '7.1' });
+    return sendJson(res, 200, {
+      ok: true,
+      service: 'special-teams-project-storage',
+      version: '7.4',
+      method: 'POST'
+    });
   }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'GET, POST');
-    return send(res, 405, { error: 'Method not allowed' });
+    return sendJson(res, 405, { error: 'Method not allowed.' });
   }
 
   try {
-    const rawBody = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    const url = await validateUrl(rawBody.url);
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000);
-    let response;
-    try {
-      response = await fetch(url, {
-        redirect: 'follow',
-        signal: controller.signal,
-        headers: {
-          'user-agent': 'Mozilla/5.0 (compatible; FootballIntelligenceRosterImporter/1.0)',
-          accept: 'text/html,application/xhtml+xml'
-        }
+    const { url, key } = environment();
+    const body = await readJsonBody(req);
+    const action = String(body.action || 'save');
+
+    if (action === 'load') {
+      const projectId = String(body.projectId || '').trim();
+      if (!projectId) return sendJson(res, 400, { error: 'Missing project ID.' });
+
+      const response = await fetch(
+        `${url}/rest/v1/special_teams_projects?id=eq.${encodeURIComponent(projectId)}&select=id,data,updated_at`,
+        { headers: supabaseHeaders(key) }
+      );
+
+      if (!response.ok) {
+        throw new Error(await supabaseError(response, 'Database read failed.'));
+      }
+
+      const records = await response.json();
+      if (!records.length) return sendJson(res, 404, { error: 'Project not found.' });
+
+      return sendJson(res, 200, {
+        projectId: records[0].id,
+        data: records[0].data,
+        updatedAt: records[0].updated_at
       });
-    } finally {
-      clearTimeout(timer);
     }
 
-    if (!response.ok) return send(res, 502, { error: `The roster website returned HTTP ${response.status}.` });
-    const type = response.headers.get('content-type') || '';
-    if (!type.includes('text/html') && !type.includes('application/xhtml+xml')) return send(res, 415, { error: 'The URL did not return an HTML roster page.' });
-    const html = await response.text();
-    if (html.length > 8_000_000) return send(res, 413, { error: 'The roster page was too large to import safely.' });
-    const players = parseRoster(html, response.url || url.href);
-    if (!players.length) return send(res, 422, { error: 'The page loaded, but its roster layout was not recognized. Use the official full-team roster page or upload CSV/JSON.' });
-    return send(res, 200, { source: response.url || url.href, count: players.length, players });
+    const data = body.data;
+    if (!data || typeof data !== 'object') {
+      return sendJson(res, 400, { error: 'Missing project data.' });
+    }
+
+    const serialized = JSON.stringify(data);
+    if (Buffer.byteLength(serialized, 'utf8') > 3_800_000) {
+      return sendJson(res, 413, {
+        error: 'Project is too large for one Vercel request. Reduce the loaded CSV or use database file storage.'
+      });
+    }
+
+    let projectId = String(body.projectId || '').trim();
+    let editKey = String(body.editKey || '').trim();
+
+    if (!projectId) {
+      projectId = newId();
+      editKey = newSecret();
+
+      const response = await fetch(`${url}/rest/v1/special_teams_projects`, {
+        method: 'POST',
+        headers: supabaseHeaders(key, { Prefer: 'return=minimal' }),
+        body: JSON.stringify({
+          id: projectId,
+          edit_key_hash: hash(editKey),
+          data
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(await supabaseError(response, 'Database insert failed.'));
+      }
+
+      return sendJson(res, 200, { projectId, editKey, created: true });
+    }
+
+    if (!editKey) {
+      return sendJson(res, 403, {
+        error: 'This browser does not have the edit key for this project.'
+      });
+    }
+
+    const lookup = await fetch(
+      `${url}/rest/v1/special_teams_projects?id=eq.${encodeURIComponent(projectId)}&select=edit_key_hash`,
+      { headers: supabaseHeaders(key) }
+    );
+
+    if (!lookup.ok) {
+      throw new Error(await supabaseError(lookup, 'Database lookup failed.'));
+    }
+
+    const records = await lookup.json();
+    if (!records.length) return sendJson(res, 404, { error: 'Project not found.' });
+    if (records[0].edit_key_hash !== hash(editKey)) {
+      return sendJson(res, 403, { error: 'Invalid edit key.' });
+    }
+
+    const response = await fetch(
+      `${url}/rest/v1/special_teams_projects?id=eq.${encodeURIComponent(projectId)}`,
+      {
+        method: 'PATCH',
+        headers: supabaseHeaders(key, { Prefer: 'return=minimal' }),
+        body: JSON.stringify({ data, updated_at: new Date().toISOString() })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(await supabaseError(response, 'Database update failed.'));
+    }
+
+    return sendJson(res, 200, { projectId, updated: true });
   } catch (error) {
-    const message = error?.name === 'AbortError' ? 'The roster website took too long to respond.' : (error?.message || 'Roster import failed.');
-    return send(res, 400, { error: message });
+    console.error('Project API error:', error);
+    return sendJson(res, 500, { error: error?.message || 'Server error.' });
   }
 }
