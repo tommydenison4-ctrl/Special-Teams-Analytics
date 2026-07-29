@@ -1,3 +1,135 @@
-node_modules/
-.vercel/
-.DS_Store
+import crypto from 'node:crypto';
+
+function json(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store'
+    }
+  });
+}
+
+function environment() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Vercel.');
+  }
+  return { url: url.replace(/\/$/, ''), key };
+}
+
+function supabaseHeaders(key, extra = {}) {
+  return {
+    apikey: key,
+    'content-type': 'application/json',
+    ...extra
+  };
+}
+
+function newId() {
+  return crypto.randomBytes(9).toString('base64url');
+}
+
+function newSecret() {
+  return crypto.randomBytes(24).toString('base64url');
+}
+
+function hash(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+
+export default {
+  async fetch(request) {
+    if (request.method === 'GET') {
+      return json({ ok: true, service: 'special-teams-project-storage', version: '7.3', method: 'POST' });
+    }
+
+    if (request.method !== 'POST') {
+      return json({ error: 'Method not allowed.' }, 405);
+    }
+
+    try {
+      const { url, key } = environment();
+      const body = await request.json().catch(() => ({}));
+      const action = String(body.action || 'save');
+
+      if (action === 'load') {
+        const projectId = String(body.projectId || '').trim();
+        if (!projectId) return json({ error: 'Missing project ID.' }, 400);
+
+        const response = await fetch(
+          `${url}/rest/v1/special_teams_projects?id=eq.${encodeURIComponent(projectId)}&select=id,data,updated_at`,
+          { headers: supabaseHeaders(key) }
+        );
+        const records = await response.json().catch(() => []);
+
+        if (!response.ok) throw new Error(records?.message || 'Database read failed.');
+        if (!records.length) return json({ error: 'Project not found.' }, 404);
+
+        return json({
+          projectId: records[0].id,
+          data: records[0].data,
+          updatedAt: records[0].updated_at
+        });
+      }
+
+      const data = body.data;
+      if (!data || typeof data !== 'object') return json({ error: 'Missing project data.' }, 400);
+
+      const serialized = JSON.stringify(data);
+      if (serialized.length > 12_000_000) {
+        return json({ error: 'Project is too large. Reduce the CSV size.' }, 413);
+      }
+
+      let projectId = String(body.projectId || '').trim();
+      let editKey = String(body.editKey || '').trim();
+
+      if (!projectId) {
+        projectId = newId();
+        editKey = newSecret();
+
+        const response = await fetch(`${url}/rest/v1/special_teams_projects`, {
+          method: 'POST',
+          headers: supabaseHeaders(key, { Prefer: 'return=minimal' }),
+          body: JSON.stringify({
+            id: projectId,
+            edit_key_hash: hash(editKey),
+            data
+          })
+        });
+
+        if (!response.ok) throw new Error((await response.text()) || 'Database insert failed.');
+        return json({ projectId, editKey, created: true });
+      }
+
+      if (!editKey) {
+        return json({ error: 'This browser does not have the edit key for this project.' }, 403);
+      }
+
+      const lookup = await fetch(
+        `${url}/rest/v1/special_teams_projects?id=eq.${encodeURIComponent(projectId)}&select=edit_key_hash`,
+        { headers: supabaseHeaders(key) }
+      );
+      const records = await lookup.json().catch(() => []);
+
+      if (!lookup.ok) throw new Error(records?.message || 'Database lookup failed.');
+      if (!records.length) return json({ error: 'Project not found.' }, 404);
+      if (records[0].edit_key_hash !== hash(editKey)) return json({ error: 'Invalid edit key.' }, 403);
+
+      const response = await fetch(
+        `${url}/rest/v1/special_teams_projects?id=eq.${encodeURIComponent(projectId)}`,
+        {
+          method: 'PATCH',
+          headers: supabaseHeaders(key, { Prefer: 'return=minimal' }),
+          body: JSON.stringify({ data, updated_at: new Date().toISOString() })
+        }
+      );
+
+      if (!response.ok) throw new Error((await response.text()) || 'Database update failed.');
+      return json({ projectId, updated: true });
+    } catch (error) {
+      return json({ error: error?.message || 'Server error.' }, 500);
+    }
+  }
+};

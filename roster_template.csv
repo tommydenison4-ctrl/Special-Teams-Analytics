@@ -1,43 +1,14 @@
-# Special Teams Intelligence V7.1
+SPECIAL TEAMS INTELLIGENCE V7.3
 
-This build fixes the Vercel deployment structure.
-
-## Important
-
-There is intentionally **no `vercel.json` file**. Vercel automatically serves `index.html` and automatically creates serverless routes from the root-level `api` folder. This avoids the invalid configuration that blocked V7.0.
-
-Your GitHub repository root must show:
-
-```
-api/
-  import-roster.js
-  project.js
-index.html
-package.json
-supabase_setup.sql
-```
-
-## Deploy
-
-1. Delete the old `vercel.json` from GitHub.
-2. Upload all V7.1 files to the repository root.
-3. Confirm `api` appears as a folder and contains both JavaScript files.
-4. In Vercel, keep Framework Preset as **Other**.
-5. Leave Root Directory blank when these files are at the repository root.
-6. Keep these environment variables:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-7. Deploy or redeploy.
-
-## Health checks
-
-After the deployment says Ready, open:
-
-- `/api/import-roster`
-- `/api/project`
-
-Both should return JSON showing `ok: true`.
-
-## Supabase
-
-The existing `special_teams_projects` table is correct. Do not run the SQL again unless that table is missing.
+1. Extract this ZIP.
+2. In GitHub, the repository root must show: api, index.html, package.json.
+3. Open api and confirm it contains import-roster.js and project.js.
+4. Delete any old root-level import-roster.js, project.js, vercel.json, and any file named download.
+5. In Vercel, keep these environment variables:
+   SUPABASE_URL
+   SUPABASE_SERVICE_ROLE_KEY
+6. Redeploy.
+7. Test:
+   /api/import-roster
+   /api/project
+Both should return JSON with "ok": true.

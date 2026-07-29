@@ -1,9 +1,9 @@
 {
-  "name": "special-teams-intelligence-v7-1",
-  "version": "7.1.0",
+  "name": "special-teams-intelligence",
+  "version": "7.3.0",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "cheerio": "1.1.2"
+  "engines": {
+    "node": "20.x"
   }
 }
