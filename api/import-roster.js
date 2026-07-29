@@ -198,7 +198,7 @@ export default async function handler(req, res) {
     return sendJson(res, 200, {
       ok: true,
       service: 'roster-importer',
-      version: '7.4',
+      version: '7.5',
       method: 'POST'
     });
   }
