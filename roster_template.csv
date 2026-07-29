@@ -1,24 +1,2 @@
-SPECIAL TEAMS INTELLIGENCE V7.8
-
-UPLOAD THESE FILES TO THE ROOT OF YOUR GITHUB REPOSITORY:
-
-api/
-  import-roster.js
-  project.js
-index.html
-package.json
-roster_template.csv
-sample_pff_special_teams.csv
-
-The reliable roster workflow in this build is:
-
-1. Open Roster / Team Settings.
-2. Enter University, Nickname, and PFF team code.
-3. Click Save Team.
-4. Click Import Roster CSV / JSON.
-5. Choose a roster file using roster_template.csv as the format.
-6. Confirm the roster count is above 0.
-7. Click Save Project so the roster is included in the share link.
-
-Existing Supabase environment variables remain unchanged.
-Do not add vercel.json.
+number,name,position,height,weight,class,hometown,previousSchool,image,profile,bio
+1,Example Player,K,6-0,190,Senior,Monroe LA,Example High School,https://example.com/photo.jpg,https://example.com/player,Example player bio
