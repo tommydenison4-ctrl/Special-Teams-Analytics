@@ -1,14 +1,24 @@
-SPECIAL TEAMS INTELLIGENCE V7.3
+SPECIAL TEAMS INTELLIGENCE V7.8
 
-1. Extract this ZIP.
-2. In GitHub, the repository root must show: api, index.html, package.json.
-3. Open api and confirm it contains import-roster.js and project.js.
-4. Delete any old root-level import-roster.js, project.js, vercel.json, and any file named download.
-5. In Vercel, keep these environment variables:
-   SUPABASE_URL
-   SUPABASE_SERVICE_ROLE_KEY
-6. Redeploy.
-7. Test:
-   /api/import-roster
-   /api/project
-Both should return JSON with "ok": true.
+UPLOAD THESE FILES TO THE ROOT OF YOUR GITHUB REPOSITORY:
+
+api/
+  import-roster.js
+  project.js
+index.html
+package.json
+roster_template.csv
+sample_pff_special_teams.csv
+
+The reliable roster workflow in this build is:
+
+1. Open Roster / Team Settings.
+2. Enter University, Nickname, and PFF team code.
+3. Click Save Team.
+4. Click Import Roster CSV / JSON.
+5. Choose a roster file using roster_template.csv as the format.
+6. Confirm the roster count is above 0.
+7. Click Save Project so the roster is included in the share link.
+
+Existing Supabase environment variables remain unchanged.
+Do not add vercel.json.
