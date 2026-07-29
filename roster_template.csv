@@ -1,10 +1,12 @@
-# Special Teams Intelligence V7.0
+# Special Teams Intelligence V7.1
 
-This build is structured for GitHub, Vercel and Supabase.
+This build fixes the Vercel deployment structure.
 
-## Required repository structure
+## Important
 
-Upload the files so GitHub shows this exact structure at the repository root:
+There is intentionally **no `vercel.json` file**. Vercel automatically serves `index.html` and automatically creates serverless routes from the root-level `api` folder. This avoids the invalid configuration that blocked V7.0.
+
+Your GitHub repository root must show:
 
 ```
 api/
@@ -12,49 +14,30 @@ api/
   project.js
 index.html
 package.json
-vercel.json
 supabase_setup.sql
 ```
 
-Do not move `import-roster.js` or `project.js` out of the `api` folder.
+## Deploy
 
-## Supabase
+1. Delete the old `vercel.json` from GitHub.
+2. Upload all V7.1 files to the repository root.
+3. Confirm `api` appears as a folder and contains both JavaScript files.
+4. In Vercel, keep Framework Preset as **Other**.
+5. Leave Root Directory blank when these files are at the repository root.
+6. Keep these environment variables:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+7. Deploy or redeploy.
 
-Run `supabase_setup.sql` once in the Supabase SQL Editor. It creates only the `special_teams_projects` table.
+## Health checks
 
-## Vercel environment variables
-
-Add:
-
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-
-Then redeploy Vercel.
-
-## Deployment
-
-1. Extract this ZIP on your computer.
-2. Open the extracted folder.
-3. Upload all contents to the root of the GitHub repository, preserving the `api` folder.
-4. Confirm GitHub displays an `api` folder, not loose API files at the root.
-5. Import or redeploy the repository in Vercel.
-6. Set Framework Preset to `Other` if Vercel asks.
-
-## Quick API tests
-
-After deployment, open:
+After the deployment says Ready, open:
 
 - `/api/import-roster`
 - `/api/project`
 
-Both should show a small JSON status response instead of a 404.
+Both should return JSON showing `ok: true`.
 
-## Using the app
+## Supabase
 
-1. Load the PFF CSV.
-2. Enter the team identity and PFF code.
-3. Connect the official roster URL.
-4. Click `Save Project`.
-5. Click `Copy Share Link`.
-
-The share link loads the saved project from Supabase. The editing key stays only in the browser that created the project.
+The existing `special_teams_projects` table is correct. Do not run the SQL again unless that table is missing.

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Special Teams Intelligence V7.0</title>
+<title>Special Teams Intelligence V7.1</title>
 <style>
 :root{--bg:#071018;--panel:#0e1c27;--panel2:#122633;--line:#294653;--text:#f3f7f9;--muted:#91a9b8;--gold:#e2b34c;--maroon:#7b1d3b;--green:#4f8e12;--blue:#2f68df;--yellow:#d4a700;--red:#9a252c;--purple:#8c3caf}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#17303d,#071018 45%);color:var(--text);font:14px/1.4 Inter,Segoe UI,Arial,sans-serif}
@@ -67,7 +67,7 @@ table.log{width:100%;border-collapse:collapse;font-size:12px}table.log th,table.
 </style>
 </head>
 <body>
-<header><div><h1>Special Teams Intelligence V7.0</h1><div class="sub">Persistent team projects + dedicated player dashboards + coach-ready reports</div></div><div><label class="upload">Load PFF CSV<input id="fileInput" type="file" accept=".csv"></label> <button id="saveCloudBtn">Save Project</button> <button id="copyShareBtn">Copy Share Link</button> <button id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
+<header><div><h1>Special Teams Intelligence V7.1</h1><div class="sub">Persistent team projects + dedicated player dashboards + coach-ready reports</div></div><div><label class="upload">Load PFF CSV<input id="fileInput" type="file" accept=".csv"></label> <button id="saveCloudBtn">Save Project</button> <button id="copyShareBtn">Copy Share Link</button> <button id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
 <div class="shell">
 <aside>
 <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
