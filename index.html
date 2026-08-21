@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Special Teams Intelligence V8.2</title>
+<title>Special Teams Intelligence V8.6</title>
 <style>
 :root{--bg:#071018;--panel:#0e1c27;--panel2:#122633;--line:#294653;--text:#f3f7f9;--muted:#91a9b8;--gold:#e2b34c;--maroon:#7b1d3b;--green:#4f8e12;--blue:#2f68df;--yellow:#d4a700;--red:#9a252c;--purple:#8c3caf}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#17303d,#071018 45%);color:var(--text);font:14px/1.4 Inter,Segoe UI,Arial,sans-serif}
@@ -75,10 +75,18 @@ body.readOnly .readOnlyBadge{display:block}
 .zoneTable td,.zoneTable th{white-space:nowrap}
 @media(max-width:850px){.playDetailGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+
+.lookSelect{width:18px;height:18px;vertical-align:middle;margin-right:7px}
+.practiceTools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.practiceCardBtn{background:#173548}
+@media print{
+  .practicePacketOnly{display:block!important}
+}
+
 </style>
 </head>
 <body><div class="readOnlyBadge">READ ONLY • LIVE STAFF DATA</div>
-<header><div><h1>Special Teams Intelligence V8.2</h1><div class="sub">Live Supabase PFF data + shared roster/looks + read-only staff view + coach-ready reports</div><div id="dataSourceStatus" class="smallNote" style="margin-top:5px">Connecting to Supabase special-teams data…</div></div><div><button class="adminOnly" id="saveCloudBtn">Publish Looks / Roster</button> <button id="reloadCloudBtn">Reload Latest</button> <button id="copyShareBtn">Copy Staff Link</button> <button class="adminOnly" id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
+<header><div><h1>Special Teams Intelligence V8.6</h1><div class="sub">All live data from Supabase Storage + read-only staff view + printable practice cards</div><div id="dataSourceStatus" class="smallNote" style="margin-top:5px">Connecting to Supabase special-teams data…</div></div><div><button class="adminOnly" id="saveCloudBtn">Save Looks / Settings</button> <button class="adminOnly" id="copyAdminBtn">Copy My Admin Link</button> <button id="reloadCloudBtn">Reload Latest</button> <button id="copyShareBtn">Copy Staff Link</button> <button class="adminOnly" id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
 <div class="shell">
 <aside>
 <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
@@ -101,7 +109,7 @@ body.readOnly .readOnlyBadge{display:block}
 const DEFAULT_TEAM_SETTINGS={teamName:'',nickname:'',teamCode:'',rosterUrl:'',season:'2025'};
 let teamSettings=(()=>{try{return {...DEFAULT_TEAM_SETTINGS,...JSON.parse(localStorage.getItem('stTeamSettingsV65')||'{}')}}catch(e){return {...DEFAULT_TEAM_SETTINGS}}})();
 let rosterStatus=localStorage.getItem('stRosterStatusV65')||'No shared roster is loaded yet. Connect a roster or publish the current shared project.';
-function saveTeamSettings(){localStorage.setItem('stTeamSettingsV65',JSON.stringify(teamSettings));localStorage.setItem('stRosterStatusV65',rosterStatus);if(typeof CLOUD!=='undefined'&&!CLOUD.loading)queueAutoSave('Team settings updated')}
+function saveTeamSettings(auto=true){localStorage.setItem('stTeamSettingsV65',JSON.stringify(teamSettings));localStorage.setItem('stRosterStatusV65',rosterStatus);if(auto&&typeof CLOUD!=='undefined'&&!CLOUD.loading)queueAutoSave('Team settings updated')}
 function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function sidearmRosterFromHTML(html,baseUrl){
   const doc=new DOMParser().parseFromString(html,'text/html');
@@ -136,39 +144,43 @@ async function refreshRosterFromUrl(){
     rosterUrl:($('rosterUrlSetting')?.value||'').trim()
   };
   if(!next.rosterUrl){
-    rosterStatus='Enter an official roster URL before connecting.';
+    rosterStatus='Enter the official roster URL first.';
     saveTeamSettings();render();return;
   }
-  const changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');
+
   teamSettings=next;
-  if(changed){rosterData=[];selectedSpecialist='';saveRoster();}
   saveTeamSettings();
-  rosterStatus='Connecting to the official roster page…';saveTeamSettings();render();
+  rosterStatus='Syncing roster from the official team website…';
+  saveTeamSettings();render();
+
   try{
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),22000);
-    let res;
-    try{
-      res=await fetch('/api/import-roster',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({url:teamSettings.rosterUrl}),
-        signal:controller.signal
-      });
-    }finally{clearTimeout(timer)}
-    let payload={};
-    try{payload=await res.json()}catch(e){}
-    if(!res.ok)throw new Error(payload.error||('Roster service returned '+res.status));
-    const parsed=Array.isArray(payload.players)?payload.players:[];
-    if(!parsed.length)throw new Error('The roster page was reached, but no player cards were found.');
-    rosterData=parsed;saveRoster();
-    rosterStatus='Roster connected: '+parsed.length+' players loaded from '+(payload.source||teamSettings.rosterUrl)+'.';
-    saveTeamSettings();setup();
-    if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;
+    const response=await fetch('/api/sync-roster',{
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({
+        url:teamSettings.rosterUrl,
+        teamName:teamSettings.teamName,
+        nickname:teamSettings.nickname,
+        teamCode:teamSettings.teamCode,
+        adminKey:ensureAdminKey()
+      })
+    });
+
+    let result={};
+    try{result=await response.json()}catch(e){}
+    if(!response.ok)throw new Error(result.error||`Roster sync returned ${response.status}`);
+
+    await loadRosterFromSupabase();
+    rosterStatus=`Roster synced to Supabase: ${rosterData.length} players.`;
+    saveTeamSettings();
+    setup();
     render();
+    alert(`Roster synced: ${rosterData.length} players. It is now stored in Supabase for everyone.`);
   }catch(err){
-    rosterStatus='Roster connection failed. No previous team was substituted. '+(err.name==='AbortError'?'The request timed out after 22 seconds.':err.message);
-    saveTeamSettings();render();
+    rosterStatus='Roster sync failed: '+err.message;
+    saveTeamSettings();
+    render();
+    alert(rosterStatus);
   }
 }
 function teamSettingsPage(){
@@ -178,16 +190,16 @@ function teamSettingsPage(){
     <label>Nickname<input id="nicknameSetting" value="${esc(teamSettings.nickname)}"></label>
     <label>PFF team code<input id="teamCodeSetting" value="${esc(teamSettings.teamCode)}"></label>
   </div></div>
-  <div class="card"><div class="eyebrow">Official roster source</div><div class="filterSummary">Paste the active team's official roster page. The platform will never substitute ULM or another team if the import fails. This GitHub/Vercel build uses a server-side roster connector. Deploy the complete repository to Vercel, then paste any supported official athletics roster URL here.</div>
-    <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-top:12px"><input id="rosterUrlSetting" value="${esc(teamSettings.rosterUrl)}"><button id="saveTeamSettingsBtn">Save Team</button><button id="refreshRosterUrlBtn">Connect Roster URL</button></div>
+  <div class="card"><div class="eyebrow">Official roster source</div><div class="filterSummary">Paste the official football roster page once. Sync Roster builds the roster on the server and saves roster.json directly into Supabase Storage at Special Teams / Current.</div>
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-top:12px"><input id="rosterUrlSetting" value="${esc(teamSettings.rosterUrl)}"><button id="saveTeamSettingsBtn">Save Team</button><button id="refreshRosterUrlBtn">Sync Roster to Supabase</button></div>
     <div class="smallNote" style="margin-top:10px">${esc(rosterStatus)}</div>
   </div>
-  <div class="card"><div class="eyebrow">Roster controls</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"><button id="clearTeamRoster">Clear Team & Roster</button><button id="exportRosterSettings">Export Current Roster JSON</button><label class="upload">Optional CSV / JSON Import<input id="settingsRosterInput" type="file" accept=".csv,.json"></label></div><div class="filterSummary" style="margin-top:10px">Current roster records: ${rosterData.length}. CSV or JSON remains available as a fallback. URL connection works after this complete repository is deployed to Vercel; it will not work by double-clicking index.html locally.</div></div>`;
+  <div class="card"><div class="eyebrow">Roster controls</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"><button id="clearTeamRoster">Clear Team & Roster</button><button id="exportRosterSettings">Export Current Roster JSON</button><label class="upload">Optional CSV / JSON Import<input id="settingsRosterInput" type="file" accept=".csv,.json"></label></div><div class="filterSummary" style="margin-top:10px">Current roster records: ${rosterData.length}. The normal workflow is Sync Roster to Supabase. Manual CSV/JSON import remains only as a fallback.</div></div>`;
 }
 
 const DEFAULT_ROSTER=[];
 let rosterData=(()=>{try{let x=JSON.parse(localStorage.getItem('stRosterV65')||'null');return Array.isArray(x)?x:[]}catch(e){return []}})();
-function saveRoster(){localStorage.setItem('stRosterV65',JSON.stringify(rosterData));if(typeof CLOUD!=='undefined'&&!CLOUD.loading)queueAutoSave('Roster updated')}
+function saveRoster(auto=true){localStorage.setItem('stRosterV65',JSON.stringify(rosterData));}
 function normNum(x){return String(x||'').replace(/[^0-9]/g,'').replace(/^0+(?=\d)/,'')}
 function codeNumber(x){let m=String(x||'').match(/(?:^|\s)[SD]?(\d{1,2})(?:\s|$)/);return m?normNum(m[1]):''}
 function rosterByNumber(num){num=normNum(num);return rosterData.find(p=>normNum(p.number)===num)||null}
@@ -203,16 +215,20 @@ function playerCodeRows(a,unit,role){let team=selectedTeam();if(!team)return [];
 function specialistStats(a,kind){let rows=specialistRowsForTeam(a,kind),by={};rows.forEach(r=>{let id=specialistIdentity(r);if(!id)return;(by[id.num]||(by[id.num]=[])).push(r)});return Object.entries(by).map(([num,rs])=>{let p=rosterByNumber(num);if(!eligibleSpecialist(p,kind))return null;let made=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')).length,tb=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('TOUCH')).length;return {num,rows:rs,p,stats:kind==='punter'?[['Punts',rs.length],['Gross',fmt(avg(rs.map(r=>v(r,'pff_KICKYARDS'))),1)],['Op time',fmt(avg(rs.map(r=>v(r,'pff_OPERATIONTIME'))),2)]]:kind==='kicker'?[['FG',made+'/'+rs.length],['FG%',pct(made,rs.length)],['Long',fmt(Math.max(0,...rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')).map(r=>n(v(r,'pff_KICKYARDS'))||0)),0)]]:[['KO',rs.length],['TB%',pct(tb,rs.length)],['Depth',fmt(avg(rs.map(r=>v(r,'pff_KICKDEPTH'))),1)]]}}).filter(Boolean).sort((x,y)=>y.rows.length-x.rows.length)}
 function returnerDashboardStats(a,unit){let team=selectedTeam();let rs=a.filter(r=>v(r,'pff_SPECIALTEAMSTYPE')===unit&&v(r,returnTeamField(unit))===team);let by={};rs.forEach(r=>{let names=returnerNames(r);if(!names.length){let list=String(v(r,'pff_OFFPLAYERS')||v(r,'pff_DEFPLAYERS')||'');let m=[...list.matchAll(new RegExp(team+'\\s+([SD]?\\d+)\\s*\\((?:KR[^)]*|PR)\\)','g'))];names=m.map(x=>team+' '+x[1])}names.forEach(name=>{let num=codeNumber(name);if(!num)return;(by[num]||(by[num]=[])).push(r)})});return Object.entries(by).map(([num,rows])=>{let y=rows.map(r=>n(v(r,'pff_RETURNYARDS'))).filter(x=>x!=null);return {num,rows,stats:[['Returns',y.length],['Average',fmt(avg(y),1)],['Long',y.length?Math.max(...y):'—']]}}).sort((x,y)=>(avg(y.rows.map(r=>n(v(r,'pff_RETURNYARDS'))))||0)-(avg(x.rows.map(r=>n(v(r,'pff_RETURNYARDS'))))||0))}
 function dashboardPlayerSection(a){let kr=returnerDashboardStats(a,'KICKOFF').slice(0,4),pr=returnerDashboardStats(a,'PUNT').slice(0,4),ks=specialistStats(a,'kicker').slice(0,4),kos=specialistStats(a,'kickoff').slice(0,4),ps=specialistStats(a,'punter').slice(0,4);let cards=(arr,empty)=>arr.length?arr.map(x=>playerCard(rosterByNumber(x.num),x.stats,(selectedTeam()||'TEAM')+' '+x.num)).join(''):`<div class="empty">${empty}</div>`;return `<div class="card span12"><h3>Player dashboard</h3><div class="context">Top specialists and returners update with the active season, week and team filters.</div></div><div class="card span12"><div class="eyebrow">Top kickoff returners</div><div class="playerCardGrid">${cards(kr,'No kickoff-return records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Top punt returners</div><div class="playerCardGrid">${cards(pr,'No punt-return records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Kickers and kickoff specialists</div><div class="playerCardGrid">${cards([...ks,...kos].filter((x,i,a)=>a.findIndex(y=>y.num===x.num)===i),'No kicker records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Punters</div><div class="playerCardGrid">${cards(ps,'No punter records match the current filters.')}</div></div>`}
-function rosterManager(){return `<div class="card"><div class="rosterTools"><div><div class="eyebrow">Roster management</div><div class="filterSummary">Load CSV or JSON with: number, name, position, height, weight, class, hometown, previousSchool, image, profile and bio. Roster changes are shared through the current project; PFF plays load directly from Supabase Storage.</div></div><button id="exportRoster">Export roster JSON</button><button id="resetRoster">Clear roster</button></div></div>`}
+function rosterManager(){return `<div class="card"><div class="rosterTools"><div><div class="eyebrow">Roster management</div><div class="filterSummary">Load CSV or JSON with: number, name, position, height, weight, class, hometown, previousSchool, image, profile and bio. Roster and PFF plays load directly from Supabase Storage. Put roster.json beside the two current CSV files.</div></div><button id="exportRoster">Export roster JSON</button><button id="resetRoster">Clear roster</button></div></div>`}
 function parseRosterCSV(text){let rows=parseCSV(text);return rows.map(r=>({number:r.number||r.Number||r.jersey||r.Jersey,name:r.name||r.Name,position:r.position||r.Position,height:r.height||r.Height,weight:r.weight||r.Weight,class:r.class||r.Class,hometown:r.hometown||r.Hometown,previousSchool:r.previousSchool||r['Previous School']||r.previous_school||'',image:r.image||r.Image||r.imageUrl||'',profile:r.profile||r.Profile||r.profileUrl||'',bio:r.bio||r.Bio||''})).filter(x=>x.number&&x.name)}
 
 
 
+
+const ACCESS={
+  adminRequested:new URLSearchParams(location.search).get('admin')==='1',
+  adminKey:sessionStorage.getItem('stAdminKey')||''
+};
+
 const CLOUD={
-  projectId:'current',
-  editKey:localStorage.getItem('stEditKey:current')||'',
   status:'',
-  readOnly:false,
+  readOnly:true,
   loading:false,
   saveTimer:null
 };
@@ -220,7 +236,6 @@ const CLOUD={
 function cloudPayload(){
   return {
     teamSettings,
-    rosterData,
     savedLooks,
     repAssignments,
     updatedAt:new Date().toISOString()
@@ -228,7 +243,26 @@ function cloudPayload(){
 }
 
 function applyAccessMode(){
-  document.body.classList.toggle('readOnly',!!CLOUD.readOnly);
+  CLOUD.readOnly=!ACCESS.adminRequested;
+  document.body.classList.toggle('readOnly',CLOUD.readOnly);
+
+  const badge=document.querySelector('.readOnlyBadge');
+  if(badge){
+    badge.textContent=CLOUD.readOnly
+      ? 'READ ONLY • LIVE STAFF DATA'
+      : 'ADMIN MODE • SUPABASE STORAGE';
+  }
+}
+
+function ensureAdminKey(){
+  if(!ACCESS.adminRequested)return '';
+  if(ACCESS.adminKey)return ACCESS.adminKey;
+  const key=prompt('Enter your Special Teams admin key:')||'';
+  if(key){
+    ACCESS.adminKey=key.trim();
+    sessionStorage.setItem('stAdminKey',ACCESS.adminKey);
+  }
+  return ACCESS.adminKey;
 }
 
 async function saveProjectCloud(options={}){
@@ -236,76 +270,78 @@ async function saveProjectCloud(options={}){
     if(!options.silent)alert('This is the read-only staff view.');
     return false;
   }
+
+  const adminKey=ensureAdminKey();
+  if(!adminKey){
+    if(!options.silent)alert('Admin key is required.');
+    return false;
+  }
+
   const btn=$('saveCloudBtn');
-  if(btn&&!options.silent){btn.disabled=true;btn.textContent='Publishing…'}
+  if(btn&&!options.silent){btn.disabled=true;btn.textContent='Saving…'}
+
   try{
-    const r=await fetch('/api/project',{
+    const r=await fetch('/api/storage-project',{
       method:'POST',
       headers:{'content-type':'application/json'},
       body:JSON.stringify({
-        projectId:'current',
-        editKey:CLOUD.editKey||null,
+        action:'save',
+        adminKey,
         data:cloudPayload()
       })
     });
+
     const j=await r.json();
-    if(!r.ok)throw new Error(j.error||'Publish failed');
-    if(j.editKey){
-      CLOUD.editKey=j.editKey;
-      localStorage.setItem('stEditKey:current',j.editKey);
-    }
-    CLOUD.readOnly=false;
-    CLOUD.status='Published '+new Date().toLocaleTimeString();
-    applyAccessMode();
-    if(!options.silent)alert('Published. Everyone using the staff link will now load this data.');
+    if(!r.ok)throw new Error(j.error||'Project save failed');
+
+    CLOUD.status='Saved '+new Date().toLocaleTimeString();
+    if(!options.silent)alert('Saved to Supabase Storage. Coaches will get the updated looks/settings on reload.');
     return true;
   }catch(e){
-    if(!options.silent)alert('Publish failed: '+e.message);
-    else console.error('Auto-publish failed:',e);
+    console.error('Project save failed:',e);
+    if(!options.silent)alert('Save failed: '+e.message);
     return false;
   }finally{
-    if(btn&&!options.silent){btn.disabled=false;btn.textContent='Publish Current'}
+    if(btn&&!options.silent){btn.disabled=false;btn.textContent='Save Looks / Settings'}
   }
 }
 
 function queueAutoSave(reason='Update'){
   if(CLOUD.readOnly)return;
   clearTimeout(CLOUD.saveTimer);
-  CLOUD.status=reason+' • waiting to publish';
-  CLOUD.saveTimer=setTimeout(()=>saveProjectCloud({silent:true}),900);
+  CLOUD.status=reason+' • waiting to save';
+  CLOUD.saveTimer=setTimeout(()=>saveProjectCloud({silent:true}),700);
 }
 
 async function loadProjectCloud(options={}){
   if(CLOUD.loading)return false;
   CLOUD.loading=true;
+
   try{
-    const r=await fetch('/api/project',{
-      method:'POST',
-      headers:{'content-type':'application/json'},
-      body:JSON.stringify({action:'load',projectId:'current'})
-    });
+    const r=await fetch('/api/storage-project?action=load&v='+Date.now(),{cache:'no-store'});
     if(r.status===404){
-      CLOUD.readOnly=false;
-      CLOUD.status='No current project published yet';
-      applyAccessMode();
+      CLOUD.status='No project.json found yet';
       return false;
     }
+
     const j=await r.json();
     if(!r.ok)throw new Error(j.error||'Project load failed');
+
     const d=j.data||{};
     if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings};
-    if(Array.isArray(d.rosterData))rosterData=d.rosterData;
     if(Array.isArray(d.savedLooks))savedLooks=d.savedLooks;
     if(d.repAssignments&&typeof d.repAssignments==='object')repAssignments=d.repAssignments;
-    saveTeamSettings();saveRoster();persistLooks(false);
-    CLOUD.readOnly=!CLOUD.editKey;
-    CLOUD.status='Latest shared data loaded';
-    applyAccessMode();
-    if(options.notice)alert('Latest shared data loaded.');
+
+    saveTeamSettings(false);
+    saveRoster(false);
+    persistLooks(false);
+
+    CLOUD.status='Supabase project.json loaded';
+    if(options.notice)alert('Latest looks and settings loaded.');
     return true;
   }catch(e){
-    if(options.notice)alert('Could not load latest data: '+e.message);
-    else console.error('Cloud load:',e);
+    console.error('Project load failed:',e);
+    if(options.notice)alert('Could not load project.json: '+e.message);
     return false;
   }finally{
     CLOUD.loading=false;
@@ -314,16 +350,16 @@ async function loadProjectCloud(options={}){
 
 function copyShareLink(){
   const u=new URL(location.href);
-  u.searchParams.delete('project');
+  u.searchParams.delete('admin');
   navigator.clipboard?.writeText(u.toString())
-    .then(()=>alert('Staff link copied. It opens the latest published data in read-only mode.'))
+    .then(()=>alert('Staff link copied. It is read-only and always loads the latest Supabase data.'))
     .catch(()=>prompt('Copy this staff link:',u.toString()));
 }
 
-
 const PFF_STORAGE={
   base:'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Current',
-  files:['offense-side.csv','defense-side.csv']
+  files:['offense-side.csv','defense-side.csv'],
+  roster:'roster.json'
 };
 
 function pffStorageUrl(name){
@@ -372,6 +408,32 @@ function setDataSourceStatus(msg,bad=false){
   let e=$('dataSourceStatus');
   if(e){e.textContent=msg;e.style.color=bad?'#ff9da8':'#8fd3f4'}
 }
+
+async function loadRosterFromSupabase(options={}){
+  try{
+    const response=await fetch(pffStorageUrl(PFF_STORAGE.roster),{cache:'no-store'});
+    if(response.status===404){
+      rosterStatus='No roster.json found in Supabase Storage.';
+      if(options.notice)alert('No roster.json is in Special Teams / Current yet.');
+      return false;
+    }
+    if(!response.ok)throw new Error(`roster.json returned ${response.status}`);
+    const data=await response.json();
+    const parsed=Array.isArray(data)?data:(Array.isArray(data.players)?data.players:[]);
+    if(!parsed.length)throw new Error('roster.json contains no players');
+    rosterData=parsed;
+    saveRoster();
+    rosterStatus=`Supabase roster loaded: ${parsed.length} players.`;
+    saveTeamSettings();
+    return true;
+  }catch(err){
+    console.error('Supabase roster load failed:',err);
+    rosterStatus='Roster could not load from Supabase: '+err.message;
+    if(options.notice)alert(rosterStatus);
+    return false;
+  }
+}
+
 async function loadPffFromSupabase(options={}){
   setDataSourceStatus('Loading offense-side.csv + defense-side.csv from Supabase…');
   try{
@@ -662,7 +724,92 @@ function matchMarkup(){let m=findMatches(chartPositions)[0];if(!m)return `<div c
 function chartPage(a){let plays=chartPlays(a);if(!plays.length)return title('Chart Looks','Drag players to record actual pre-snap spacing')+unitTabs()+`<div class="empty">No ${viewType} plays are available for this unit and filter.</div>`;let r=activeChartPlay(a);initChartPositions(r);let dots=Object.entries(chartPositions).map(([k,p])=>chartDot(p,k)).join('');let coords=Object.values(chartPositions).sort((a,b)=>a.role.localeCompare(b.role)).map(p=>`<div class="coordLine"><b>${p.role}</b><span>${p.name}</span><span>${p.x.toFixed(1)}</span><span>${p.y.toFixed(1)}</span></div>`).join('');let assigned=repAssignments[playKey(r)],label=viewType==='PUNT'?(viewSide==='unit'?'Punt Team':'Punt Return'):(viewSide==='unit'?'Kickoff Coverage':'Kickoff Return');return title(`${label} Look Charting`,'Drag each player to the actual alignment. Save it once, then connect or match every underlying rep.')+unitTabs()+`<div class="playControls"><button id="chartPrev">Previous rep</button><button id="chartNext">Next rep</button><button id="copyPrev">Copy previous chart</button><button id="resetChart">Reset positions</button><span class="viz-badge">Rep ${chartIndex+1} of ${plays.length}</span></div><div class="chartShell"><div class="chartField" id="chartField"><div class="los"></div><div class="losLabel">REFERENCE LINE</div>${depthOverlay(viewType,viewSide)}${dots}</div><div class="chartPanel"><div class="playCard">${sourceSummary(r)}${assigned?`<div class="note">Assigned to ${savedLooks.find(x=>x.id===assigned.lookId)?.name||'saved look'}</div>`:''}</div>${matchMarkup()}<div class="playCard"><div class="eyebrow">Save / assign</div><input class="input" id="lookName" placeholder="Look name, e.g. Punt Return 2x Vice"><div class="fieldActions" style="margin-top:8px"><button class="primary wide" id="saveNewLook">Save as new look</button><button class="success wide" id="assignBest">Assign to best match</button><button id="mirrorChart">Mirror alignment</button><button id="exportLooks">Export looks</button></div><div class="status" id="chartStatus"></div></div><div class="playCard"><div class="eyebrow">Player coordinates</div><div class="coordTable"><div class="coordLine"><b>Role</b><span>Player</span><b>X</b><b>Y</b></div>${coords}</div></div></div></div><div class="note">Coordinates are normalized to the field, so the chart can later be stored in Supabase exactly as shown. Matching currently uses role and spatial distance, with small charting differences treated as the same look.</div>`}
 function lookField(l){return `<div class="libField">${l.positions.map(p=>`<div class="libDot" style="left:${p.x}%;top:${p.y}%" title="${p.name}">${p.role}</div>`).join('')}</div>`}
 function assignedRows(l,a){let mp=new Map(a.map(r=>[playKey(r),r]));return l.repKeys.map(k=>mp.get(k)).filter(Boolean)}
-function libraryPage(a){let ls=savedLooks.filter(l=>(!$('unitF').value||l.unit===$('unitF').value));if(!ls.length)return title('Look Library','Saved alignments and all underlying rep data')+`<div class="empty">No looks have been saved yet. Open Chart Looks, drag the players, and save the first alignment.</div>`;return title('Look Library','Every saved diagram keeps its assigned PFF reps and underlying performance data')+`<div class="libraryGrid">${ls.map(l=>{let rr=assignedRows(l,rows),returns=rr.filter(r=>n(v(r,'pff_RETURNYARDS'))!=null);return `<div class="family"><div class="lookHead"><div><div class="lookName">${l.name}</div><div class="lookMeta">${l.unit} • ${l.side==='unit'?'unit':'return'} • ${l.positions.length} players</div></div><div><b>${l.repKeys.length}</b><div class="lookMeta">reps</div></div></div>${lookField(l)}<div class="metrics"><div class="mini"><b>${l.repKeys.length}</b><span>Assigned reps</span></div><div class="mini"><b>${fmt(avg(rr.map(r=>v(r,'pff_HANGTIME'))),2)}</b><span>Hang</span></div><div class="mini"><b>${fmt(avg(returns.map(r=>v(r,'pff_RETURNYARDS'))),1)}</b><span>Return yds</span></div><div class="mini"><b>${fmt(avg(rr.map(r=>v(r,'pff_EXPECTED_POINTS_ADDED'))),3)}</b><span>EPA</span></div></div><div class="lookControls"><button class="showReps" data-id="${l.id}">Show underlying reps</button><button class="loadLook" data-id="${l.id}">Open in charting</button><button class="danger deleteLook" data-id="${l.id}">Delete</button></div><div class="repRows" id="reps_${l.id}">${rr.length?rr.map(r=>`<div class="repRow"><span>Wk ${v(r,'pff_WEEK')}</span><span>${v(r,'pff_OFFTEAM')} vs ${v(r,'pff_DEFTEAM')} • ${v(r,'pff_KICKRESULT')}</span><span>${v(r,'pff_RETURNYARDS')||'—'} yds</span><span>${v(r,'pff_HANGTIME')||'—'} hang</span></div>`).join(''):'<div class="lookMeta">No currently loaded PFF rows match the saved rep IDs.</div>'}</div></div>`}).join('')}</div>`}
+function practiceUnitLabel(l){
+  if(l.unit==='PUNT')return l.side==='unit'?'Punt Team':'Punt Return';
+  if(l.unit==='KICKOFF')return l.side==='unit'?'Kickoff Coverage':'Kickoff Return';
+  return `${l.unit} ${l.side}`;
+}
+function practiceCardDocument(looks){
+  const cards=looks.map((l,idx)=>{
+    const field=lookField(l)
+      .replace(/class="lookField"/g,'class="printField"')
+      .replace(/class="lookDot"/g,'class="printDot"');
+    return `<section class="practicePage">
+      <div class="practiceHeader">
+        <div><div class="practiceTeam">${esc(teamSettings.teamName||teamSettings.nickname||teamSettings.teamCode||'Special Teams')}</div>
+        <h1>${esc(l.name)}</h1>
+        <div class="practiceMeta">${esc(practiceUnitLabel(l))} • ${l.positions.length} players • ${l.repKeys?.length||0} assigned reps</div></div>
+        <div class="practiceNum">${idx+1}</div>
+      </div>
+      <div class="practiceFieldWrap">${field}</div>
+      <div class="practiceFooter">Special Teams Intelligence • Practice Prep</div>
+    </section>`;
+  }).join('');
+
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Special Teams Practice Cards</title>
+  <style>
+  @page{size:landscape;margin:.35in}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#111;background:#fff}
+  .practicePage{page-break-after:always;break-after:page;height:7.3in;display:flex;flex-direction:column}
+  .practicePage:last-child{page-break-after:auto}
+  .practiceHeader{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;border-bottom:3px solid #111;padding-bottom:8px}
+  .practiceTeam{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.12em}
+  h1{font-size:25px;margin:3px 0}
+  .practiceMeta{font-size:12px}
+  .practiceNum{font-size:28px;font-weight:900}
+  .practiceFieldWrap{flex:1;display:flex;align-items:center;justify-content:center}
+  .printField{position:relative;width:92%;height:5.7in;border:3px solid #111;background:
+    repeating-linear-gradient(to bottom,transparent 0,transparent 9.7%,#bbb 9.8%,#bbb 10%,transparent 10.1%);
+    overflow:hidden}
+  .printField:before{content:"REFERENCE LINE";position:absolute;left:0;right:0;top:50%;border-top:3px solid #111;text-align:center;font-size:10px;font-weight:800;padding-top:3px}
+  .printDot{position:absolute;transform:translate(-50%,-50%);min-width:42px;height:42px;border:2px solid #111;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:8px;font-weight:800;line-height:1.05;padding:3px}
+  .practiceFooter{text-align:right;font-size:9px;margin-top:6px}
+  button{position:fixed;right:18px;top:18px;padding:10px 15px;font-size:14px}
+  @media print{button{display:none}}
+  </style></head><body>
+  <button onclick="window.print()">Print / Save PDF</button>${cards}</body></html>`;
+}
+function openPracticeCards(looks){
+  if(!looks.length){alert('Select at least one saved look.');return}
+  const w=window.open('','_blank');
+  if(!w){alert('Allow pop-ups for this app so the practice-card PDF window can open.');return}
+  w.document.open();
+  w.document.write(practiceCardDocument(looks));
+  w.document.close();
+}
+function libraryPage(a){
+  let ls=savedLooks.filter(l=>(!$('unitF').value||l.unit===$('unitF').value));
+  if(!ls.length)return title('Look Library','Saved alignments and all underlying rep data')+
+    `<div class="empty">No looks have been saved yet. Open Chart Looks, drag the players, and save the first alignment.</div>`;
+
+  return title('Look Library','Saved diagrams load from Supabase project.json and can be printed as clean practice cards')+
+  `<div class="practiceTools">
+    <button id="selectAllLooks">Select all</button>
+    <button id="clearLookSelection">Clear selection</button>
+    <button class="primary" id="printSelectedLooks">Practice Packet PDF</button>
+    <span class="lookMeta">Choose any looks below. One look prints per landscape page.</span>
+  </div>
+  <div class="libraryGrid">${ls.map(l=>{
+    let rr=assignedRows(l,rows),returns=rr.filter(r=>n(v(r,'pff_RETURNYARDS'))!=null);
+    return `<div class="family">
+      <div class="lookHead">
+        <div><label><input class="lookSelect" type="checkbox" data-look-select="${l.id}"><span class="lookName">${l.name}</span></label>
+        <div class="lookMeta">${l.unit} • ${l.side==='unit'?'unit':'return'} • ${l.positions.length} players</div></div>
+        <div><b>${l.repKeys.length}</b><div class="lookMeta">reps</div></div>
+      </div>
+      ${lookField(l)}
+      <div class="metrics"><div class="mini"><b>${l.repKeys.length}</b><span>Assigned reps</span></div><div class="mini"><b>${fmt(avg(rr.map(r=>v(r,'pff_HANGTIME'))),2)}</b><span>Hang</span></div><div class="mini"><b>${fmt(avg(returns.map(r=>v(r,'pff_RETURNYARDS'))),1)}</b><span>Return yds</span></div><div class="mini"><b>${fmt(avg(rr.map(r=>v(r,'pff_EXPECTED_POINTS_ADDED'))),3)}</b><span>EPA</span></div></div>
+      <div class="lookControls">
+        <button class="showReps" data-id="${l.id}">Show underlying reps</button>
+        <button class="loadLook adminOnly" data-id="${l.id}">Open in charting</button>
+        <button class="practiceCardBtn" data-practice-id="${l.id}">Practice Card PDF</button>
+        <button class="danger deleteLook adminOnly" data-id="${l.id}">Delete</button>
+      </div>
+      <div class="repRows" id="reps_${l.id}">${rr.length?rr.map(r=>`<div class="repRow"><span>Wk ${v(r,'pff_WEEK')}</span><span>${v(r,'pff_OFFTEAM')} vs ${v(r,'pff_DEFTEAM')} • ${v(r,'pff_KICKRESULT')}</span><span>${v(r,'pff_RETURNYARDS')||'—'} yds</span><span>${v(r,'pff_HANGTIME')||'—'} hang</span></div>`).join(''):'<div class="lookMeta">No currently loaded PFF rows match the saved rep IDs.</div>'}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
 function saveNewLook(r){let name=($('lookName').value||`${viewType} ${viewSide==='unit'?'Unit':'Return'} Look ${savedLooks.filter(x=>x.unit===viewType&&x.side===viewSide).length+1}`).trim(),id='L'+Date.now();let look={id,name,unit:viewType,side:viewSide,positions:normalizedPositions(chartPositions),repKeys:[playKey(r)],createdAt:new Date().toISOString()};savedLooks.push(look);repAssignments[playKey(r)]={lookId:id,match:'seed'};persistLooks();$('chartStatus').textContent=`Saved ${name} and connected this rep.`;render()}
 function assignBest(r){let m=findMatches(chartPositions)[0];if(!m){$('chartStatus').textContent='No saved look exists yet. Save this as a new look first.';return}if(!m.look.repKeys.includes(playKey(r)))m.look.repKeys.push(playKey(r));repAssignments[playKey(r)]={lookId:m.look.id,match:m.max<=2?'exact':m.avg<=5?'near':'manual'};persistLooks();$('chartStatus').textContent=`Assigned to ${m.look.name}.`;render()}
 function bindChartDrag(){let field=$('chartField');if(!field)return;let drag=null;field.querySelectorAll('.dragPlayer').forEach(el=>{el.addEventListener('pointerdown',e=>{drag=el;el.setPointerCapture(e.pointerId);selectedPlayer=decodeURIComponent(el.dataset.key);el.classList.add('selected');e.preventDefault()});el.addEventListener('pointermove',e=>{if(drag!==el)return;let b=field.getBoundingClientRect(),x=Math.max(2,Math.min(98,100*(e.clientX-b.left)/b.width)),y=Math.max(2,Math.min(98,100*(e.clientY-b.top)/b.height));let snap=e.shiftKey?1:0.5;x=Math.round(x/snap)*snap;y=Math.round(y/snap)*snap;chartPositions[selectedPlayer].x=x;chartPositions[selectedPlayer].y=y;el.style.left=x+'%';el.style.top=y+'%'});el.addEventListener('pointerup',()=>{drag=null;el.classList.remove('selected');render()})})}
@@ -733,11 +880,12 @@ function render(){
 
 function loadRosterFile(f){if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=f.name.toLowerCase().endsWith('.json')?JSON.parse(rd.result):parseRosterCSV(rd.result);if(!Array.isArray(x)||!x.length)throw new Error('No roster rows found');rosterData=x;saveRoster();rosterStatus='Roster file loaded: '+x.length+' players.';saveTeamSettings();render();alert('Roster loaded: '+x.length+' players')}catch(err){alert('Roster load failed: '+err.message)}};rd.readAsText(f)}
 
-function bind(){let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=()=>window.print();document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;if($('unitF'))$('unitF').value=viewType;playIndex=0;chartIndex=0;chartPositions={};render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};render()};if(cn)cn.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex+1)%x.length;chartPositions={};render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filtered());chartPositions=defaultPositions(r);render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look)chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);render()};if($('saveNewLook'))$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filtered()));if($('assignBest'))$('assignBest').onclick=()=>assignBest(activeChartPlay(filtered()));if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=()=>{let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks();render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;chartPositions=Object.fromEntries(l.positions.map(p=>[p.role+'|'+p.name,{...p}]));page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});bindChartDrag();bindPlayerPages()}
+function bind(){let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let ca=$('copyAdminBtn');if(ca)ca.onclick=()=>{const u=new URL(location.href);u.searchParams.set('admin','1');navigator.clipboard?.writeText(u.toString()).then(()=>alert('Admin link copied. You will still need the admin key when you edit.')).catch(()=>prompt('Copy your private admin link:',u.toString()))};let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadRosterFromSupabase();await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=()=>window.print();document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;if($('unitF'))$('unitF').value=viewType;playIndex=0;chartIndex=0;chartPositions={};render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};render()};if(cn)cn.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex+1)%x.length;chartPositions={};render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filtered());chartPositions=defaultPositions(r);render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look)chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);render()};if($('saveNewLook'))$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filtered()));if($('assignBest'))$('assignBest').onclick=()=>assignBest(activeChartPlay(filtered()));if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('[data-practice-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.practiceId);if(l)openPracticeCards([l])});if($('selectAllLooks'))$('selectAllLooks').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=true);if($('clearLookSelection'))$('clearLookSelection').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=false);if($('printSelectedLooks'))$('printSelectedLooks').onclick=()=>{let ids=[...document.querySelectorAll('[data-look-select]:checked')].map(x=>x.dataset.lookSelect),looks=ids.map(id=>savedLooks.find(l=>l.id===id)).filter(Boolean);openPracticeCards(looks)};document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=()=>{let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks();render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;chartPositions=Object.fromEntries(l.positions.map(p=>[p.role+'|'+p.name,{...p}]));page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});bindChartDrag();bindPlayerPages()}
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;playIndex=0;chartIndex=0;chartPositions={};render()});
 document.querySelectorAll('.toolbar select').forEach(e=>e.onchange=()=>{playIndex=0;chartIndex=0;chartPositions={};render()});$('resetF').onclick=()=>{['seasonF','weekF','teamF','unitF'].forEach(id=>$(id).value='');dashKoHash='';dashPuntHash='';dashFgHash='';playIndex=0;render()};
 (async()=>{
   await loadProjectCloud();
+  await loadRosterFromSupabase();
   await loadPffFromSupabase({render:false});
   setup();
   applyAccessMode();

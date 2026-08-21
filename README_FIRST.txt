@@ -70,3 +70,13 @@ WHAT STILL USES THE CURRENT PROJECT API
 - rep assignments
 
 PFF rows are intentionally NOT written into project.json/database anymore.
+
+V8.3 ROSTER STORAGE
+The app now also reads:
+Special Teams / Current / roster.json
+
+Accepted roster.json formats:
+1. A plain array of player objects
+2. {"players":[...player objects...]}
+
+The app loads project settings/looks, then roster.json, then the two PFF CSVs.
