@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Special Teams Intelligence V8.1</title>
+<title>Special Teams Intelligence V8.2</title>
 <style>
 :root{--bg:#071018;--panel:#0e1c27;--panel2:#122633;--line:#294653;--text:#f3f7f9;--muted:#91a9b8;--gold:#e2b34c;--maroon:#7b1d3b;--green:#4f8e12;--blue:#2f68df;--yellow:#d4a700;--red:#9a252c;--purple:#8c3caf}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#17303d,#071018 45%);color:var(--text);font:14px/1.4 Inter,Segoe UI,Arial,sans-serif}
@@ -78,7 +78,7 @@ body.readOnly .readOnlyBadge{display:block}
 </style>
 </head>
 <body><div class="readOnlyBadge">READ ONLY • LIVE STAFF DATA</div>
-<header><div><h1>Special Teams Intelligence V8.1</h1><div class="sub">Shared current data + read-only staff view + dedicated player dashboards + coach-ready reports</div></div><div><label class="upload adminOnly">Load PFF CSV<input id="fileInput" type="file" accept=".csv"></label> <button class="adminOnly" id="saveCloudBtn">Publish Current</button> <button id="reloadCloudBtn">Reload Latest</button> <button id="copyShareBtn">Copy Staff Link</button> <button class="adminOnly" id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
+<header><div><h1>Special Teams Intelligence V8.2</h1><div class="sub">Live Supabase PFF data + shared roster/looks + read-only staff view + coach-ready reports</div><div id="dataSourceStatus" class="smallNote" style="margin-top:5px">Connecting to Supabase special-teams data…</div></div><div><button class="adminOnly" id="saveCloudBtn">Publish Looks / Roster</button> <button id="reloadCloudBtn">Reload Latest</button> <button id="copyShareBtn">Copy Staff Link</button> <button class="adminOnly" id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
 <div class="shell">
 <aside>
 <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
@@ -203,7 +203,7 @@ function playerCodeRows(a,unit,role){let team=selectedTeam();if(!team)return [];
 function specialistStats(a,kind){let rows=specialistRowsForTeam(a,kind),by={};rows.forEach(r=>{let id=specialistIdentity(r);if(!id)return;(by[id.num]||(by[id.num]=[])).push(r)});return Object.entries(by).map(([num,rs])=>{let p=rosterByNumber(num);if(!eligibleSpecialist(p,kind))return null;let made=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')).length,tb=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('TOUCH')).length;return {num,rows:rs,p,stats:kind==='punter'?[['Punts',rs.length],['Gross',fmt(avg(rs.map(r=>v(r,'pff_KICKYARDS'))),1)],['Op time',fmt(avg(rs.map(r=>v(r,'pff_OPERATIONTIME'))),2)]]:kind==='kicker'?[['FG',made+'/'+rs.length],['FG%',pct(made,rs.length)],['Long',fmt(Math.max(0,...rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')).map(r=>n(v(r,'pff_KICKYARDS'))||0)),0)]]:[['KO',rs.length],['TB%',pct(tb,rs.length)],['Depth',fmt(avg(rs.map(r=>v(r,'pff_KICKDEPTH'))),1)]]}}).filter(Boolean).sort((x,y)=>y.rows.length-x.rows.length)}
 function returnerDashboardStats(a,unit){let team=selectedTeam();let rs=a.filter(r=>v(r,'pff_SPECIALTEAMSTYPE')===unit&&v(r,returnTeamField(unit))===team);let by={};rs.forEach(r=>{let names=returnerNames(r);if(!names.length){let list=String(v(r,'pff_OFFPLAYERS')||v(r,'pff_DEFPLAYERS')||'');let m=[...list.matchAll(new RegExp(team+'\\s+([SD]?\\d+)\\s*\\((?:KR[^)]*|PR)\\)','g'))];names=m.map(x=>team+' '+x[1])}names.forEach(name=>{let num=codeNumber(name);if(!num)return;(by[num]||(by[num]=[])).push(r)})});return Object.entries(by).map(([num,rows])=>{let y=rows.map(r=>n(v(r,'pff_RETURNYARDS'))).filter(x=>x!=null);return {num,rows,stats:[['Returns',y.length],['Average',fmt(avg(y),1)],['Long',y.length?Math.max(...y):'—']]}}).sort((x,y)=>(avg(y.rows.map(r=>n(v(r,'pff_RETURNYARDS'))))||0)-(avg(x.rows.map(r=>n(v(r,'pff_RETURNYARDS'))))||0))}
 function dashboardPlayerSection(a){let kr=returnerDashboardStats(a,'KICKOFF').slice(0,4),pr=returnerDashboardStats(a,'PUNT').slice(0,4),ks=specialistStats(a,'kicker').slice(0,4),kos=specialistStats(a,'kickoff').slice(0,4),ps=specialistStats(a,'punter').slice(0,4);let cards=(arr,empty)=>arr.length?arr.map(x=>playerCard(rosterByNumber(x.num),x.stats,(selectedTeam()||'TEAM')+' '+x.num)).join(''):`<div class="empty">${empty}</div>`;return `<div class="card span12"><h3>Player dashboard</h3><div class="context">Top specialists and returners update with the active season, week and team filters.</div></div><div class="card span12"><div class="eyebrow">Top kickoff returners</div><div class="playerCardGrid">${cards(kr,'No kickoff-return records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Top punt returners</div><div class="playerCardGrid">${cards(pr,'No punt-return records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Kickers and kickoff specialists</div><div class="playerCardGrid">${cards([...ks,...kos].filter((x,i,a)=>a.findIndex(y=>y.num===x.num)===i),'No kicker records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Punters</div><div class="playerCardGrid">${cards(ps,'No punter records match the current filters.')}</div></div>`}
-function rosterManager(){return `<div class="card"><div class="rosterTools"><div><div class="eyebrow">Roster management</div><div class="filterSummary">Load CSV or JSON with: number, name, position, height, weight, class, hometown, previousSchool, image, profile and bio. Uploaded data is saved in this browser.</div></div><button id="exportRoster">Export roster JSON</button><button id="resetRoster">Clear roster</button></div></div>`}
+function rosterManager(){return `<div class="card"><div class="rosterTools"><div><div class="eyebrow">Roster management</div><div class="filterSummary">Load CSV or JSON with: number, name, position, height, weight, class, hometown, previousSchool, image, profile and bio. Roster changes are shared through the current project; PFF plays load directly from Supabase Storage.</div></div><button id="exportRoster">Export roster JSON</button><button id="resetRoster">Clear roster</button></div></div>`}
 function parseRosterCSV(text){let rows=parseCSV(text);return rows.map(r=>({number:r.number||r.Number||r.jersey||r.Jersey,name:r.name||r.Name,position:r.position||r.Position,height:r.height||r.Height,weight:r.weight||r.Weight,class:r.class||r.Class,hometown:r.hometown||r.Hometown,previousSchool:r.previousSchool||r['Previous School']||r.previous_school||'',image:r.image||r.Image||r.imageUrl||'',profile:r.profile||r.Profile||r.profileUrl||'',bio:r.bio||r.Bio||''})).filter(x=>x.number&&x.name)}
 
 
@@ -221,7 +221,6 @@ function cloudPayload(){
   return {
     teamSettings,
     rosterData,
-    rows,
     savedLooks,
     repAssignments,
     updatedAt:new Date().toISOString()
@@ -296,7 +295,6 @@ async function loadProjectCloud(options={}){
     const d=j.data||{};
     if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings};
     if(Array.isArray(d.rosterData))rosterData=d.rosterData;
-    if(Array.isArray(d.rows))rows=d.rows;
     if(Array.isArray(d.savedLooks))savedLooks=d.savedLooks;
     if(d.repAssignments&&typeof d.repAssignments==='object')repAssignments=d.repAssignments;
     saveTeamSettings();saveRoster();persistLooks(false);
@@ -320,6 +318,89 @@ function copyShareLink(){
   navigator.clipboard?.writeText(u.toString())
     .then(()=>alert('Staff link copied. It opens the latest published data in read-only mode.'))
     .catch(()=>prompt('Copy this staff link:',u.toString()));
+}
+
+
+const PFF_STORAGE={
+  base:'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Current',
+  files:['offense-side.csv','defense-side.csv']
+};
+
+function pffStorageUrl(name){
+  return `${PFF_STORAGE.base}/${encodeURIComponent(name)}?v=${Date.now()}`;
+}
+function sourceRowKey(r){
+  let game=String(v(r,'pff_GAMEID')||'').trim();
+  let play=String(v(r,'pff_PLAYID')||'').trim();
+  let sort=String(v(r,'pff_SORTORDER')||'').trim();
+  let gsis=String(v(r,'pff_GSISPLAYID')||'').trim();
+  if(game&&play)return `gp:${game}|${play}`;
+  if(gsis)return `gsis:${gsis}`;
+  return `fallback:${game}|${sort}|${v(r,'pff_OFFTEAM')}|${v(r,'pff_DEFTEAM')}|${v(r,'pff_SPECIALTEAMSTYPE')}`;
+}
+function mergePffSources(groups){
+  const map=new Map();
+  groups.flat().forEach(r=>{
+    const key=sourceRowKey(r);
+    if(!map.has(key)){map.set(key,{...r});return}
+    const current=map.get(key);
+    Object.keys(r).forEach(k=>{
+      if((current[k]==null||String(current[k]).trim()==='')&&r[k]!=null&&String(r[k]).trim()!=='')current[k]=r[k];
+    });
+  });
+  return [...map.values()];
+}
+function classifyCounts(rs){
+  let team=teamSettings.teamCode||'';
+  let c={};
+  const add=k=>c[k]=(c[k]||0)+1;
+  rs.forEach(r=>{
+    let t=String(v(r,'pff_SPECIALTEAMSTYPE')||'').toUpperCase();
+    if(!t)return;
+    if(!team){add(t);return}
+    let off=String(v(r,'pff_OFFTEAM')||'').toUpperCase()===String(team).toUpperCase();
+    let def=String(v(r,'pff_DEFTEAM')||'').toUpperCase()===String(team).toUpperCase();
+    if(t==='KICKOFF') add(off?'KO Coverage':def?'KO Return':'KICKOFF');
+    else if(t==='PUNT') add(off?'Punt Team':def?'Punt Return':'PUNT');
+    else if(t==='FIELD GOAL') add(off?'Field Goal':def?'FG Block':'FIELD GOAL');
+    else if(t==='EXTRA POINT') add(off?'PAT':def?'PAT Block':'EXTRA POINT');
+    else add(t);
+  });
+  return c;
+}
+function setDataSourceStatus(msg,bad=false){
+  let e=$('dataSourceStatus');
+  if(e){e.textContent=msg;e.style.color=bad?'#ff9da8':'#8fd3f4'}
+}
+async function loadPffFromSupabase(options={}){
+  setDataSourceStatus('Loading offense-side.csv + defense-side.csv from Supabase…');
+  try{
+    const results=await Promise.all(PFF_STORAGE.files.map(async name=>{
+      const response=await fetch(pffStorageUrl(name),{cache:'no-store'});
+      if(!response.ok)throw new Error(`${name} returned ${response.status}`);
+      const body=await response.text();
+      const parsed=parseCSV(body);
+      if(!parsed.length)throw new Error(`${name} contained no play rows`);
+      return {name,rows:parsed};
+    }));
+    const rawCount=results.reduce((n,x)=>n+x.rows.length,0);
+    rows=mergePffSources(results.map(x=>x.rows));
+    const counts=classifyCounts(rows);
+    const countText=Object.entries(counts).map(([k,n])=>`${k}: ${n}`).join(' • ');
+    setDataSourceStatus(`Supabase live • 2 files • ${rawCount} raw rows • ${rows.length} unique plays${countText?' • '+countText:''}`);
+    setup();
+    playIndex=0;chartIndex=0;chartPositions={};
+    if(options.render!==false)render();
+    return true;
+  }catch(err){
+    console.error('Supabase PFF load failed:',err);
+    rows=[];
+    setup();
+    setDataSourceStatus('PFF data could not load from Supabase: '+err.message,true);
+    if(options.notice)alert('Could not load PFF data from Supabase: '+err.message);
+    if(options.render!==false)render();
+    return false;
+  }
 }
 
 const EMBEDDED=[];
@@ -652,9 +733,15 @@ function render(){
 
 function loadRosterFile(f){if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=f.name.toLowerCase().endsWith('.json')?JSON.parse(rd.result):parseRosterCSV(rd.result);if(!Array.isArray(x)||!x.length)throw new Error('No roster rows found');rosterData=x;saveRoster();rosterStatus='Roster file loaded: '+x.length+' players.';saveTeamSettings();render();alert('Roster loaded: '+x.length+' players')}catch(err){alert('Roster load failed: '+err.message)}};rd.readAsText(f)}
 
-function bind(){let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud({notice:true});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=()=>window.print();document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;if($('unitF'))$('unitF').value=viewType;playIndex=0;chartIndex=0;chartPositions={};render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};render()};if(cn)cn.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex+1)%x.length;chartPositions={};render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filtered());chartPositions=defaultPositions(r);render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look)chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);render()};if($('saveNewLook'))$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filtered()));if($('assignBest'))$('assignBest').onclick=()=>assignBest(activeChartPlay(filtered()));if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=()=>{let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks();render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;chartPositions=Object.fromEntries(l.positions.map(p=>[p.role+'|'+p.name,{...p}]));page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});bindChartDrag();bindPlayerPages()}
+function bind(){let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=()=>window.print();document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;if($('unitF'))$('unitF').value=viewType;playIndex=0;chartIndex=0;chartPositions={};render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};render()};if(cn)cn.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex+1)%x.length;chartPositions={};render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filtered());chartPositions=defaultPositions(r);render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look)chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);render()};if($('saveNewLook'))$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filtered()));if($('assignBest'))$('assignBest').onclick=()=>assignBest(activeChartPlay(filtered()));if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=()=>{let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks();render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;chartPositions=Object.fromEntries(l.positions.map(p=>[p.role+'|'+p.name,{...p}]));page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});bindChartDrag();bindPlayerPages()}
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;playIndex=0;chartIndex=0;chartPositions={};render()});
 document.querySelectorAll('.toolbar select').forEach(e=>e.onchange=()=>{playIndex=0;chartIndex=0;chartPositions={};render()});$('resetF').onclick=()=>{['seasonF','weekF','teamF','unitF'].forEach(id=>$(id).value='');dashKoHash='';dashPuntHash='';dashFgHash='';playIndex=0;render()};
-$('fileInput').onchange=async e=>{if(CLOUD.readOnly)return;let f=e.target.files[0];if(!f)return;rows=parseCSV(await f.text());setup();playIndex=0;chartIndex=0;chartPositions={};render();queueAutoSave('PFF data imported')};(async()=>{await loadProjectCloud();setup();applyAccessMode();render()})();
+(async()=>{
+  await loadProjectCloud();
+  await loadPffFromSupabase({render:false});
+  setup();
+  applyAccessMode();
+  render();
+})();
 </script>
 </body></html>
