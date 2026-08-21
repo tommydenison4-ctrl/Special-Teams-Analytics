@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Special Teams Intelligence V9.3</title>
+<title>Special Teams Intelligence V9.4</title>
 <style>
 :root{--bg:#071018;--panel:#0e1c27;--panel2:#122633;--line:#294653;--text:#f3f7f9;--muted:#91a9b8;--gold:#e2b34c;--maroon:#7b1d3b;--green:#4f8e12;--blue:#2f68df;--yellow:#d4a700;--red:#9a252c;--purple:#8c3caf}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#17303d,#071018 45%);color:var(--text);font:14px/1.4 Inter,Segoe UI,Arial,sans-serif}
@@ -288,7 +288,7 @@ body.readOnly .readOnlyBadge{display:block}
 </style>
 </head>
 <body><div class="readOnlyBadge">READ ONLY • LIVE STAFF DATA</div>
-<header><div><h1>Special Teams Intelligence V9.3</h1><div class="sub">All live data from Supabase Storage + read-only staff view + printable practice cards</div><div id="dataSourceStatus" class="smallNote" style="margin-top:5px">Connecting to Supabase special-teams data…</div></div><div><button class="adminOnly" id="saveCloudBtn">Save Looks / Settings</button> <button class="adminOnly" id="copyAdminBtn">Copy My Admin Link</button> <button id="reloadCloudBtn">Reload Latest</button> <button id="copyShareBtn">Copy Staff Link</button> <button class="adminOnly" id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
+<header><div><h1>Special Teams Intelligence V9.4</h1><div class="sub">All live data from Supabase Storage + read-only staff view + printable practice cards</div><div id="dataSourceStatus" class="smallNote" style="margin-top:5px">Connecting to Supabase special-teams data…</div></div><div><button class="adminOnly" id="saveCloudBtn">Save Looks / Settings</button> <button class="adminOnly" id="copyAdminBtn">Copy My Admin Link</button> <button id="reloadCloudBtn">Reload Latest</button> <button id="copyShareBtn">Copy Staff Link</button> <button class="adminOnly" id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
 <div class="shell">
 <aside>
 <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
@@ -457,20 +457,73 @@ function rosterByNumber(num){num=normNum(num);return rosterData.find(p=>normNum(
 const historicalRosters={};
 function activeSeason(){return String($('seasonF')?.value||'').trim()}
 function nameKey(s){return String(s||'').toLowerCase().replace(/[“”"'’.,()]/g,'').replace(/\s+/g,' ').trim()}
-function historicalByNumber(num,season){return (historicalRosters[String(season)]||[]).find(p=>normNum(p.number)===normNum(num))||null}
-function verifiedIdentity(num){
+function historicalPlayersByNumber(num,season){
+  return (historicalRosters[String(season)]||[]).filter(p=>normNum(p.number)===normNum(num));
+}
+function strictIdentityCheck(num){
   const season=activeSeason();
   const current=rosterByNumber(num);
-  if(!season || season==='2026') return {status:'verified',label:'CURRENT ROSTER',player:current,current,historical:null};
-  const historical=historicalByNumber(num,season);
-  if(!historical) return {status:'unverified',label:`${season} UNVERIFIED`,player:current,current,historical:null};
-  if(current && nameKey(current.name)===nameKey(historical.name)){
-    return {status:'verified',label:`VERIFIED ${season}`,player:{...historical,...current,number:historical.number},current,historical};
+
+  if(!season || season==='2026'){
+    return {
+      status:'verified',
+      label:'CURRENT ROSTER',
+      allowed:true,
+      player:current,
+      current,
+      historical:null
+    };
   }
-  return {status:'changed',label:'ROSTER CHANGED',player:historical,current,historical};
+
+  const matches=historicalPlayersByNumber(num,season);
+
+  if(!current){
+    return {
+      status:'unverified',
+      label:'DATA HIDDEN',
+      allowed:false,
+      player:null,
+      current:null,
+      historical:null
+    };
+  }
+
+  if(matches.length!==1){
+    return {
+      status:'unverified',
+      label:'DATA HIDDEN',
+      allowed:false,
+      player:current,
+      current,
+      historical:null
+    };
+  }
+
+  const historical=matches[0];
+
+  if(nameKey(current.name)!==nameKey(historical.name)){
+    return {
+      status:'changed',
+      label:'DATA HIDDEN',
+      allowed:false,
+      player:current,
+      current,
+      historical
+    };
+  }
+
+  return {
+    status:'verified',
+    label:`CONFIRMED ${season}`,
+    allowed:true,
+    player:{...historical,...current,number:historical.number},
+    current,
+    historical
+  };
 }
+function verifiedIdentity(num){return strictIdentityCheck(num)}
 function verifyPill(v){return `<span class="verifyPill ${v.status}">${v.label}</span>`}
-function seasonStatsTag(){return `<div class="seasonStatsTag">${activeSeason()||'ALL'} SPECIAL TEAMS STATS</div>`}
+function seasonStatsTag(){let s=activeSeason();return `<div class="seasonStatsTag">${s&&s!=='2026'?'CONFIRMED '+s:(s||'CURRENT')} SPECIAL TEAMS STATS</div>`}
 async function loadHistoricalRoster(season='2025'){
   if(historicalRosters[String(season)]?.length)return;
   try{
@@ -1368,13 +1421,20 @@ function pffFallbackPlayer(num,kind,rows=[]){
 function specialistFullStats(a,kind){
   let rs=specialistRowsForTeam(a,kind),by={};
   rs.forEach(r=>{let id=specialistIdentity(r);if(!id)return;(by[id.num]||(by[id.num]=[])).push(r)});
-  return Object.entries(by).map(([num,rows])=>{
-    let vf=verifiedIdentity(num),p=vf.player||pffFallbackPlayer(num,kind,rows);
-    return {num,rows,p,verification:vf}
-  }).filter(x=>x.verification.status!=='verified'||!rosterData.length||eligibleSpecialist(x.p,kind))
+  return Object.entries(by)
+    .map(([num,rows])=>{
+      let vf=verifiedIdentity(num),p=vf.player||pffFallbackPlayer(num,kind,rows);
+      return {num,rows,p,verification:vf}
+    })
+    .filter(x=>x.verification?.allowed!==false)
+    .filter(x=>!rosterData.length||eligibleSpecialist(x.p,kind))
     .sort((x,y)=>y.rows.length-x.rows.length)
 }
-function returnerFullStats(a,unit){return returnerDashboardStats(a,unit).map(x=>{let vf=verifiedIdentity(x.num);return {...x,p:vf.player||pffFallbackPlayer(x.num,'returner',x.rows),verification:vf}})}
+function returnerFullStats(a,unit){
+  return returnerDashboardStats(a,unit)
+    .map(x=>{let vf=verifiedIdentity(x.num);return {...x,p:vf.player||pffFallbackPlayer(x.num,'returner',x.rows),verification:vf}})
+    .filter(x=>x.verification?.allowed!==false)
+}
 function cardForCategory(x,cat){let rs=x.rows||[],stats=[];if(cat==='kickReturners'||cat==='puntReturners'){let y=rs.map(r=>n(v(r,'pff_RETURNYARDS'))).filter(z=>z!=null);stats=[['Returns',y.length],['Average',fmt(avg(y),1)],['Long',y.length?Math.max(...y):'—']]}else if(cat==='kickers'){let made=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')),attempts=rs.length;stats=[['FG',made.length+'/'+attempts],['FG%',pct(made.length,attempts)],['Long',made.length?Math.max(...made.map(r=>n(v(r,'pff_KICKYARDS'))||0)):'—']]}else{stats=[['Punts',rs.length],['Gross',fmt(avg(rs.map(r=>v(r,'pff_KICKYARDS'))),1)],['Op Time',fmt(avg(rs.map(r=>v(r,'pff_OPERATIONTIME'))),2)]]}let p=x.p||rosterByNumber(x.num),vf=x.verification||verifiedIdentity(x.num);let warn=vf.status==='changed'&&vf.historical&&vf.current?`<div class="identityWarning">${activeSeason()} #${x.num} was ${vf.historical.name}. Current #${x.num} is ${vf.current.name}. These stats remain attached to the ${activeSeason()} player.</div>`:vf.status==='unverified'&&activeSeason()?`<div class="identityWarning">Could not verify #${x.num} against the ${activeSeason()} roster snapshot.</div>`:'';return `<div class="playerSelect" data-playernum="${x.num}">${playerCard(p,stats,(selectedTeam()||'TEAM')+' '+x.num,vf)}${warn}</div>`}
 function selectedProfile(a,cat,list){if(!list.length)return '<div class="empty">No qualifying player records match the active filters.</div>';if(!selectedSpecialist||!list.some(x=>x.num===selectedSpecialist))selectedSpecialist=list[0].num;let x=list.find(z=>z.num===selectedSpecialist)||list[0],p=x.p||verifiedIdentity(x.num).player||{name:(selectedTeam()||'TEAM')+' '+x.num,number:x.num,bio:'Roster profile not yet matched.'},rs=x.rows||[];let isRet=cat==='kickReturners'||cat==='puntReturners';let metrics='';let splits='';if(isRet){let y=rs.map(r=>n(v(r,'pff_RETURNYARDS'))).filter(z=>z!=null);metrics=[['Returns',y.length],['Total yards',y.reduce((s,z)=>s+z,0)],['Average',fmt(avg(y),1)],['Median',fmt(med(y),1)],['Long',y.length?Math.max(...y):'—'],['20+ rate',pct(y.filter(z=>z>=20).length,y.length)],['0-or-less',pct(y.filter(z=>z<=0).length,y.length)],['Avg result FP',fmt(avg(rs.map(resultFP)),1)]].map(z=>`<div class="mini"><b>${z[1]}</b><span>${z[0]}</span></div>`).join('');splits=splitTableMarkup(rowHashSplits(rs),['Hash','Plays','Avg return','Avg kick','Avg hang'])}else if(cat==='kickers'){let made=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')),miss=rs.length-made.length,dist=rs.map(r=>n(v(r,'pff_KICKYARDS'))).filter(z=>z!=null);metrics=[['Attempts',rs.length],['Made',made.length],['FG%',pct(made.length,rs.length)],['Missed',miss],['Long',made.length?Math.max(...made.map(r=>n(v(r,'pff_KICKYARDS'))||0)):'—'],['Avg attempt',fmt(avg(dist),1)],['Avg operation',fmt(avg(rs.map(r=>v(r,'pff_FGOPTIME'))),2)],['Median operation',fmt(med(rs.map(r=>v(r,'pff_FGOPTIME'))),2)]].map(z=>`<div class="mini"><b>${z[1]}</b><span>${z[0]}</span></div>`).join('');splits=splitTableMarkup(['L','C','R'].map(h=>{let q=rs.filter(r=>String(v(r,'pff_HASH')).toUpperCase()===h),m=q.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE'));return [h,q.length,m.length,pct(m.length,q.length),fmt(avg(q.map(r=>v(r,'pff_KICKYARDS'))),1)]}),['Hash','Attempts','Made','FG%','Avg distance'])}else{let ret=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('RETURN')),fc=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('FAIR')),tb=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('TOUCH'));let net=rs.map(r=>{let g=n(v(r,'pff_KICKYARDS')),ry=n(v(r,'pff_RETURNYARDS'))||0;return g==null?null:g-ry});metrics=[['Punts',rs.length],['Gross',fmt(avg(rs.map(r=>v(r,'pff_KICKYARDS'))),1)],['Net',fmt(avg(net),1)],['Hang',fmt(avg(rs.map(r=>v(r,'pff_HANGTIME'))),2)],['Operation',fmt(avg(rs.map(r=>v(r,'pff_OPERATIONTIME'))),2)],['Fair catch %',pct(fc.length,rs.length)],['Touchback %',pct(tb.length,rs.length)],['Return avg',fmt(avg(ret.map(r=>v(r,'pff_RETURNYARDS'))),1)]].map(z=>`<div class="mini"><b>${z[1]}</b><span>${z[0]}</span></div>`).join('');splits=splitTableMarkup(['L','C','R'].map(h=>{let q=rs.filter(r=>String(v(r,'pff_HASH')).toUpperCase()===h);return [h,q.length,fmt(avg(q.map(r=>v(r,'pff_KICKYARDS'))),1),fmt(avg(q.map(r=>v(r,'pff_HANGTIME'))),2),fmt(avg(q.map(r=>v(r,'pff_OPERATIONTIME'))),2)]}),['Hash','Punts','Gross','Hang','Operation'])}
 let meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');return `<div class="pageBreak">${reportBanner(p.name+' Player Report')}<div class="card playerHero"><div class="playerPhoto">${playerPhoto(p)}<div class="playerNo">#${p.number||x.num}</div></div><div class="playerBioCard"><div class="eyebrow">Player profile</div><h2>${p.name}</h2><div class="playerMeta">${meta}${p.previousSchool?'<br>Previous: '+p.previousSchool:''}</div><div class="bioSnippet bioCollapsed">${p.bio||'Biography not yet loaded.'}</div>${p.bio?'<button class="bioToggle" type="button" onclick="toggleBio(this)">View Bio</button>':''}${p.profile?`<a class="profileLink" href="${p.profile}" target="_blank" rel="noopener">Official biography ↗</a>`:''}<div class="metrics" style="margin-top:14px">${metrics}</div></div></div><div class="splitGrid" style="margin-top:14px"><div class="card"><div class="eyebrow">By hash</div>${splits}</div><div class="card"><div class="eyebrow">Results</div>${bars(countBy(rs,'pff_KICKRESULT'))||'<div class="empty">No results.</div>'}</div><div class="card"><div class="eyebrow">Direction</div>${bars(countBy(rs,'pff_KICKDIRACTUAL'))||'<div class="empty">No direction data.</div>'}</div></div><div class="card scroll" style="margin-top:14px"><div class="eyebrow">Underlying plays</div>${table(rs)}</div></div>`}
@@ -1390,7 +1450,7 @@ function playerPage(a){
     ?`Official roster loaded: <b>${rosterData.length}</b> players.`
     :`No roster.json loaded yet. Player statistics still come directly from PFF; roster sync adds names, photos and bios.`;
   return reportBanner('Player Intelligence')+
-    title('Player Intelligence','PFF special-teams production with season-aware roster verification. Historical stats stay attached to the player who actually wore that number in that season.')+
+    title('Player Intelligence','Strict identity mode: historical PFF stats appear only when the historical roster identity and current player identity match exactly. Any mismatch, duplicate jersey number or unverified identity is excluded.')+
     `<div class="card"><div class="context">Active team: <b>${selectedTeam()||inferredHomeTeam()||'None selected'}</b>. ${rosterNote}</div></div>`+
     (CLOUD.readOnly?'':rosterManager())+
     categoryTabs()+
