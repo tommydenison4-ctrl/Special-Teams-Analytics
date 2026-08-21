@@ -43,7 +43,7 @@ function objectUrl(base) {
   return `${base}/storage/v1/object/${bucket}/${path}`;
 }
 
-async function loadRoster(base, serviceKey) {
+async function loadRoster(base, serviceKey, fallbackRoster = [], fallbackMeta = {}) {
   const response = await fetch(`${objectUrl(base)}?v=${Date.now()}`, {
     headers: {
       apikey: serviceKey,
@@ -51,15 +51,37 @@ async function loadRoster(base, serviceKey) {
     },
     cache: 'no-store'
   });
-  if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`Could not load roster.json (${response.status}): ${detail || 'unknown error'}`);
+
+  if (response.ok) {
+    const data = await response.json();
+    return {
+      meta: Array.isArray(data) ? {} : data,
+      players: Array.isArray(data) ? data : (Array.isArray(data.players) ? data.players : []),
+      createdFromFallback: false
+    };
   }
-  const data = await response.json();
-  return {
-    meta: Array.isArray(data) ? {} : data,
-    players: Array.isArray(data) ? data : (Array.isArray(data.players) ? data.players : [])
-  };
+
+  // Important V9.2 behavior:
+  // The user's browser may already have the 99-player roster from the earlier successful
+  // roster-builder even when roster.json was never written to Storage. In that case,
+  // seed Supabase from the browser roster instead of failing.
+  if ((response.status === 400 || response.status === 404) && Array.isArray(fallbackRoster) && fallbackRoster.length) {
+    return {
+      meta: {
+        teamName: fallbackMeta.teamName || '',
+        nickname: fallbackMeta.nickname || '',
+        teamCode: fallbackMeta.teamCode || '',
+        rosterUrl: fallbackMeta.rosterUrl || '',
+        source: 'browser-roster-fallback',
+        generatedAt: new Date().toISOString()
+      },
+      players: fallbackRoster,
+      createdFromFallback: true
+    };
+  }
+
+  const detail = await response.text();
+  throw new Error(`Could not load roster.json (${response.status}): ${detail || 'unknown error'}`);
 }
 
 async function saveRoster(base, serviceKey, meta, players) {
@@ -241,9 +263,13 @@ export default async function handler(req, res) {
     }
 
     const batchSize = Math.max(1, Math.min(Number(body.batchSize) || 8, 10));
-    const { meta, players } = await loadRoster(url, serviceKey);
+    const { meta, players, createdFromFallback } = await loadRoster(url, serviceKey, body.fallbackRoster, body.teamSettings || {});
 
     if (!players.length) return sendJson(res, 404, { error: 'roster.json contains no players.' });
+
+    if (createdFromFallback) {
+      await saveRoster(url, serviceKey, meta, players);
+    }
 
     // Skip players already enriched. Also skip profile-less players so one bad record
     // cannot cause an endless client loop.
