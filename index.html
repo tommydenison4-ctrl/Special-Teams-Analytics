@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ULM Special Teams Intelligence V9.7</title>
+<title>ULM Special Teams Intelligence V9.8</title>
 <style>
 :root{--bg:#071018;--panel:#0e1c27;--panel2:#122633;--line:#294653;--text:#f3f7f9;--muted:#91a9b8;--gold:#e2b34c;--maroon:#7b1d3b;--green:#4f8e12;--blue:#2f68df;--yellow:#d4a700;--red:#9a252c;--purple:#8c3caf}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#17303d,#071018 45%);color:var(--text);font:14px/1.4 Inter,Segoe UI,Arial,sans-serif}
@@ -578,6 +578,47 @@ aside{padding-top:12px}
   .ulmHeaderActions button{font-size:10.5px!important}
   aside .nav{font-size:10.2px!important;padding:6px 7px!important}
   .title h2,.pageTitle h2,h2{font-size:26px!important}
+}
+
+
+/* V9.8 — COMPLETE PLAYER PHOTOS ON DESKTOP + MOBILE */
+.playerCard .playerPhoto,
+.playerHero .playerPhoto{
+  height:auto!important;
+  aspect-ratio:4 / 5!important;
+  background:#f4f4f4!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+}
+.playerCard .playerPhoto img,
+.playerHero .playerPhoto img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  display:block!important;
+}
+.playerCard .playerNo,
+.playerHero .playerNo{
+  left:10px!important;
+  bottom:10px!important;
+  z-index:3!important;
+}
+@media(min-width:1251px){
+  .playerCard .playerPhoto{max-height:430px!important}
+}
+@media(min-width:701px) and (max-width:1250px){
+  .playerCard .playerPhoto{max-height:520px!important}
+}
+@media(max-width:700px){
+  .playerCard .playerPhoto,
+  .playerHero .playerPhoto{
+    width:100%!important;
+    max-height:none!important;
+    aspect-ratio:4 / 5!important;
+  }
 }
 
 </style>
@@ -1921,6 +1962,47 @@ aside{padding-top:12px}
   .ulmHeaderActions button{font-size:10.5px!important}
   aside .nav{font-size:10.2px!important;padding:6px 7px!important}
   .title h2,.pageTitle h2,h2{font-size:26px!important}
+}
+
+
+/* V9.8 — COMPLETE PLAYER PHOTOS ON DESKTOP + MOBILE */
+.playerCard .playerPhoto,
+.playerHero .playerPhoto{
+  height:auto!important;
+  aspect-ratio:4 / 5!important;
+  background:#f4f4f4!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+}
+.playerCard .playerPhoto img,
+.playerHero .playerPhoto img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  display:block!important;
+}
+.playerCard .playerNo,
+.playerHero .playerNo{
+  left:10px!important;
+  bottom:10px!important;
+  z-index:3!important;
+}
+@media(min-width:1251px){
+  .playerCard .playerPhoto{max-height:430px!important}
+}
+@media(min-width:701px) and (max-width:1250px){
+  .playerCard .playerPhoto{max-height:520px!important}
+}
+@media(max-width:700px){
+  .playerCard .playerPhoto,
+  .playerHero .playerPhoto{
+    width:100%!important;
+    max-height:none!important;
+    aspect-ratio:4 / 5!important;
+  }
 }
 
 </style></head><body>
