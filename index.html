@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Special Teams Intelligence V8.7</title>
+<title>Special Teams Intelligence V8.8</title>
 <style>
 :root{--bg:#071018;--panel:#0e1c27;--panel2:#122633;--line:#294653;--text:#f3f7f9;--muted:#91a9b8;--gold:#e2b34c;--maroon:#7b1d3b;--green:#4f8e12;--blue:#2f68df;--yellow:#d4a700;--red:#9a252c;--purple:#8c3caf}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#17303d,#071018 45%);color:var(--text);font:14px/1.4 Inter,Segoe UI,Arial,sans-serif}
@@ -241,19 +241,48 @@ body.readOnly .readOnlyBadge{display:block}
   aside .nav{min-width:104px!important}
 }
 
+
+/* V8.8: keep every major navigation view visible on phones */
+@media (max-width: 820px){
+  aside{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    overflow:visible!important;
+    gap:6px!important;
+    padding:8px 10px 10px!important;
+  }
+  aside .nav{
+    width:100%!important;
+    min-width:0!important;
+    padding:9px 5px!important;
+    font-size:11px!important;
+    line-height:1.12!important;
+    white-space:normal!important;
+  }
+  aside .nav span{
+    display:block!important;
+    overflow-wrap:anywhere!important;
+  }
+}
+@media (max-width: 430px){
+  aside{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  aside .nav{font-size:10.5px!important;padding:8px 4px!important}
+}
+
 </style>
 </head>
 <body><div class="readOnlyBadge">READ ONLY • LIVE STAFF DATA</div>
-<header><div><h1>Special Teams Intelligence V8.7</h1><div class="sub">All live data from Supabase Storage + read-only staff view + printable practice cards</div><div id="dataSourceStatus" class="smallNote" style="margin-top:5px">Connecting to Supabase special-teams data…</div></div><div><button class="adminOnly" id="saveCloudBtn">Save Looks / Settings</button> <button class="adminOnly" id="copyAdminBtn">Copy My Admin Link</button> <button id="reloadCloudBtn">Reload Latest</button> <button id="copyShareBtn">Copy Staff Link</button> <button class="adminOnly" id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
+<header><div><h1>Special Teams Intelligence V8.8</h1><div class="sub">All live data from Supabase Storage + read-only staff view + printable practice cards</div><div id="dataSourceStatus" class="smallNote" style="margin-top:5px">Connecting to Supabase special-teams data…</div></div><div><button class="adminOnly" id="saveCloudBtn">Save Looks / Settings</button> <button class="adminOnly" id="copyAdminBtn">Copy My Admin Link</button> <button id="reloadCloudBtn">Reload Latest</button> <button id="copyShareBtn">Copy Staff Link</button> <button class="adminOnly" id="teamSettingsBtn">Roster / Team Settings</button> <button id="reportModeBtn">Report Mode</button> <button id="printBtn">Print / Save PDF</button></div></header>
 <div class="shell">
 <aside>
 <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
+<button class="nav" data-page="players">♟ <span>Player Intelligence</span></button>
 <button class="nav" data-page="hash"># <span>Hash Intelligence</span></button>
 <button class="nav" data-page="spray">↗ <span>Spray Reports</span></button>
 <button class="nav" data-page="viewer">◎ <span>Play Structure Viewer</span></button>
 <button class="nav" data-page="chart">✥ <span>Chart Looks</span></button>
 <button class="nav" data-page="library">▦ <span>Look Library</span></button>
-<button class="nav" data-page="players">♟ <span>Player Intelligence</span></button>
+
 <button class="nav" data-page="relationships">⌁ <span>Relationships</span></button>
 <button class="nav" data-page="families">● <span>Structure Families</span></button>
 <button class="nav" data-page="plays">≡ <span>Play Log</span></button>
@@ -370,7 +399,7 @@ function initials(name){return String(name||'?').split(/\s+/).slice(0,2).map(x=>
 function playerPhoto(p){let img=p&&p.image?`<img src="${p.image}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`:'';return `${img}<div class="playerInitials" style="${img?'display:none':''}">${initials(p?.name)}</div>`}
 function playerCard(p,stats,label){p=p||{name:label||'Unmatched player',number:'',position:'',height:'',weight:'',class:'',hometown:'',previousSchool:'',bio:'Add this player through the roster upload.'};let meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');let st=stats||[];return `<div class="playerCard"><div class="playerPhoto">${playerPhoto(p)}<div class="playerNo">#${p.number||'—'}</div></div><div class="playerBody"><h3>${p.name||label}${p.profile?'<span class="rosterBadge">OFFICIAL BIO</span>':''}</h3><div class="playerMeta">${meta||'Roster match pending'}${p.previousSchool?'<br>Previous: '+p.previousSchool:''}</div><div class="playerStatRow">${st.slice(0,3).map(x=>`<div class="playerStat"><b>${x[1]}</b><span>${x[0]}</span></div>`).join('')}</div><div class="bioSnippet">${p.bio||''}</div>${p.profile?`<a class="profileLink" href="${p.profile}" target="_blank" rel="noopener">Open full official bio ↗</a>`:''}</div></div>`}
 function playerCodeRows(a,unit,role){let team=selectedTeam();if(!team)return [];return a.filter(r=>v(r,'pff_SPECIALTEAMSTYPE')===unit&&(v(r,'pff_OFFTEAM')===team||v(r,'pff_DEFTEAM')===team)).map(r=>{let fields=[v(r,'pff_KICKER'),v(r,'pff_RETURNER'),v(r,'pff_OFFPLAYERS'),v(r,'pff_DEFPLAYERS')].join(';');let matches=[...fields.matchAll(new RegExp(team+'\\s+([SD]?\\d+)\\s*\\(([^)]+)\\)','g'))];return {r,codes:matches.filter(m=>!role||m[2].includes(role)).map(m=>m[1])}})}
-function specialistStats(a,kind){let rows=specialistRowsForTeam(a,kind),by={};rows.forEach(r=>{let id=specialistIdentity(r);if(!id)return;(by[id.num]||(by[id.num]=[])).push(r)});return Object.entries(by).map(([num,rs])=>{let p=rosterByNumber(num);if(!eligibleSpecialist(p,kind))return null;let made=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')).length,tb=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('TOUCH')).length;return {num,rows:rs,p,stats:kind==='punter'?[['Punts',rs.length],['Gross',fmt(avg(rs.map(r=>v(r,'pff_KICKYARDS'))),1)],['Op time',fmt(avg(rs.map(r=>v(r,'pff_OPERATIONTIME'))),2)]]:kind==='kicker'?[['FG',made+'/'+rs.length],['FG%',pct(made,rs.length)],['Long',fmt(Math.max(0,...rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')).map(r=>n(v(r,'pff_KICKYARDS'))||0)),0)]]:[['KO',rs.length],['TB%',pct(tb,rs.length)],['Depth',fmt(avg(rs.map(r=>v(r,'pff_KICKDEPTH'))),1)]]}}).filter(Boolean).sort((x,y)=>y.rows.length-x.rows.length)}
+function specialistStats(a,kind){let rows=specialistRowsForTeam(a,kind),by={};rows.forEach(r=>{let id=specialistIdentity(r);if(!id)return;(by[id.num]||(by[id.num]=[])).push(r)});return Object.entries(by).map(([num,rs])=>{let p=rosterByNumber(num)||pffFallbackPlayer(num,kind,rs);if(rosterData.length&&!eligibleSpecialist(p,kind))return null;let made=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')).length,tb=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('TOUCH')).length;return {num,rows:rs,p,stats:kind==='punter'?[['Punts',rs.length],['Gross',fmt(avg(rs.map(r=>v(r,'pff_KICKYARDS'))),1)],['Op time',fmt(avg(rs.map(r=>v(r,'pff_OPERATIONTIME'))),2)]]:kind==='kicker'?[['FG',made+'/'+rs.length],['FG%',pct(made,rs.length)],['Long',fmt(Math.max(0,...rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')).map(r=>n(v(r,'pff_KICKYARDS'))||0)),0)]]:[['KO',rs.length],['TB%',pct(tb,rs.length)],['Depth',fmt(avg(rs.map(r=>v(r,'pff_KICKDEPTH'))),1)]]}}).filter(Boolean).sort((x,y)=>y.rows.length-x.rows.length)}
 function returnerDashboardStats(a,unit){let team=selectedTeam();let rs=a.filter(r=>v(r,'pff_SPECIALTEAMSTYPE')===unit&&v(r,returnTeamField(unit))===team);let by={};rs.forEach(r=>{let names=returnerNames(r);if(!names.length){let list=String(v(r,'pff_OFFPLAYERS')||v(r,'pff_DEFPLAYERS')||'');let m=[...list.matchAll(new RegExp(team+'\\s+([SD]?\\d+)\\s*\\((?:KR[^)]*|PR)\\)','g'))];names=m.map(x=>team+' '+x[1])}names.forEach(name=>{let num=codeNumber(name);if(!num)return;(by[num]||(by[num]=[])).push(r)})});return Object.entries(by).map(([num,rows])=>{let y=rows.map(r=>n(v(r,'pff_RETURNYARDS'))).filter(x=>x!=null);return {num,rows,stats:[['Returns',y.length],['Average',fmt(avg(y),1)],['Long',y.length?Math.max(...y):'—']]}}).sort((x,y)=>(avg(y.rows.map(r=>n(v(r,'pff_RETURNYARDS'))))||0)-(avg(x.rows.map(r=>n(v(r,'pff_RETURNYARDS'))))||0))}
 function dashboardPlayerSection(a){let kr=returnerDashboardStats(a,'KICKOFF').slice(0,4),pr=returnerDashboardStats(a,'PUNT').slice(0,4),ks=specialistStats(a,'kicker').slice(0,4),kos=specialistStats(a,'kickoff').slice(0,4),ps=specialistStats(a,'punter').slice(0,4);let cards=(arr,empty)=>arr.length?arr.map(x=>playerCard(rosterByNumber(x.num),x.stats,(selectedTeam()||'TEAM')+' '+x.num)).join(''):`<div class="empty">${empty}</div>`;return `<div class="card span12"><h3>Player dashboard</h3><div class="context">Top specialists and returners update with the active season, week and team filters.</div></div><div class="card span12"><div class="eyebrow">Top kickoff returners</div><div class="playerCardGrid">${cards(kr,'No kickoff-return records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Top punt returners</div><div class="playerCardGrid">${cards(pr,'No punt-return records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Kickers and kickoff specialists</div><div class="playerCardGrid">${cards([...ks,...kos].filter((x,i,a)=>a.findIndex(y=>y.num===x.num)===i),'No kicker records match the current filters.')}</div></div><div class="card span12"><div class="eyebrow">Punters</div><div class="playerCardGrid">${cards(ps,'No punter records match the current filters.')}</div></div>`}
 function rosterManager(){return `<div class="card"><div class="rosterTools"><div><div class="eyebrow">Roster management</div><div class="filterSummary">Load CSV or JSON with: number, name, position, height, weight, class, hometown, previousSchool, image, profile and bio. Roster and PFF plays load directly from Supabase Storage. Put roster.json beside the two current CSV files.</div></div><button id="exportRoster">Export roster JSON</button><button id="resetRoster">Clear roster</button></div></div>`}
@@ -631,7 +660,33 @@ let repAssignments=JSON.parse(localStorage.getItem('st_rep_assignments_v4')||'{}
 const $=id=>document.getElementById(id),v=(r,k)=>r?.[k]??'',n=x=>{let z=parseFloat(x);return Number.isFinite(z)?z:null},fmt=(x,d=1)=>x==null||Number.isNaN(x)?'—':Number(x).toFixed(d);
 const avg=a=>{let z=a.map(n).filter(x=>x!=null);return z.length?z.reduce((s,x)=>s+x,0)/z.length:null},med=a=>{let z=a.map(n).filter(x=>x!=null).sort((a,b)=>a-b);if(!z.length)return null;let m=Math.floor(z.length/2);return z.length%2?z[m]:(z[m-1]+z[m])/2},uniq=a=>[...new Set(a.filter(x=>x!==''&&x!=null))].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));
 function parseCSV(t){let rs=[],r=[],c='',q=false;for(let i=0;i<t.length;i++){let x=t[i],y=t[i+1];if(x=='"'&&q&&y=='"'){c+='"';i++}else if(x=='"')q=!q;else if(x==','&&!q){r.push(c);c=''}else if((x=='\n'||x=='\r')&&!q){if(x=='\r'&&y=='\n')i++;r.push(c);if(r.some(z=>z!==''))rs.push(r);r=[];c=''}else c+=x}if(c||r.length){r.push(c);rs.push(r)}let h=rs.shift()||[];return rs.map(a=>Object.fromEntries(h.map((x,i)=>[x,a[i]??''])))}
-function setup(){[['seasonF','pff_GAMESEASON','All seasons'],['weekF','pff_WEEK','All weeks'],['unitF','pff_SPECIALTEAMSTYPE','All units']].forEach(([id,k,l])=>{let e=$(id),cur=e.value;e.innerHTML=`<option value="">${l}</option>`+uniq(rows.map(r=>v(r,k))).map(x=>`<option>${x}</option>`).join('');if([...e.options].some(o=>o.value==cur))e.value=cur});let te=$('teamF'),tc=te.value||teamSettings.teamCode||'';te.innerHTML='<option value="">All teams</option>'+uniq(rows.flatMap(r=>[v(r,'pff_OFFTEAM'),v(r,'pff_DEFTEAM')])).map(x=>`<option>${x}</option>`).join('');if([...te.options].some(o=>o.value==tc))te.value=tc;else te.value=''}
+function inferredHomeTeam(){
+  let counts={};
+  rows.forEach(r=>{
+    [v(r,'pff_OFFTEAM'),v(r,'pff_DEFTEAM')].filter(Boolean).forEach(t=>{
+      t=String(t).trim();
+      counts[t]=(counts[t]||0)+1;
+    });
+  });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
+}
+function setup(){
+  [['seasonF','pff_GAMESEASON','All seasons'],['weekF','pff_WEEK','All weeks'],['unitF','pff_SPECIALTEAMSTYPE','All units']].forEach(([id,k,l])=>{
+    let e=$(id),cur=e.value;
+    e.innerHTML=`<option value="">${l}</option>`+uniq(rows.map(r=>v(r,k))).map(x=>`<option>${x}</option>`).join('');
+    if([...e.options].some(o=>o.value==cur))e.value=cur
+  });
+  let te=$('teamF'),
+      inferred=inferredHomeTeam(),
+      tc=te.value||teamSettings.teamCode||inferred||'';
+  te.innerHTML='<option value="">All teams</option>'+uniq(rows.flatMap(r=>[v(r,'pff_OFFTEAM'),v(r,'pff_DEFTEAM')])).map(x=>`<option>${x}</option>`).join('');
+  if([...te.options].some(o=>o.value==tc))te.value=tc;
+  else te.value='';
+  if(!teamSettings.teamCode&&inferred){
+    teamSettings.teamCode=inferred;
+    localStorage.setItem('stTeamSettingsV65',JSON.stringify(teamSettings));
+  }
+}
 function filtered(){let team=$('teamF').value;return rows.filter(r=>(!$('seasonF').value||String(v(r,'pff_GAMESEASON'))==$('seasonF').value)&&(!$('weekF').value||String(v(r,'pff_WEEK'))==$('weekF').value)&&(!team||v(r,'pff_OFFTEAM')==team||v(r,'pff_DEFTEAM')==team)&&(!$('unitF').value||v(r,'pff_SPECIALTEAMSTYPE')==$('unitF').value))}
 function selectedTeam(){return $('teamF')?.value||''}
 function unitTeamField(type,side){if(type==='PUNT')return side==='unit'?'pff_OFFTEAM':'pff_DEFTEAM';return side==='unit'?'pff_DEFTEAM':'pff_OFFTEAM'}
@@ -1083,6 +1138,34 @@ function practiceCardDocument(looks){
   aside .nav{min-width:104px!important}
 }
 
+
+/* V8.8: keep every major navigation view visible on phones */
+@media (max-width: 820px){
+  aside{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    overflow:visible!important;
+    gap:6px!important;
+    padding:8px 10px 10px!important;
+  }
+  aside .nav{
+    width:100%!important;
+    min-width:0!important;
+    padding:9px 5px!important;
+    font-size:11px!important;
+    line-height:1.12!important;
+    white-space:normal!important;
+  }
+  aside .nav span{
+    display:block!important;
+    overflow-wrap:anywhere!important;
+  }
+}
+@media (max-width: 430px){
+  aside{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  aside .nav{font-size:10.5px!important;padding:8px 4px!important}
+}
+
 </style></head><body>
   <button onclick="window.print()">Print / Save PDF</button>${cards}</body></html>`;
 }
@@ -1151,12 +1234,58 @@ function reportBanner(titleText){let parts=[document.getElementById('seasonF')?.
 function categoryTabs(){let cats=[['kickReturners','Kick Returners'],['puntReturners','Punt Returners'],['kickers','Kickers'],['punters','Punters']];return `<div class="playerCategoryTabs noPrint">${cats.map(([k,l])=>`<button data-pcat="${k}" class="${playerCategory===k?'active':''}">${l}</button>`).join('')}</div>`}
 function rowHashSplits(rs){return ['L','C','R'].map(h=>{let x=rs.filter(r=>String(v(r,'pff_HASH')).toUpperCase()===h);return [h==='L'?'Left':h==='R'?'Right':'Middle',x.length,fmt(avg(x.map(r=>v(r,'pff_RETURNYARDS'))),1),fmt(avg(x.map(r=>v(r,'pff_KICKYARDS'))),1),fmt(avg(x.map(r=>v(r,'pff_HANGTIME'))),2)]})}
 function splitTableMarkup(rows,heads){return `<table class="splitTable"><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
-function specialistFullStats(a,kind){let rs=specialistRowsForTeam(a,kind),by={};rs.forEach(r=>{let id=specialistIdentity(r);if(!id)return;(by[id.num]||(by[id.num]=[])).push(r)});return Object.entries(by).map(([num,rows])=>({num,rows,p:rosterByNumber(num)})).filter(x=>eligibleSpecialist(x.p,kind)).sort((x,y)=>y.rows.length-x.rows.length)}
-function returnerFullStats(a,unit){return returnerDashboardStats(a,unit).map(x=>({...x,p:rosterByNumber(x.num)}))}
+function pffFallbackPlayer(num,kind,rows=[]){
+  let team=selectedTeam()||teamSettings.teamCode||'TEAM';
+  let label=kind==='punter'?'Punter':kind==='kicker'?'Kicker':'Returner';
+  return {
+    number:num,
+    name:`${team} #${num}`,
+    position:kind==='punter'?'P':kind==='kicker'?'K':'RET',
+    height:'',
+    weight:'',
+    class:'',
+    hometown:'',
+    previousSchool:'',
+    image:'',
+    profile:'',
+    bio:`${label} identified directly from the loaded PFF special-teams data. Sync roster.json to add the official player name, photo and bio.`
+  };
+}
+function specialistFullStats(a,kind){
+  let rs=specialistRowsForTeam(a,kind),by={};
+  rs.forEach(r=>{
+    let id=specialistIdentity(r);
+    if(!id)return;
+    (by[id.num]||(by[id.num]=[])).push(r)
+  });
+  return Object.entries(by).map(([num,rows])=>{
+    let roster=rosterByNumber(num);
+    return {num,rows,p:roster||pffFallbackPlayer(num,kind,rows)}
+  }).filter(x=>!rosterData.length||eligibleSpecialist(x.p,kind))
+    .sort((x,y)=>y.rows.length-x.rows.length)
+}
+function returnerFullStats(a,unit){return returnerDashboardStats(a,unit).map(x=>({...x,p:rosterByNumber(x.num)||pffFallbackPlayer(x.num,'returner',x.rows)}))}
 function cardForCategory(x,cat){let rs=x.rows||[],stats=[];if(cat==='kickReturners'||cat==='puntReturners'){let y=rs.map(r=>n(v(r,'pff_RETURNYARDS'))).filter(z=>z!=null);stats=[['Returns',y.length],['Average',fmt(avg(y),1)],['Long',y.length?Math.max(...y):'—']]}else if(cat==='kickers'){let made=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')),attempts=rs.length;stats=[['FG',made.length+'/'+attempts],['FG%',pct(made.length,attempts)],['Long',made.length?Math.max(...made.map(r=>n(v(r,'pff_KICKYARDS'))||0)):'—']]}else{stats=[['Punts',rs.length],['Gross',fmt(avg(rs.map(r=>v(r,'pff_KICKYARDS'))),1)],['Op Time',fmt(avg(rs.map(r=>v(r,'pff_OPERATIONTIME'))),2)]]}let p=x.p||rosterByNumber(x.num);return `<div class="playerSelect" data-playernum="${x.num}">${playerCard(p,stats,(selectedTeam()||'TEAM')+' '+x.num)}</div>`}
 function selectedProfile(a,cat,list){if(!list.length)return '<div class="empty">No qualifying player records match the active filters.</div>';if(!selectedSpecialist||!list.some(x=>x.num===selectedSpecialist))selectedSpecialist=list[0].num;let x=list.find(z=>z.num===selectedSpecialist)||list[0],p=x.p||rosterByNumber(x.num)||{name:(selectedTeam()||'TEAM')+' '+x.num,number:x.num,bio:'Roster profile not yet matched. Load the roster CSV or JSON to add the player image and biography.'},rs=x.rows||[];let isRet=cat==='kickReturners'||cat==='puntReturners';let metrics='';let splits='';if(isRet){let y=rs.map(r=>n(v(r,'pff_RETURNYARDS'))).filter(z=>z!=null);metrics=[['Returns',y.length],['Total yards',y.reduce((s,z)=>s+z,0)],['Average',fmt(avg(y),1)],['Median',fmt(med(y),1)],['Long',y.length?Math.max(...y):'—'],['20+ rate',pct(y.filter(z=>z>=20).length,y.length)],['0-or-less',pct(y.filter(z=>z<=0).length,y.length)],['Avg result FP',fmt(avg(rs.map(resultFP)),1)]].map(z=>`<div class="mini"><b>${z[1]}</b><span>${z[0]}</span></div>`).join('');splits=splitTableMarkup(rowHashSplits(rs),['Hash','Plays','Avg return','Avg kick','Avg hang'])}else if(cat==='kickers'){let made=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE')),miss=rs.length-made.length,dist=rs.map(r=>n(v(r,'pff_KICKYARDS'))).filter(z=>z!=null);metrics=[['Attempts',rs.length],['Made',made.length],['FG%',pct(made.length,rs.length)],['Missed',miss],['Long',made.length?Math.max(...made.map(r=>n(v(r,'pff_KICKYARDS'))||0)):'—'],['Avg attempt',fmt(avg(dist),1)],['Avg operation',fmt(avg(rs.map(r=>v(r,'pff_FGOPTIME'))),2)],['Median operation',fmt(med(rs.map(r=>v(r,'pff_FGOPTIME'))),2)]].map(z=>`<div class="mini"><b>${z[1]}</b><span>${z[0]}</span></div>`).join('');splits=splitTableMarkup(['L','C','R'].map(h=>{let q=rs.filter(r=>String(v(r,'pff_HASH')).toUpperCase()===h),m=q.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('MADE'));return [h,q.length,m.length,pct(m.length,q.length),fmt(avg(q.map(r=>v(r,'pff_KICKYARDS'))),1)]}),['Hash','Attempts','Made','FG%','Avg distance'])}else{let ret=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('RETURN')),fc=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('FAIR')),tb=rs.filter(r=>String(v(r,'pff_KICKRESULT')).toUpperCase().includes('TOUCH'));let net=rs.map(r=>{let g=n(v(r,'pff_KICKYARDS')),ry=n(v(r,'pff_RETURNYARDS'))||0;return g==null?null:g-ry});metrics=[['Punts',rs.length],['Gross',fmt(avg(rs.map(r=>v(r,'pff_KICKYARDS'))),1)],['Net',fmt(avg(net),1)],['Hang',fmt(avg(rs.map(r=>v(r,'pff_HANGTIME'))),2)],['Operation',fmt(avg(rs.map(r=>v(r,'pff_OPERATIONTIME'))),2)],['Fair catch %',pct(fc.length,rs.length)],['Touchback %',pct(tb.length,rs.length)],['Return avg',fmt(avg(ret.map(r=>v(r,'pff_RETURNYARDS'))),1)]].map(z=>`<div class="mini"><b>${z[1]}</b><span>${z[0]}</span></div>`).join('');splits=splitTableMarkup(['L','C','R'].map(h=>{let q=rs.filter(r=>String(v(r,'pff_HASH')).toUpperCase()===h);return [h,q.length,fmt(avg(q.map(r=>v(r,'pff_KICKYARDS'))),1),fmt(avg(q.map(r=>v(r,'pff_HANGTIME'))),2),fmt(avg(q.map(r=>v(r,'pff_OPERATIONTIME'))),2)]}),['Hash','Punts','Gross','Hang','Operation'])}
 let meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');return `<div class="pageBreak">${reportBanner(p.name+' Player Report')}<div class="card playerHero"><div class="playerPhoto">${playerPhoto(p)}<div class="playerNo">#${p.number||x.num}</div></div><div class="playerBioCard"><div class="eyebrow">Player profile</div><h2>${p.name}</h2><div class="playerMeta">${meta}${p.previousSchool?'<br>Previous: '+p.previousSchool:''}</div><p class="bioSnippet" style="font-size:12px;min-height:0">${p.bio||'Biography not yet loaded.'}</p>${p.profile?`<a class="profileLink" href="${p.profile}" target="_blank" rel="noopener">Official biography ↗</a>`:''}<div class="metrics" style="margin-top:14px">${metrics}</div></div></div><div class="splitGrid" style="margin-top:14px"><div class="card"><div class="eyebrow">By hash</div>${splits}</div><div class="card"><div class="eyebrow">Results</div>${bars(countBy(rs,'pff_KICKRESULT'))||'<div class="empty">No results.</div>'}</div><div class="card"><div class="eyebrow">Direction</div>${bars(countBy(rs,'pff_KICKDIRACTUAL'))||'<div class="empty">No direction data.</div>'}</div></div><div class="card scroll" style="margin-top:14px"><div class="eyebrow">Underlying plays</div>${table(rs)}</div></div>`}
-function playerPage(a){let lists={kickReturners:returnerFullStats(a,'KICKOFF'),puntReturners:returnerFullStats(a,'PUNT'),kickers:specialistFullStats(a,'kicker'),punters:specialistFullStats(a,'punter')},list=lists[playerCategory]||[];let labels={kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers',punters:'Punters'};return reportBanner('Player Intelligence')+title('Player Intelligence','A separate dashboard for returners, kickers and punters. Only roster-matched players from the selected PFF team are shown.')+`<div class="card"><div class="context">Active PFF team: <b>${selectedTeam()||'None selected'}</b>. Loaded roster: <b>${rosterData.length}</b> players. Specialist cards require both an exact PFF team-code match and an eligible roster position.</div></div>`+rosterManager()+categoryTabs()+`<div class="card"><div class="eyebrow">${labels[playerCategory]}</div><div class="playerCardGrid" style="margin-top:10px">${list.length?list.map(x=>cardForCategory(x,playerCategory)).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>'}</div></div><div style="margin-top:14px">${selectedProfile(a,playerCategory,list)}</div>`}
+function playerPage(a){
+  let lists={
+    kickReturners:returnerFullStats(a,'KICKOFF'),
+    puntReturners:returnerFullStats(a,'PUNT'),
+    kickers:specialistFullStats(a,'kicker'),
+    punters:specialistFullStats(a,'punter')
+  },list=lists[playerCategory]||[];
+  let labels={kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers',punters:'Punters'};
+  let rosterNote=rosterData.length
+    ?`Official roster loaded: <b>${rosterData.length}</b> players.`
+    :`No roster.json loaded yet. Player statistics still come directly from PFF; roster sync adds names, photos and bios.`;
+  return reportBanner('Player Intelligence')+
+    title('Player Intelligence','Returners, kickers and punters built directly from the live PFF data, with roster details layered on when available.')+
+    `<div class="card"><div class="context">Active team: <b>${selectedTeam()||inferredHomeTeam()||'None selected'}</b>. ${rosterNote}</div></div>`+
+    (CLOUD.readOnly?'':rosterManager())+
+    categoryTabs()+
+    `<div class="card"><div class="eyebrow">${labels[playerCategory]}</div><div class="playerCardGrid" style="margin-top:10px">${list.length?list.map(x=>cardForCategory(x,playerCategory)).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>'}</div></div><div style="margin-top:14px">${selectedProfile(a,playerCategory,list)}</div>`
+}
 
 function truthyResult(r,needle){return String(v(r,'pff_KICKRESULT')).toUpperCase().includes(needle)}
 function safeMax(vals){vals=vals.filter(x=>x!=null&&Number.isFinite(x));return vals.length?Math.max(...vals):null}
