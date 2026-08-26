@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ULM Special Teams Intelligence V10.5</title>
+<title>ULM Special Teams Intelligence V11.6</title>
 <style>
 :root{--bg:#071018;--panel:#0e1c27;--panel2:#122633;--line:#294653;--text:#f3f7f9;--muted:#91a9b8;--gold:#EBA800;--maroon:#8A2432;--green:#4f8e12;--blue:#2f68df;--yellow:#d4a700;--red:#9a252c;--purple:#8c3caf}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#17303d,#071018 45%);color:var(--text);font:14px/1.4 Inter,Segoe UI,Arial,sans-serif}
@@ -732,6 +732,52 @@ button:hover{border-color:#EBA800!important}
 .ulmOfficialLogo{display:block!important;visibility:visible!important;opacity:1!important;object-fit:contain!important;background:transparent!important;filter:none!important}
 .reportBrandRow img{object-fit:contain!important;background:transparent!important}
 
+
+/* V10.6 — Post-snap whiteboard */
+.chartField{isolation:isolate}
+.drawOverlay{position:absolute;inset:0;width:100%;height:100%;z-index:6;overflow:visible;touch-action:none}
+.drawOverlay.drawActive{cursor:crosshair}.drawOverlay.eraseActive{cursor:not-allowed}
+.drawPath{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:stroke}
+.drawPath:hover{filter:drop-shadow(0 0 3px rgba(255,255,255,.8))}
+.dragPlayer{z-index:8}
+.whiteboardTools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 10px}
+.whiteboardTools button{min-width:0;padding:8px 7px;font-size:11px;line-height:1.15}
+.whiteboardTools button.active{background:#8A2432;border-color:#EBA800;box-shadow:inset 0 0 0 1px rgba(235,168,0,.35)}
+.drawOptions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0}
+.drawOptions label{font-size:10px;color:var(--muted)}.drawOptions select{width:100%;margin-top:4px}
+.postSnapLegend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:7px}
+.postSnapLegend i{display:inline-block;width:18px;height:4px;border-radius:4px;margin-right:5px;vertical-align:middle}
+.postSnapTags{margin-top:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#081720}
+.postSnapTags b{color:var(--gold)}
+.drawHint{font-size:10px;color:var(--muted);line-height:1.35;margin-top:7px}
+@media(max-width:820px){.whiteboardTools{grid-template-columns:repeat(2,minmax(0,1fr))}.whiteboardTools button{min-height:42px;font-size:11px}}
+
+
+/* V10.8 — live Apple-Pencil-style drawing */
+.drawPath.liveDraw{
+  opacity:.92;
+  filter:drop-shadow(0 0 2px rgba(255,255,255,.35));
+}
+.drawCursor{
+  fill:#fff;
+  stroke:#08131b;
+  stroke-width:1.2;
+  vector-effect:non-scaling-stroke;
+  pointer-events:none;
+}
+
+
+/* V11.0 — auto grouping + prominent single-look printing */
+.fullPageLookBtn,#printCurrentLook{
+  background:#8A2432!important;color:#fff!important;border:2px solid #EBA800!important;
+  font-weight:900!important;box-shadow:0 2px 8px rgba(0,0,0,.28)
+}
+.nearReview{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
+.nearCandidate{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #1d3440}
+.nearCandidate:last-child{border-bottom:0}.nearCandidate .lookMeta{line-height:1.3}
+.autoGroupBadge{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:999px;background:#102b22;border:1px solid #2f775e;color:#c9f7df;font-size:10px;font-weight:800}
+@media(max-width:820px){.nearCandidate{grid-template-columns:1fr 1fr}.nearCandidate .lookMeta{grid-column:1/-1}.fullPageLookBtn,#printCurrentLook{min-height:42px}}
+
 </style>
 </head>
 <body><div class="readOnlyBadge">READ ONLY • LIVE STAFF DATA</div>
@@ -1253,6 +1299,8 @@ async function loadPffFromSupabase(options={}){
 const EMBEDDED=[];
 let rows=EMBEDDED,page='dashboard',viewType='PUNT',viewSide='unit',playIndex=0,dashKoHash='',dashPuntHash='',dashFgHash='';
 let chartIndex=0,chartPositions={},selectedPlayer=null;
+let chartPaths=[],drawMode='move',drawUndo=[],drawRedo=[],activeDraw=null;
+let drawWidth=5,drawDash='solid';
 let savedLooks=JSON.parse(localStorage.getItem('st_saved_looks_v4')||'[]');
 let repAssignments=JSON.parse(localStorage.getItem('st_rep_assignments_v4')||'{}');
 const $=id=>document.getElementById(id),v=(r,k)=>r?.[k]??'',n=x=>{let z=parseFloat(x);return Number.isFinite(z)?z:null},fmt=(x,d=1)=>x==null||Number.isNaN(x)?'—':Number(x).toFixed(d);
@@ -1465,9 +1513,11 @@ function sourceKey(type,side){if(type==='PUNT')return side==='unit'?'pff_OFFPLAY
 function rolePos(role,i,type,side,play){
  let r=String(role).toUpperCase(),x=50,y=50;
  if(type==='PUNT'&&side==='unit'){
-  if(r==='P'){x=50;y=88}else if(r==='PLS'){x=50;y=48}
-  else if(r==='GL'){x=7;y=46}else if(r==='GR'){x=93;y=46}
-  else if(r==='PLT'){x=34;y=48}else if(r==='PLG'){x=43;y=48}else if(r==='PRG'){x=57;y=48}else if(r==='PRT'){x=66;y=48}
+  // V11.6: punt-team backfield is below the LOS on this field orientation.
+  // LOS is at 48%, so front-line player centers must sit below it (larger Y).
+  if(r==='P'){x=50;y=88}else if(r==='PLS'){x=50;y=52}
+  else if(r==='GL'){x=7;y=52}else if(r==='GR'){x=93;y=52}
+  else if(r==='PLT'){x=34;y=52}else if(r==='PLG'){x=43;y=52}else if(r==='PRG'){x=57;y=52}else if(r==='PRT'){x=66;y=52}
   else if(r==='PPL'){x=32;y=63}else if(r==='PPR'){x=68;y=63}else if(r==='PPRI'){x=60;y=63}else if(r==='PPRO'){x=76;y=63}
   else if(r==='PLW'){x=22;y=58}else if(r==='PRW'){x=78;y=58}else{x=12+(i%10)*8.4;y=60}
  }else if(type==='PUNT'){
@@ -1531,10 +1581,345 @@ function activeChartPlay(a){let ps=chartPlays(a);if(chartIndex>=ps.length)chartI
 function initChartPositions(r,force=false){let k=playKey(r),assigned=repAssignments[k],look=assigned&&savedLooks.find(x=>x.id===assigned.lookId);if(!force&&Object.keys(chartPositions).length)return;if(look)chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));else chartPositions=defaultPositions(r)}
 function chartDot(p,key){let cl=(p.role==='P'||p.role==='PK'||p.role==='FK')?'kicker':p.role==='PLS'?'snapper':viewSide==='return'?'return':'';return `<div class="dragPlayer ${cl}" data-key="${encodeURIComponent(key)}" style="left:${p.x}%;top:${p.y}%" title="${p.name} • ${p.role}">${p.role}</div>`}
 function sourceSummary(r){return `<div class="sourceData"><b>${v(r,'pff_OFFTEAM')} vs ${v(r,'pff_DEFTEAM')}</b><br>${v(r,'pff_GAMEDATE')} • Week ${v(r,'pff_WEEK')} • Q${v(r,'pff_QUARTER')} ${v(r,'pff_CLOCK')}<br>Play ID: ${playKey(r)}<br>Result: ${v(r,'pff_KICKRESULT')||'—'} • Hang: ${v(r,'pff_HANGTIME')||'—'} • Return: ${v(r,'pff_RETURNYARDS')||'—'}<br>Hash: ${v(r,'pff_HASH')||'—'} • Kick direction: ${v(r,'pff_KICKDIRACTUAL')||'—'}</div>`}
+
+function roleCountsFromRow(r,type=viewType,side=viewSide){
+  let counts={};parsePlayers(v(r,sourceKey(type,side))).forEach(p=>{let role=String(p.role||'').toUpperCase().trim();if(role)counts[role]=(counts[role]||0)+1});return counts
+}
+function roleCountDistance(a,b){
+  let keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]),diff=0,total=0;
+  keys.forEach(k=>{diff+=Math.abs((a?.[k]||0)-(b?.[k]||0));total+=Math.max((a?.[k]||0),(b?.[k]||0))});
+  return {diff,total,similarity:total?1-diff/total:0}
+}
+function allPlaysForLook(look){
+  let season=$('seasonF')?.value||'',team=selectedTeam(),teamField=unitTeamField(look.unit,look.side);
+  return rows.filter(r=>v(r,'pff_SPECIALTEAMSTYPE')===look.unit&&(!season||String(v(r,'pff_GAMESEASON'))===String(season))&&(!team||v(r,teamField)===team)&&parsePlayers(v(r,sourceKey(look.unit,look.side))).length)
+}
+function nearCandidateInfo(r){return {playKey:playKey(r),week:v(r,'pff_WEEK'),gameDate:v(r,'pff_GAMEDATE'),off:v(r,'pff_OFFTEAM'),def:v(r,'pff_DEFTEAM'),result:v(r,'pff_KICKRESULT')}}
+function autoGroupSavedLook(look,seedRow){
+  if(!look||!seedRow)return {exact:0,near:0};
+  let seedSig=signature(seedRow,look.unit,look.side),seedCounts=roleCountsFromRow(seedRow,look.unit,look.side);
+  look.seedSignature=seedSig;look.seedRoleCounts=seedCounts;look.nearCandidates=[];
+  let exact=0,near=0;
+  allPlaysForLook(look).forEach(r=>{
+    let key=playKey(r);if(!key)return;
+    let sig=signature(r,look.unit,look.side);
+    if(sig===seedSig){
+      if(!look.repKeys.includes(key))look.repKeys.push(key);
+      repAssignments[key]={lookId:look.id,match:key===playKey(seedRow)?'seed':'exact-auto'};exact++;
+      return;
+    }
+    let d=roleCountDistance(seedCounts,roleCountsFromRow(r,look.unit,look.side));
+    // Near means essentially the same structure with only a small role difference.
+    if(d.diff<=2 && d.similarity>=.82 && !repAssignments[key]){
+      look.nearCandidates.push({...nearCandidateInfo(r),diff:d.diff,similarity:d.similarity});near++
+    }
+  });
+  look.repKeys=[...new Set(look.repKeys)];
+  look.nearCandidates=look.nearCandidates.filter((x,i,a)=>a.findIndex(y=>y.playKey===x.playKey)===i);
+  return {exact,near}
+}
+function approveNearCandidate(lookId,key){
+  let look=savedLooks.find(l=>l.id===lookId);if(!look)return;
+  if(!look.repKeys.includes(key))look.repKeys.push(key);
+  repAssignments[key]={lookId,match:'near-approved'};
+  look.nearCandidates=(look.nearCandidates||[]).filter(x=>x.playKey!==key);
+  persistLooks();render()
+}
+function rejectNearCandidate(lookId,key){
+  let look=savedLooks.find(l=>l.id===lookId);if(!look)return;
+  look.nearCandidates=(look.nearCandidates||[]).filter(x=>x.playKey!==key);
+  persistLooks();render()
+}
+function approveAllNear(lookId){
+  let look=savedLooks.find(l=>l.id===lookId);if(!look)return;
+  (look.nearCandidates||[]).forEach(c=>{if(!look.repKeys.includes(c.playKey))look.repKeys.push(c.playKey);repAssignments[c.playKey]={lookId,match:'near-approved'}});
+  look.nearCandidates=[];persistLooks();render()
+}
+
 function matchMarkup(){let m=findMatches(chartPositions)[0];if(!m)return `<div class="matchBox"><b>No saved looks for this unit.</b><div class="lookMeta">Save this alignment as the first look.</div></div>`;let exact=m.missing===0&&m.max<=2.0,near=m.missing===0&&m.avg<=5.0;return `<div class="matchBox ${exact?'matchGood':near?'matchNear':''}"><div class="eyebrow">Best current match</div><b>${m.look.name}</b><div class="${exact?'badgeExact':near?'badgeNear':'badgeNew'}">${exact?'Exact match':near?'Near match':'New/different look'} • average ${m.avg.toFixed(1)} field units • max ${m.max.toFixed(1)}</div><div class="lookMeta">${m.look.repKeys.length} assigned reps • ${m.missing?m.missing+' unmatched roles':'all roles matched'}</div></div>`}
-function chartPage(a){let plays=chartPlays(a);if(!plays.length)return title('Chart Looks','Drag players to record actual pre-snap spacing')+unitTabs()+`<div class="empty">No ${viewType} plays are available for this unit and filter.</div>`;let r=activeChartPlay(a);initChartPositions(r);let dots=Object.entries(chartPositions).map(([k,p])=>chartDot(p,k)).join('');let coords=Object.values(chartPositions).sort((a,b)=>a.role.localeCompare(b.role)).map(p=>`<div class="coordLine"><b>${p.role}</b><span>${p.name}</span><span>${p.x.toFixed(1)}</span><span>${p.y.toFixed(1)}</span></div>`).join('');let assigned=repAssignments[playKey(r)],label=viewType==='PUNT'?(viewSide==='unit'?'Punt Team':'Punt Return'):(viewSide==='unit'?'Kickoff Coverage':'Kickoff Return');return title(`${label} Look Charting`,'Drag each player to the actual alignment. Save it once, then connect or match every underlying rep.')+unitTabs()+`<div class="playControls"><button id="chartPrev">Previous rep</button><button id="chartNext">Next rep</button><button id="copyPrev">Copy previous chart</button><button id="resetChart">Reset positions</button><span class="viz-badge">Rep ${chartIndex+1} of ${plays.length}</span></div><div class="chartShell"><div class="chartField" id="chartField"><div class="los"></div><div class="losLabel">REFERENCE LINE</div>${depthOverlay(viewType,viewSide)}${dots}</div><div class="chartPanel"><div class="playCard">${sourceSummary(r)}${assigned?`<div class="note">Assigned to ${savedLooks.find(x=>x.id===assigned.lookId)?.name||'saved look'}</div>`:''}</div>${matchMarkup()}<div class="playCard"><div class="eyebrow">Save / assign</div><input class="input" id="lookName" placeholder="Look name, e.g. Punt Return 2x Vice"><div class="fieldActions" style="margin-top:8px"><button class="primary wide" id="saveNewLook">Save as new look</button><button class="success wide" id="assignBest">Assign to best match</button><button id="mirrorChart">Mirror alignment</button><button id="exportLooks">Export looks</button></div><div class="status" id="chartStatus"></div></div><div class="playCard"><div class="eyebrow">Player coordinates</div><div class="coordTable"><div class="coordLine"><b>Role</b><span>Player</span><b>X</b><b>Y</b></div>${coords}</div></div></div></div><div class="note">Coordinates are normalized to the field, so the chart can later be stored in Supabase exactly as shown. Matching currently uses role and spatial distance, with small charting differences treated as the same look.</div>`}
-function lookField(l){return `<div class="libField">${l.positions.map(p=>`<div class="libDot" style="left:${p.x}%;top:${p.y}%" title="${p.name}">${p.role}</div>`).join('')}</div>`}
-function assignedRows(l,a){let mp=new Map(a.map(r=>[playKey(r),r]));return l.repKeys.map(k=>mp.get(k)).filter(Boolean)}
+
+function clonePaths(paths){return JSON.parse(JSON.stringify(paths||[]))}
+function pushDrawUndo(){drawUndo.push(clonePaths(chartPaths));if(drawUndo.length>30)drawUndo.shift();drawRedo=[]}
+function drawUndoStep(){if(!drawUndo.length)return;drawRedo.push(clonePaths(chartPaths));chartPaths=drawUndo.pop();render()}
+function drawRedoStep(){if(!drawRedo.length)return;drawUndo.push(clonePaths(chartPaths));chartPaths=drawRedo.pop();render()}
+function lineColor(type){if(type==='block')return '#EBA800';if(type==='lane')return '#7dd3fc';if(type==='line')return '#ffffff';return '#ff6b6b'}
+function nearestPlayerKey(x,y){let best=null,dist=999;Object.entries(chartPositions).forEach(([k,p])=>{let d=Math.hypot(p.x-x,p.y-y);if(d<dist){dist=d;best=k}});return dist<=7?best:null}
+function simplifyCurvePoints(points,minDist=1.05){
+  if(!points?.length)return [];
+  let out=[points[0]];
+  for(let i=1;i<points.length;i++){
+    let p=points[i],last=out[out.length-1];
+    if(Math.hypot((p.x||0)-(last.x||0),(p.y||0)-(last.y||0))>=minDist)out.push(p);
+  }
+  let end=points[points.length-1];
+  if(points.length>1 && out[out.length-1]!==end &&
+     (out[out.length-1].x!==end.x||out[out.length-1].y!==end.y))out.push(end);
+  return out;
+}
+function movingAveragePoints(points,radius=2){
+  if(!points?.length)return [];
+  if(points.length<4)return points.map(p=>({...p}));
+  return points.map((p,i)=>{
+    if(i===0||i===points.length-1)return {...p};
+    let sx=0,sy=0,n=0;
+    for(let j=Math.max(0,i-radius);j<=Math.min(points.length-1,i+radius);j++){
+      sx+=points[j].x;sy+=points[j].y;n++;
+    }
+    return {x:sx/n,y:sy/n};
+  });
+}
+function chaikinSmooth(points,iterations=2){
+  let pts=(points||[]).map(p=>({x:+p.x,y:+p.y}));
+  if(pts.length<3)return pts;
+  for(let k=0;k<iterations;k++){
+    let next=[pts[0]];
+    for(let i=0;i<pts.length-1;i++){
+      let p0=pts[i],p1=pts[i+1];
+      next.push({x:.75*p0.x+.25*p1.x,y:.75*p0.y+.25*p1.y});
+      next.push({x:.25*p0.x+.75*p1.x,y:.25*p0.y+.75*p1.y});
+    }
+    next.push(pts[pts.length-1]);
+    pts=next;
+  }
+  return pts;
+}
+function rdp(points,epsilon=1.15){
+  if(!points||points.length<3)return (points||[]).map(p=>({...p}));
+  const dist=(p,a,b)=>{
+    let dx=b.x-a.x,dy=b.y-a.y;
+    if(!dx&&!dy)return Math.hypot(p.x-a.x,p.y-a.y);
+    let t=((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy);
+    t=Math.max(0,Math.min(1,t));
+    return Math.hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy));
+  };
+  let first=points[0],last=points[points.length-1],max=0,index=0;
+  for(let i=1;i<points.length-1;i++){
+    let d=dist(points[i],first,last);
+    if(d>max){index=i;max=d}
+  }
+  if(max>epsilon){
+    let a=rdp(points.slice(0,index+1),epsilon),b=rdp(points.slice(index),epsilon);
+    return a.slice(0,-1).concat(b);
+  }
+  return [{...first},{...last}];
+}
+function footballCurvePoints(points,live=false){
+  let pts=simplifyCurvePoints(points,live?.65:1.0);
+  if(pts.length<3)return pts;
+  pts=movingAveragePoints(pts,live?1:2);
+  // Remove tiny hand wiggles while preserving deliberate bends.
+  pts=rdp(pts,live?.55:1.0);
+  // Turn those deliberate bends into broad coaching-diagram arcs.
+  pts=chaikinSmooth(pts,live?1:3);
+  return pts;
+}
+function compactCurvePoints(points){
+  let pts=footballCurvePoints(points,false);
+  return simplifyCurvePoints(pts,.75);
+}
+function smoothPathD(points,live=false){
+  let pts=footballCurvePoints(points,live);
+  if(!pts?.length)return '';
+  if(pts.length===1)return `M ${pts[0].x} ${pts[0].y}`;
+  if(pts.length===2)return `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y}`;
+  let d=`M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
+  for(let i=1;i<pts.length-1;i++){
+    let midx=(pts[i].x+pts[i+1].x)/2,midy=(pts[i].y+pts[i+1].y)/2;
+    d+=` Q ${pts[i].x.toFixed(2)} ${pts[i].y.toFixed(2)} ${midx.toFixed(2)} ${midy.toFixed(2)}`;
+  }
+  let prev=pts[pts.length-2],last=pts[pts.length-1];
+  d+=` Q ${prev.x.toFixed(2)} ${prev.y.toFixed(2)} ${last.x.toFixed(2)} ${last.y.toFixed(2)}`;
+  return d;
+}
+function pathSvg(p,idx){
+  let pts=p.points||[];if(!pts.length)return '';
+  let d=(p.type==='line'||p.type==='block')&&pts.length>1?`M ${pts[0].x} ${pts[0].y} L ${pts[pts.length-1].x} ${pts[pts.length-1].y}`:smoothPathD(pts);
+  let stroke=p.color||lineColor(p.type),dash=p.dash==='dashed'?'7 5':'none',w=p.width||5,marker=p.type==='arrow'||p.type==='lane'?'url(#arrowHead)':'';
+  let cap='';
+  if(p.type==='block'&&pts.length>1){
+    let a=pts[pts.length-2],b=pts[pts.length-1],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,px=-dy/len*2.2,py=dx/len*2.2;
+    cap=`<line x1="${(b.x-px).toFixed(2)}" y1="${(b.y-py).toFixed(2)}" x2="${(b.x+px).toFixed(2)}" y2="${(b.y+py).toFixed(2)}" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`
+  }
+  return `<path class="drawPath" data-path-index="${idx}" d="${d}" stroke="${stroke}" stroke-width="${w}" stroke-dasharray="${dash}" marker-end="${marker}"></path>${cap}`
+}
+function pathsOverlay(paths=chartPaths){
+  return `<svg class="drawOverlay" viewBox="0 0 100 100" preserveAspectRatio="none"><defs>
+    <marker id="arrowHead" markerWidth="7" markerHeight="7" refX="5.6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3.5 L0,7 z" fill="#ff6b6b"></path></marker>
+    </defs>${(paths||[]).map((p,i)=>pathSvg(p,i)).join('')}</svg>`
+}
+function postSnapTagSummary(r){
+  let fields=[['Pursuit',v(r,'pff_PURSUIT')],['Gunners',v(r,'pff_GUNNERS')],['Vice',v(r,'pff_VISE')],['Return direction',v(r,'pff_RETURNDIRECTION')],['Kick direction',v(r,'pff_KICKDIRACTUAL')]].filter(x=>String(x[1]||'').trim());
+  return fields.length?`<div class="postSnapTags"><div class="eyebrow">Available PFF post-snap tags</div>${fields.map(x=>`<div><b>${x[0]}:</b> ${x[1]}</div>`).join('')}</div>`:`<div class="postSnapTags"><div class="eyebrow">Post-snap</div><div class="drawHint">No player-tracking lane coordinates exist in this PFF row. Draw the actual lanes, pursuit or blocks on the field.</div></div>`
+}
+function chartWhiteboardTools(){
+  return `<div class="playCard"><div class="eyebrow">Post-snap whiteboard</div>
+  <div class="whiteboardTools">
+    <button data-draw-mode="move" class="${drawMode==='move'?'active':''}">↔ Move Players</button>
+    <button data-draw-mode="arrow" class="${drawMode==='arrow'?'active':''}">➜ Smooth Arrow</button>
+    <button data-draw-mode="lane" class="${drawMode==='lane'?'active':''}">⌁ Pursuit / Lane</button>
+    <button data-draw-mode="block" class="${drawMode==='block'?'active':''}">⊣ Block / Vice</button>
+    <button data-draw-mode="line" class="${drawMode==='line'?'active':''}">╱ Straight Line</button>
+    <button data-draw-mode="erase" class="${drawMode==='erase'?'active':''}">⌫ Erase Line</button>
+    <button id="drawUndo" ${drawUndo.length?'':'disabled'}>↶ Undo</button><button id="drawRedo" ${drawRedo.length?'':'disabled'}>↷ Redo</button>
+    <button id="clearPaths" class="danger">Clear Lines</button><button id="copyPostSnap">Copy Post-Snap</button>
+  </div>
+  <div class="drawOptions">
+    <label>Line thickness<select id="drawWidth"><option value="3" ${drawWidth==3?'selected':''}>Thin</option><option value="5" ${drawWidth==5?'selected':''}>Normal</option><option value="7" ${drawWidth==7?'selected':''}>Thick</option></select></label>
+    <label>Line style<select id="drawDash"><option value="solid" ${drawDash==='solid'?'selected':''}>Solid</option><option value="dashed" ${drawDash==='dashed'?'selected':''}>Dashed</option></select></label>
+  </div>
+  <div class="postSnapLegend"><span><i style="background:#ff6b6b"></i>Arrow</span><span><i style="background:#7dd3fc"></i>Pursuit / lane</span><span><i style="background:#EBA800"></i>Block / vice</span><span><i style="background:#fff"></i>Line</span></div>
+  <div class="drawHint">Touch/click and drag. The stroke appears live under your finger, mouse or Pencil and auto-corrects into a clean football-diagram arc. Start near a player and the path attaches to him, so its starting point follows if you move that player.</div></div>`
+}
+function resetChartDrawing(){chartPaths=[];drawUndo=[];drawRedo=[];activeDraw=null}
+function loadLookIntoChart(l){chartPositions=Object.fromEntries((l.positions||[]).map(p=>[p.role+'|'+p.name,{...p}]));chartPaths=clonePaths(l.paths||[]);drawUndo=[];drawRedo=[]}
+function mirrorPaths(){chartPaths.forEach(p=>(p.points||[]).forEach(pt=>pt.x=100-pt.x))}
+
+function livePathElement(svg,p,index){
+  let ns='http://www.w3.org/2000/svg';
+  let el=document.createElementNS(ns,'path');
+  el.setAttribute('class','drawPath liveDraw');
+  el.dataset.pathIndex=String(index);
+  el.setAttribute('fill','none');
+  el.setAttribute('stroke',p.color||lineColor(p.type));
+  el.setAttribute('stroke-width',p.width||5);
+  el.setAttribute('stroke-linecap','round');
+  el.setAttribute('stroke-linejoin','round');
+  el.setAttribute('vector-effect','non-scaling-stroke');
+  el.setAttribute('stroke-dasharray',p.dash==='dashed'?'7 5':'none');
+  if(p.type==='arrow'||p.type==='lane')el.setAttribute('marker-end','url(#arrowHead)');
+  svg.appendChild(el);
+  return el;
+}
+function liveCursorElement(svg){
+  let ns='http://www.w3.org/2000/svg';
+  let c=document.createElementNS(ns,'circle');
+  c.setAttribute('class','drawCursor');
+  c.setAttribute('r','1.15');
+  svg.appendChild(c);
+  return c;
+}
+function updateLivePath(el,p){
+  if(!el||!p)return;
+  let pts=p.points||[];
+  let d=(p.type==='line'||p.type==='block')&&pts.length>1
+    ?`M ${pts[0].x} ${pts[0].y} L ${pts[pts.length-1].x} ${pts[pts.length-1].y}`
+    :smoothPathD(pts,true);
+  el.setAttribute('d',d);
+}
+
+function bindChartDrawing(){
+  let field=$('chartField'),svg=field?.querySelector('.drawOverlay');if(!field||!svg)return;
+  svg.classList.toggle('drawActive',['arrow','lane','block','line'].includes(drawMode));
+  svg.classList.toggle('eraseActive',drawMode==='erase');
+
+  const norm=e=>{
+    let b=field.getBoundingClientRect();
+    return {
+      x:Math.max(0,Math.min(100,100*(e.clientX-b.left)/b.width)),
+      y:Math.max(0,Math.min(100,100*(e.clientY-b.top)/b.height))
+    }
+  };
+
+  let liveEl=null,cursorEl=null;
+
+  svg.addEventListener('pointerdown',e=>{
+    if(drawMode==='move')return;
+    if(drawMode==='erase'){
+      let t=e.target.closest?.('.drawPath');
+      if(t){
+        let i=Number(t.dataset.pathIndex);
+        if(Number.isInteger(i)){pushDrawUndo();chartPaths.splice(i,1);render()}
+      }
+      e.preventDefault();return;
+    }
+
+    let pt=norm(e);
+    pushDrawUndo();
+    let attach=nearestPlayerKey(pt.x,pt.y);
+    if(attach)pt={x:chartPositions[attach].x,y:chartPositions[attach].y};
+
+    activeDraw={
+      id:'P'+Date.now(),
+      type:drawMode,
+      width:Number(drawWidth)||5,
+      dash:drawDash,
+      color:lineColor(drawMode),
+      attachedTo:attach||null,
+      points:[pt]
+    };
+    chartPaths.push(activeDraw);
+
+    // Create the stroke immediately. This is why the path is now visible
+    // while the user's finger / mouse / Pencil is still moving.
+    liveEl=livePathElement(svg,activeDraw,chartPaths.length-1);
+    cursorEl=liveCursorElement(svg);
+    cursorEl.setAttribute('cx',pt.x);
+    cursorEl.setAttribute('cy',pt.y);
+    updateLivePath(liveEl,activeDraw);
+
+    svg.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  svg.addEventListener('pointermove',e=>{
+    if(!activeDraw)return;
+
+    // Pointer Events can expose higher-frequency coalesced samples on Pencil/touch.
+    // We use them, then filter them, which makes the live stroke both responsive and smooth.
+    let samples=typeof e.getCoalescedEvents==='function' ? e.getCoalescedEvents() : [e];
+    if(!samples.length)samples=[e];
+
+    for(const ev of samples){
+      let pt=norm(ev),pts=activeDraw.points,last=pts[pts.length-1];
+      if(activeDraw.type==='line'||activeDraw.type==='block'){
+        if(pts.length===1)pts.push(pt);else pts[1]=pt;
+      }else{
+        // Slightly denser capture than V10.7, then smooth the display rather than
+        // letting the raw hand jitter become the rendered line.
+        if(Math.hypot(pt.x-last.x,pt.y-last.y)>.55)pts.push(pt);
+      }
+    }
+
+    updateLivePath(liveEl,activeDraw);
+    let last=activeDraw.points[activeDraw.points.length-1];
+    if(cursorEl&&last){cursorEl.setAttribute('cx',last.x);cursorEl.setAttribute('cy',last.y)}
+    e.preventDefault();
+  });
+
+  const finish=e=>{
+    if(!activeDraw)return;
+    if((activeDraw.points||[]).length<2){
+      chartPaths.pop();
+      if(drawUndo.length)drawUndo.pop();
+    }else if(!['line','block'].includes(activeDraw.type)){
+      // Final "ink correction": retain the intended bends, remove hand rigidity,
+      // and save the corrected path rather than the noisy raw samples.
+      activeDraw.points=compactCurvePoints(activeDraw.points);
+    }
+    activeDraw=null;liveEl=null;cursorEl=null;
+    render();
+    e?.preventDefault?.();
+  };
+
+  svg.addEventListener('pointerup',finish);
+  svg.addEventListener('pointercancel',finish);
+}
+
+function chartPage(a){
+  let plays=chartPlays(a);if(!plays.length)return title('Chart Looks','Chart pre-snap alignment and draw post-snap lanes, pursuit angles, blocks and arrows')+unitTabs()+`<div class="empty">No ${viewType} plays are available for this unit and filter.</div>`;
+  let r=activeChartPlay(a);initChartPositions(r);
+  let dots=Object.entries(chartPositions).map(([k,p])=>chartDot(p,k)).join('');
+  let coords=Object.values(chartPositions).sort((a,b)=>a.role.localeCompare(b.role)).map(p=>`<div class="coordLine"><b>${p.role}</b><span>${p.name}</span><span>${p.x.toFixed(1)}</span><span>${p.y.toFixed(1)}</span></div>`).join('');
+  let assigned=repAssignments[playKey(r)],label=viewType==='PUNT'?(viewSide==='unit'?'Punt Team':'Punt Return'):(viewSide==='unit'?'Kickoff Coverage':'Kickoff Return');
+  return title(`${label} Look Charting`,'Set the pre-snap alignment, then draw the post-snap responsibility exactly as you coach it.')+unitTabs()+
+  `<div class="playControls"><button id="chartPrev">Previous rep</button><button id="chartNext">Next rep</button><button id="copyPrev">Copy previous chart</button><button id="resetChart">Reset positions</button><span class="viz-badge">Rep ${chartIndex+1} of ${plays.length}</span></div>
+  <div class="chartShell"><div class="chartField" id="chartField"><div class="los"></div><div class="losLabel">REFERENCE LINE</div>${depthOverlay(viewType,viewSide)}${pathsOverlay(chartPaths)}${dots}</div>
+  <div class="chartPanel">${chartWhiteboardTools()}<div class="playCard">${sourceSummary(r)}${postSnapTagSummary(r)}${assigned?`<div class="note">Assigned to ${savedLooks.find(x=>x.id===assigned.lookId)?.name||'saved look'}</div>`:''}</div>${matchMarkup()}
+  <div class="playCard"><div class="eyebrow">Save / assign</div><input class="input" id="lookName" placeholder="Look name, e.g. Punt Return 2x Vice"><div class="fieldActions" style="margin-top:8px"><button class="primary wide" id="saveNewLook">Save as new look</button><button class="success wide" id="assignBest">Assign to best match</button><button id="printCurrentLook">Full Page Print</button><button id="mirrorChart">Mirror alignment + paths</button><button id="exportLooks">Export looks</button></div><div class="status" id="chartStatus"></div></div>
+  <div class="playCard"><div class="eyebrow">Player coordinates</div><div class="coordTable"><div class="coordLine"><b>Role</b><span>Player</span><b>X</b><b>Y</b></div>${coords}</div></div></div></div>
+  <div class="note">Saved looks now include both normalized pre-snap player coordinates and post-snap whiteboard paths. Practice cards and the Look Library show those paths automatically.</div>`
+}
+function lookField(l){return `<div class="libField">${pathsOverlay(l.paths||[])}${(l.positions||[]).map(p=>`<div class="libDot" style="left:${p.x}%;top:${p.y}%" title="${p.name}">${p.role}</div>`).join('')}</div>`}
 function practiceUnitLabel(l){
   if(l.unit==='PUNT')return l.side==='unit'?'Punt Team':'Punt Return';
   if(l.unit==='KICKOFF')return l.side==='unit'?'Kickoff Coverage':'Kickoff Return';
@@ -1542,9 +1927,11 @@ function practiceUnitLabel(l){
 }
 function practiceCardDocument(looks){
   const cards=looks.map((l,idx)=>{
-    const field=lookField(l)
+    const field=printSafeFieldMarkup(lookField(l))
       .replace(/class="lookField"/g,'class="printField"')
-      .replace(/class="lookDot"/g,'class="printDot"');
+      .replace(/class="libField"/g,'class="printField"')
+      .replace(/class="lookDot"/g,'class="printDot"')
+      .replace(/class="libDot"/g,'class="printDot"');
     return `<section class="practicePage">
       <div class="practiceHeader">
         <div><div class="practiceTeam">${esc(teamSettings.teamName||teamSettings.nickname||teamSettings.teamCode||'Special Teams')}</div>
@@ -1575,7 +1962,26 @@ function practiceCardDocument(looks){
     overflow:hidden}
   .printField:before{content:"REFERENCE LINE";position:absolute;left:0;right:0;top:50%;border-top:3px solid #111;text-align:center;font-size:10px;font-weight:800;padding-top:3px}
   .printDot{position:absolute;transform:translate(-50%,-50%);min-width:42px;height:42px;border:2px solid #111;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:8px;font-weight:800;line-height:1.05;padding:3px}
+  .printField .drawOverlay{position:absolute;inset:0;width:100%;height:100%;z-index:1}.printField .printDot{z-index:2}
   .practiceFooter{text-align:right;font-size:9px;margin-top:6px}
+
+  /* V11.1 print path fix — convert all whiteboard ink to black on white paper */
+  .drawOverlay{overflow:visible!important}
+  .drawOverlay .drawPath{
+    fill:none!important;
+    stroke:#111!important;
+    opacity:1!important;
+    filter:none!important;
+  }
+  .drawOverlay line{
+    stroke:#111!important;
+    opacity:1!important;
+  }
+  .drawOverlay marker path{
+    fill:#111!important;
+    stroke:#111!important;
+  }
+
   button{position:fixed;right:18px;top:18px;padding:10px 15px;font-size:14px}
   @media print{button{display:none}}
   
@@ -2143,12 +2549,151 @@ function openPracticeCards(looks){
   w.document.write(practiceCardDocument(looks));
   w.document.close();
 }
+
+
+function printSafeFieldMarkup(markup){
+  return String(markup||'')
+    .replace(/stroke="#ff6b6b"/g,'stroke="#111111"')
+    .replace(/stroke="#7dd3fc"/g,'stroke="#111111"')
+    .replace(/stroke="#EBA800"/g,'stroke="#111111"')
+    .replace(/stroke="#ffffff"/g,'stroke="#111111"')
+    .replace(/stroke="#fff"/g,'stroke="#111111"')
+    .replace(/fill="#ff6b6b"/g,'fill="#111111"')
+    .replace(/fill="#7dd3fc"/g,'fill="#111111"')
+    .replace(/fill="#EBA800"/g,'fill="#111111"')
+    .replace(/fill="#ffffff"/g,'fill="#111111"')
+    .replace(/fill="#fff"/g,'fill="#111111"');
+}
+
+
+function escXml(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]))}
+function printPathSvg(p,idx){
+  let pts=p.points||[];
+  if(!pts.length)return '';
+  let d=(p.type==='line'||p.type==='block')&&pts.length>1
+    ?`M ${pts[0].x} ${pts[0].y} L ${pts[pts.length-1].x} ${pts[pts.length-1].y}`
+    :smoothPathD(pts,false);
+  let w=Math.max(1.25,(p.width||5)*0.42);
+  let dash=p.dash==='dashed'?'2.6 2.2':'none';
+  let marker=(p.type==='arrow'||p.type==='lane')?'url(#printArrowHead)':'';
+  let cap='';
+  if(p.type==='block'&&pts.length>1){
+    let a=pts[pts.length-2],b=pts[pts.length-1],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;
+    let px=-dy/len*2.2,py=dx/len*2.2;
+    cap=`<line x1="${(b.x-px).toFixed(2)}" y1="${(b.y-py).toFixed(2)}" x2="${(b.x+px).toFixed(2)}" y2="${(b.y+py).toFixed(2)}" stroke="#111" stroke-width="${w}" stroke-linecap="round"/>`;
+  }
+  return `<path d="${d}" fill="none" stroke="#111" stroke-width="${w}" stroke-dasharray="${dash}" stroke-linecap="round" stroke-linejoin="round" marker-end="${marker}"/>${cap}`;
+}
+function fullPageLookSvg(l){
+  // V11.4: keep the printed formation behind the line of scrimmage.
+  // If any player (including gunners) is already past the LOS, shift the entire
+  // printed unit upward together so nobody is beyond the line.
+  const yPad=10;
+  const printHeight=120;
+  const losY=60;
+  const backBuffer=1.5; // keep player centers about 1.5 yards behind the LOS
+
+  const rawPlayers=(l.positions||[]).map(p=>({
+    ...p,
+    px:Number(p.x)||0,
+    py:(Number(p.y)||0)+yPad
+  }));
+
+  const maxPlayerY=rawPlayers.length?Math.max(...rawPlayers.map(p=>p.py)):0;
+  const deltaBack=Math.max(0,maxPlayerY-(losY-backBuffer));
+
+  const yardLines=Array.from({length:13},(_,i)=>{
+    let y=i*10;
+    let isReference=(y===losY);
+    return `<line x1="0" y1="${y}" x2="100" y2="${y}" stroke="${isReference?'#111':'#d3d7da'}" stroke-width="${isReference?'0.65':'0.28'}"/>`;
+  }).join('');
+
+  const translatePathY=p=>{
+    let q=JSON.parse(JSON.stringify(p||{}));
+    (q.points||[]).forEach(pt=>pt.y=((Number(pt.y)||0)+yPad-deltaBack));
+    return q;
+  };
+
+  const paths=(l.paths||[]).map((p,i)=>printPathSvg(translatePathY(p),i)).join('');
+
+  const players=rawPlayers.map(p=>{
+    let role=escXml(p.role||'');
+    let px=p.px;
+    let py=p.py-deltaBack;
+    return `<g transform="translate(${px} ${py})">
+      <circle cx="0" cy="0" r="2.7" fill="#fff" stroke="#111" stroke-width=".55"/>
+      <text x="0" y=".65" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="1.65" font-weight="700" fill="#111">${role}</text>
+    </g>`;
+  }).join('');
+
+  return `<svg class="fullPageVector" viewBox="0 0 100 ${printHeight}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="printArrowHead" markerWidth="4.5" markerHeight="4.5" refX="3.7" refY="2.25" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L4.5,2.25 L0,4.5 z" fill="#111"/>
+      </marker>
+    </defs>
+    <rect x="0" y="0" width="100" height="${printHeight}" fill="#fff"/>
+    ${yardLines}
+    ${paths}
+    ${players}
+  </svg>`;
+}
+function fullPageLookDocument(l){
+  const field=fullPageLookSvg(l);
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(l.name)} - Full Page Look</title>
+  <style>
+  @page{size:letter portrait;margin:.4in}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif}
+  .sheet{height:10.1in;display:flex;flex-direction:column}
+  .titleBlock{margin:0 0 12px 0}
+  .titleLine{min-height:34px;border-bottom:2px solid #111;margin:0 0 12px 0;font-size:24px;font-weight:800;line-height:1.2;padding:0 4px 4px 4px;outline:none}
+  .fieldShell{flex:1;display:flex;align-items:stretch;justify-content:center;border:3px solid #111;background:#fff;overflow:hidden}
+  .fullPageVector{display:block;width:100%;height:100%;background:#fff}
+  .controlBar{position:fixed;right:18px;top:18px;display:flex;gap:8px;z-index:10}
+  .controlBar button{padding:10px 14px;font-size:14px;border-radius:8px;border:1px solid #333;background:#fff;cursor:pointer}
+  .controlBar button.primary{background:#8A2432;color:#fff;border-color:#8A2432}
+  .helper{position:fixed;left:18px;top:18px;font-size:12px;color:#333;background:#fff;padding:8px 10px;border:1px solid #ddd;border-radius:8px;z-index:10}
+  @media print{
+    .controlBar,.helper{display:none!important}
+    html,body{width:100%;height:100%;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+    .fieldShell{border-color:#111!important}
+    .fullPageVector{display:block!important;visibility:visible!important}
+  }
+  </style></head>
+  <body>
+    <div class="controlBar"><button class="primary" onclick="window.print()">Print / Save PDF</button></div>
+    <div class="helper">Click the two blank lines at the top and type your title.</div>
+    <section class="sheet">
+      <div class="titleBlock">
+        <div class="titleLine" contenteditable="true"></div>
+        <div class="titleLine" contenteditable="true"></div>
+      </div>
+      <div class="fieldShell">${field}</div>
+    </section>
+  </body></html>`;
+}
+function openFullPageLook(l){
+  if(!l){alert('No saved look was found.');return}
+  const w=window.open('','_blank');
+  if(!w){alert('Allow pop-ups for this app so the full-page print window can open.');return}
+  w.document.open();
+  w.document.write(fullPageLookDocument(l));
+  w.document.close();
+}
+function printCurrentChartLook(){
+  let r=activeChartPlay(filtered());if(!r)return;
+  let name=($('lookName')?.value||'').trim();
+  let temp={id:'TEMP',name:name||'',unit:viewType,side:viewSide,positions:normalizedPositions(chartPositions),paths:clonePaths(chartPaths),repKeys:[playKey(r)]};
+  openFullPageLook(temp)
+}
+
 function libraryPage(a){
   let ls=savedLooks.filter(l=>(!$('unitF').value||l.unit===$('unitF').value));
   if(!ls.length)return title('Look Library','Saved alignments and all underlying rep data')+
     `<div class="empty">No looks have been saved yet. Open Chart Looks, drag the players, and save the first alignment.</div>`;
 
-  return title('Look Library','Saved diagrams load from Supabase project.json and can be printed as clean practice cards')+
+  return title('Look Library','Saved diagrams load from Supabase project.json and can be printed as clean practice cards or single full-page look sheets')+
   `<div class="practiceTools">
     <button id="selectAllLooks">Select all</button>
     <button id="clearLookSelection">Clear selection</button>
@@ -2161,7 +2706,7 @@ function libraryPage(a){
       <div class="lookHead">
         <div><label><input class="lookSelect" type="checkbox" data-look-select="${l.id}"><span class="lookName">${l.name}</span></label>
         <div class="lookMeta">${l.unit} • ${l.side==='unit'?'unit':'return'} • ${l.positions.length} players</div></div>
-        <div><b>${l.repKeys.length}</b><div class="lookMeta">reps</div></div>
+        <div><b>${l.repKeys.length}</b><div class="lookMeta">reps</div>${(l.nearCandidates||[]).length?`<div class="autoGroupBadge">${l.nearCandidates.length} near to review</div>`:''}</div>
       </div>
       ${lookField(l)}
       <div class="metrics"><div class="mini"><b>${l.repKeys.length}</b><span>Assigned reps</span></div><div class="mini"><b>${fmt(avg(rr.map(r=>v(r,'pff_HANGTIME'))),2)}</b><span>Hang</span></div><div class="mini"><b>${fmt(avg(returns.map(r=>v(r,'pff_RETURNYARDS'))),1)}</b><span>Return yds</span></div><div class="mini"><b>${fmt(avg(rr.map(r=>v(r,'pff_EXPECTED_POINTS_ADDED'))),3)}</b><span>EPA</span></div></div>
@@ -2169,15 +2714,32 @@ function libraryPage(a){
         <button class="showReps" data-id="${l.id}">Show underlying reps</button>
         <button class="loadLook adminOnly" data-id="${l.id}">Open in charting</button>
         <button class="practiceCardBtn" data-practice-id="${l.id}">Practice Card PDF</button>
+        <button class="fullPageLookBtn" data-fullpage-id="${l.id}">FULL PAGE PRINT</button>
         <button class="danger deleteLook adminOnly" data-id="${l.id}">Delete</button>
       </div>
+      ${(l.nearCandidates||[]).length?`<div class="nearReview"><div class="lookHead"><div><b>Near matches to review</b><div class="lookMeta">Exact role structures were grouped automatically. These are close but require your approval.</div></div><button class="approveAllNear" data-look-id="${l.id}">Approve all</button></div>${(l.nearCandidates||[]).map(c=>`<div class="nearCandidate"><div class="lookMeta"><b>Week ${c.week||'—'} • ${c.off||''} vs ${c.def||''}</b><br>${c.gameDate||''} • ${c.result||'—'} • ${Math.round((c.similarity||0)*100)}% role similarity</div><button class="approveNear" data-look-id="${l.id}" data-play-key="${encodeURIComponent(c.playKey)}">Add</button><button class="rejectNear" data-look-id="${l.id}" data-play-key="${encodeURIComponent(c.playKey)}">Dismiss</button></div>`).join('')}</div>`:''}
       <div class="repRows" id="reps_${l.id}">${rr.length?rr.map(r=>`<div class="repRow"><span>Wk ${v(r,'pff_WEEK')}</span><span>${v(r,'pff_OFFTEAM')} vs ${v(r,'pff_DEFTEAM')} • ${v(r,'pff_KICKRESULT')}</span><span>${v(r,'pff_RETURNYARDS')||'—'} yds</span><span>${v(r,'pff_HANGTIME')||'—'} hang</span></div>`).join(''):'<div class="lookMeta">No currently loaded PFF rows match the saved rep IDs.</div>'}</div>
     </div>`;
   }).join('')}</div>`;
 }
-function saveNewLook(r){let name=($('lookName').value||`${viewType} ${viewSide==='unit'?'Unit':'Return'} Look ${savedLooks.filter(x=>x.unit===viewType&&x.side===viewSide).length+1}`).trim(),id='L'+Date.now();let look={id,name,unit:viewType,side:viewSide,positions:normalizedPositions(chartPositions),repKeys:[playKey(r)],createdAt:new Date().toISOString()};savedLooks.push(look);repAssignments[playKey(r)]={lookId:id,match:'seed'};persistLooks();$('chartStatus').textContent=`Saved ${name} and connected this rep.`;render()}
+function saveNewLook(r){
+  let name=($('lookName').value||`${viewType} ${viewSide==='unit'?'Unit':'Return'} Look ${savedLooks.filter(x=>x.unit===viewType&&x.side===viewSide).length+1}`).trim(),id='L'+Date.now();
+  let look={id,name,unit:viewType,side:viewSide,positions:normalizedPositions(chartPositions),paths:clonePaths(chartPaths),repKeys:[playKey(r)],nearCandidates:[],createdAt:new Date().toISOString()};
+  savedLooks.push(look);repAssignments[playKey(r)]={lookId:id,match:'seed'};
+  let grouped=autoGroupSavedLook(look,r);
+  persistLooks();
+  $('chartStatus').textContent=`Saved ${name}. ${grouped.exact} exact reps grouped automatically${grouped.near?` • ${grouped.near} near matches waiting for review`:''}.`;
+  render()
+}
 function assignBest(r){let m=findMatches(chartPositions)[0];if(!m){$('chartStatus').textContent='No saved look exists yet. Save this as a new look first.';return}if(!m.look.repKeys.includes(playKey(r)))m.look.repKeys.push(playKey(r));repAssignments[playKey(r)]={lookId:m.look.id,match:m.max<=2?'exact':m.avg<=5?'near':'manual'};persistLooks();$('chartStatus').textContent=`Assigned to ${m.look.name}.`;render()}
-function bindChartDrag(){let field=$('chartField');if(!field)return;let drag=null;field.querySelectorAll('.dragPlayer').forEach(el=>{el.addEventListener('pointerdown',e=>{drag=el;el.setPointerCapture(e.pointerId);selectedPlayer=decodeURIComponent(el.dataset.key);el.classList.add('selected');e.preventDefault()});el.addEventListener('pointermove',e=>{if(drag!==el)return;let b=field.getBoundingClientRect(),x=Math.max(2,Math.min(98,100*(e.clientX-b.left)/b.width)),y=Math.max(2,Math.min(98,100*(e.clientY-b.top)/b.height));let snap=e.shiftKey?1:0.5;x=Math.round(x/snap)*snap;y=Math.round(y/snap)*snap;chartPositions[selectedPlayer].x=x;chartPositions[selectedPlayer].y=y;el.style.left=x+'%';el.style.top=y+'%'});el.addEventListener('pointerup',()=>{drag=null;el.classList.remove('selected');render()})})}
+function bindChartDrag(){
+  let field=$('chartField');if(!field)return;let drag=null;
+  field.querySelectorAll('.dragPlayer').forEach(el=>{
+    el.addEventListener('pointerdown',e=>{if(drawMode!=='move')return;drag=el;el.setPointerCapture(e.pointerId);selectedPlayer=decodeURIComponent(el.dataset.key);el.classList.add('selected');e.preventDefault()});
+    el.addEventListener('pointermove',e=>{if(drag!==el)return;let b=field.getBoundingClientRect(),x=Math.max(2,Math.min(98,100*(e.clientX-b.left)/b.width)),y=Math.max(2,Math.min(98,100*(e.clientY-b.top)/b.height));let snap=e.shiftKey?1:0.5;x=Math.round(x/snap)*snap;y=Math.round(y/snap)*snap;chartPositions[selectedPlayer].x=x;chartPositions[selectedPlayer].y=y;chartPaths.filter(p=>p.attachedTo===selectedPlayer&&p.points?.length).forEach(p=>{p.points[0].x=x;p.points[0].y=y});el.style.left=x+'%';el.style.top=y+'%'});
+    el.addEventListener('pointerup',()=>{if(drag===el){drag=null;el.classList.remove('selected');render()}})
+  })
+}
 function exportLookData(){let blob=new Blob([JSON.stringify({savedLooks,repAssignments},null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='special-teams-look-library.json';a.click();URL.revokeObjectURL(u)}
 
 function table(a){let ks=['pff_GAMEDATE','pff_WEEK','pff_OFFTEAM','pff_DEFTEAM','pff_SPECIALTEAMSTYPE','pff_FIELDPOSITION','pff_HASH','pff_KICKRESULT','pff_KICKYARDS','pff_KICKDEPTH','pff_KICKWIDTH','pff_HANGTIME','pff_RETURNYARDS'];return `<div class="card scroll"><table class="log"><thead><tr>${ks.map(k=>`<th>${k.replace('pff_','').replaceAll('_',' ')}</th>`).join('')}</tr></thead><tbody>${a.map(r=>`<tr>${ks.map(k=>`<td>${v(r,k)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
@@ -2294,9 +2856,16 @@ function render(){
 
 function loadRosterFile(f){if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=f.name.toLowerCase().endsWith('.json')?JSON.parse(rd.result):parseRosterCSV(rd.result);if(!Array.isArray(x)||!x.length)throw new Error('No roster rows found');rosterData=x;saveRoster();rosterStatus='Roster file loaded: '+x.length+' players.';saveTeamSettings();render();alert('Roster loaded: '+x.length+' players')}catch(err){alert('Roster load failed: '+err.message)}};rd.readAsText(f)}
 
-function bind(){let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let ca=$('copyAdminBtn');if(ca)ca.onclick=()=>{const u=new URL(location.href);u.searchParams.set('admin','1');navigator.clipboard?.writeText(u.toString()).then(()=>alert('Admin link copied. You will still need the admin key when you edit.')).catch(()=>prompt('Copy your private admin link:',u.toString()))};let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadRosterFromSupabase();await loadHistoricalRoster('2025');await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let epd=$('refreshPlayerDetails');if(epd)epd.onclick=()=>enrichRosterBatches().catch(e=>alert('Player detail refresh failed: '+e.message));let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=()=>window.print();document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;if($('unitF'))$('unitF').value=viewType;playIndex=0;chartIndex=0;chartPositions={};render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};render()};if(cn)cn.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex+1)%x.length;chartPositions={};render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filtered());chartPositions=defaultPositions(r);render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look)chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);render()};if($('saveNewLook'))$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filtered()));if($('assignBest'))$('assignBest').onclick=()=>assignBest(activeChartPlay(filtered()));if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('[data-practice-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.practiceId);if(l)openPracticeCards([l])});if($('selectAllLooks'))$('selectAllLooks').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=true);if($('clearLookSelection'))$('clearLookSelection').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=false);if($('printSelectedLooks'))$('printSelectedLooks').onclick=()=>{let ids=[...document.querySelectorAll('[data-look-select]:checked')].map(x=>x.dataset.lookSelect),looks=ids.map(id=>savedLooks.find(l=>l.id===id)).filter(Boolean);openPracticeCards(looks)};document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=()=>{let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks();render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;chartPositions=Object.fromEntries(l.positions.map(p=>[p.role+'|'+p.name,{...p}]));page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});bindChartDrag()}
-document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;playIndex=0;chartIndex=0;chartPositions={};render()});
-document.querySelectorAll('.toolbar select').forEach(e=>e.onchange=()=>{playIndex=0;chartIndex=0;chartPositions={};render()});$('resetF').onclick=()=>{['seasonF','weekF','teamF','unitF'].forEach(id=>$(id).value='');dashKoHash='';dashPuntHash='';dashFgHash='';playIndex=0;render()};
+function bind(){let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let ca=$('copyAdminBtn');if(ca)ca.onclick=()=>{const u=new URL(location.href);u.searchParams.set('admin','1');navigator.clipboard?.writeText(u.toString()).then(()=>alert('Admin link copied. You will still need the admin key when you edit.')).catch(()=>prompt('Copy your private admin link:',u.toString()))};let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadRosterFromSupabase();await loadHistoricalRoster('2025');await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let epd=$('refreshPlayerDetails');if(epd)epd.onclick=()=>enrichRosterBatches().catch(e=>alert('Player detail refresh failed: '+e.message));let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=()=>window.print();document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;if($('unitF'))$('unitF').value=viewType;playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};resetChartDrawing();render()};if(cn)cn.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex+1)%x.length;chartPositions={};resetChartDrawing();render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filtered());chartPositions=defaultPositions(r);resetChartDrawing();render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);chartPaths=[];let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look){chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));chartPaths=clonePaths(look.paths||[])}drawUndo=[];drawRedo=[];render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);mirrorPaths();render()};if($('saveNewLook'))$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filtered()));if($('assignBest'))$('assignBest').onclick=()=>assignBest(activeChartPlay(filtered()));if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('[data-practice-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.practiceId);if(l)openPracticeCards([l])});document.querySelectorAll('[data-fullpage-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.fullpageId);if(l)openFullPageLook(l)});if($('printCurrentLook'))$('printCurrentLook').onclick=printCurrentChartLook;document.querySelectorAll('.approveNear').forEach(b=>b.onclick=()=>approveNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.rejectNear').forEach(b=>b.onclick=()=>rejectNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.approveAllNear').forEach(b=>b.onclick=()=>approveAllNear(b.dataset.lookId));if($('selectAllLooks'))$('selectAllLooks').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=true);if($('clearLookSelection'))$('clearLookSelection').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=false);if($('printSelectedLooks'))$('printSelectedLooks').onclick=()=>{let ids=[...document.querySelectorAll('[data-look-select]:checked')].map(x=>x.dataset.lookSelect),looks=ids.map(id=>savedLooks.find(l=>l.id===id)).filter(Boolean);openPracticeCards(looks)};document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=()=>{let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks();render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;loadLookIntoChart(l);page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});
+document.querySelectorAll('[data-draw-mode]').forEach(b=>b.onclick=()=>{drawMode=b.dataset.drawMode;render()});
+if($('drawWidth'))$('drawWidth').onchange=e=>{drawWidth=Number(e.target.value)||5};
+if($('drawDash'))$('drawDash').onchange=e=>{drawDash=e.target.value||'solid'};
+if($('drawUndo'))$('drawUndo').onclick=drawUndoStep;if($('drawRedo'))$('drawRedo').onclick=drawRedoStep;
+if($('clearPaths'))$('clearPaths').onclick=()=>{if(chartPaths.length){pushDrawUndo();chartPaths=[];render()}};
+if($('copyPostSnap'))$('copyPostSnap').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length],pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look?.paths?.length){pushDrawUndo();chartPaths=clonePaths(look.paths);render()}else alert('The previous saved look has no post-snap paths yet.')};
+bindChartDrag();bindChartDrawing()}
+document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});
+document.querySelectorAll('.toolbar select').forEach(e=>e.onchange=()=>{playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});$('resetF').onclick=()=>{['seasonF','weekF','teamF','unitF'].forEach(id=>$(id).value='');dashKoHash='';dashPuntHash='';dashFgHash='';playIndex=0;render()};
 (async()=>{
   await loadProjectCloud();
   await loadRosterFromSupabase();
