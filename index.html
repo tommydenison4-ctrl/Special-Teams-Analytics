@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ULM Special Teams Intelligence V11.9</title>
+<title>ULM Special Teams Intelligence V12.0</title>
 <style>
 :root{--bg:#071018;--panel:#0e1c27;--panel2:#122633;--line:#294653;--text:#f3f7f9;--muted:#91a9b8;--gold:#EBA800;--maroon:#8A2432;--green:#4f8e12;--blue:#2f68df;--yellow:#d4a700;--red:#9a252c;--purple:#8c3caf}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#17303d,#071018 45%);color:var(--text);font:14px/1.4 Inter,Segoe UI,Arial,sans-serif}
@@ -34,7 +34,7 @@ main{padding:18px 22px 44px}.toolbar,.unitTabs,.playControls{display:flex;gap:8p
 .note{margin-top:12px;border-left:3px solid var(--gold);padding-left:10px;color:var(--muted);font-size:12px}
 table.log{width:100%;border-collapse:collapse;font-size:12px}table.log th,table.log td{padding:8px;border-bottom:1px solid #223945;text-align:left;white-space:nowrap}table.log th{color:var(--muted);position:sticky;top:0;background:var(--panel)}.scroll{max-height:450px;overflow:auto}
 
-.chartShell{display:grid;grid-template-columns:minmax(560px,1fr) 360px;gap:14px}.chartField{height:680px;position:relative;border:2px solid #fff;border-radius:10px;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden;touch-action:none}.chartField:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0,transparent calc(10% - 1px),rgba(255,255,255,.18) calc(10% - 1px),rgba(255,255,255,.18) 10%)}
+.chartShell{display:grid;grid-template-columns:minmax(560px,1fr) 360px;gap:14px}.chartField{height:680px;position:relative;border:2px solid #fff;border-radius:10px;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden;touch-action:none}.chartField:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0,transparent calc(10% - 1px),rgba(255,255,255,.18) calc(10% - 1px),rgba(255,255,255,.18) 10%)}.chartOutcomeBar{position:absolute;left:10px;right:10px;top:10px;z-index:9;background:rgba(6,16,24,.88);border:1px solid rgba(255,255,255,.28);border-radius:10px;padding:9px 12px 8px;backdrop-filter:blur(2px);pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}.chartOutcomeLine{display:flex;gap:12px;flex-wrap:wrap;align-items:center;line-height:1.35}.chartOutcomeLine + .chartOutcomeLine{margin-top:4px}.chartOutcomePiece{font-size:12px;color:#f3f7f9}.chartOutcomePiece b{color:var(--gold);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}.chartOutcomeEmpty{color:#b8c8d2}.repSummary{margin:0 0 12px 0;padding:10px 12px;border:1px solid #d7d7d7;border-radius:10px;background:#fff;font-size:12px;line-height:1.45}.repSummary b{color:#61142d;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}
 .dragPlayer{position:absolute;transform:translate(-50%,-50%);width:43px;height:43px;border-radius:50%;background:#fff;color:#071018;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;z-index:8;cursor:grab;user-select:none;box-shadow:0 3px 9px rgba(0,0,0,.35)}.dragPlayer:active{cursor:grabbing}.dragPlayer.return{border-color:#4a9cff}.dragPlayer.kicker{border-color:#ef6767}.dragPlayer.snapper{border-color:#a56be3}.dragPlayer.tackler{border-color:#ff4d4f!important;background:#fff1f1!important;box-shadow:0 0 0 3px rgba(255,77,79,.18),0 3px 9px rgba(0,0,0,.35)}.dragPlayer.assistTackler{border-style:dashed}.dragPlayer.selected{outline:3px solid #fff;outline-offset:2px}
 .chartPanel{display:flex;flex-direction:column;gap:10px}.fieldActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.primary{background:var(--maroon);border-color:#A83A48}.success{background:#255f43;border-color:#3e8c67}.danger{background:#6f2228;border-color:#a6434b}.wide{grid-column:1/-1}.input{width:100%;background:#0a1821;color:#fff;border:1px solid var(--line);border-radius:8px;padding:9px}.matchBox{padding:11px;border:1px solid var(--line);border-radius:10px;background:#0a1922}.matchGood{border-color:#3e8c67}.matchNear{border-color:#b58b35}.lookList{display:flex;flex-direction:column;gap:9px}.lookItem{border:1px solid var(--line);border-radius:11px;padding:11px;background:#0b1922;cursor:pointer}.lookItem:hover{border-color:#6f8795}.lookItem.active{border-color:var(--gold)}.lookHead{display:flex;justify-content:space-between;gap:10px}.lookName{font-size:17px;font-weight:800}.lookMeta{font-size:11px;color:var(--muted)}.repRows{margin-top:10px;display:none}.lookItem.open .repRows{display:block}.repRow{display:grid;grid-template-columns:75px 1fr 65px 70px;gap:7px;padding:7px 0;border-top:1px solid #203743;font-size:11px}.repRow button{padding:5px 7px;font-size:10px}.coordTable{max-height:240px;overflow:auto}.coordLine{display:grid;grid-template-columns:54px 1fr 42px 42px;gap:6px;padding:5px 0;border-bottom:1px solid #1f3440;font-size:11px}.status{font-size:12px;color:var(--muted);min-height:18px}.badgeExact{color:#81d4a5}.badgeNear{color:#e6c36f}.badgeNew{color:#f08e94}.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.sourceData{font-size:11px;color:var(--muted);line-height:1.6}.sourceData b{color:#fff}.libraryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.libField{height:320px;position:relative;border:2px solid #fff;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden}.libField:before{content:"";position:absolute;left:0;right:0;top:48%;height:2px;background:#fff}.libDot{position:absolute;transform:translate(-50%,-50%);width:29px;height:29px;border-radius:50%;background:#fff;color:#071018;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900}.lookControls{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.lookControls button{padding:6px 8px;font-size:11px}
 @media(max-width:1150px){.chartShell{grid-template-columns:1fr}.libraryGrid{grid-template-columns:1fr}}
@@ -1590,6 +1590,43 @@ function tackleDisplayNote(r,type,side){
   if(hits.length)return `<div class="note">Red circle = tackle recorded on this unit. Dashed red = tackle assist.</div>`;
   return `<div class="note">Tackle recorded by the opposite unit: ${esc(t.all.join(', '))}</div>`;
 }
+function cleanResultLabel(r){
+  let raw=String(v(r,'pff_KICKRESULT')||'').trim();
+  if(!raw)return 'No result recorded';
+  return raw.replace(/_/g,' ' ).replace(/\s+/g,' ' ).replace(/\b\w/g,m=>m.toUpperCase());
+}
+function chartReturnText(r){
+  let result=String(v(r,'pff_KICKRESULT')||'').toUpperCase();
+  let y=n(v(r,'pff_RETURNYARDS'));
+  if(y!=null)return `${y} yards`;
+  if(/TOUCHBACK|FAIR\s*CATCH|DOWNED|OUT OF BOUNDS|OOB|BLOCKED/.test(result))return 'none';
+  return 'none recorded';
+}
+function chartTacklerText(r){
+  let t=tackleInfo(r),parts=[];
+  if(t.solo.length)parts.push(`Tackle: ${t.solo.join(', ')}`);
+  if(t.assist.length)parts.push(`Assist: ${t.assist.join(', ')}`);
+  return parts.length?parts.join(' • '):'none recorded by PFF';
+}
+function chartOutcomeSummary(r){
+  return {
+    result:cleanResultLabel(r),
+    returnText:chartReturnText(r),
+    tacklers:chartTacklerText(r),
+    hang:v(r,'pff_HANGTIME')||'—',
+    kickDir:v(r,'pff_KICKDIRACTUAL')||'—',
+    returnDir:v(r,'pff_RETURNDIRECTION')||'—'
+  };
+}
+function chartOutcomeBar(r){
+  let s=chartOutcomeSummary(r);
+  return `<div class="chartOutcomeBar"><div class="chartOutcomeLine"><span class="chartOutcomePiece"><b>Result</b>${esc(s.result)}</span><span class="chartOutcomePiece"><b>Return</b>${esc(s.returnText)}</span><span class="chartOutcomePiece"><b>Tacklers</b>${esc(s.tacklers)}</span></div><div class="chartOutcomeLine"><span class="chartOutcomePiece"><b>Hang</b>${esc(String(s.hang))}</span><span class="chartOutcomePiece"><b>Kick dir</b>${esc(String(s.kickDir))}</span><span class="chartOutcomePiece"><b>Return dir</b>${esc(String(s.returnDir))}</span></div></div>`;
+}
+function repSummaryMarkup(r){
+  let s=chartOutcomeSummary(r);
+  return `<div class="repSummary"><div><span><b>Result</b>${esc(s.result)}</span> &nbsp; <span><b>Return</b>${esc(s.returnText)}</span></div><div style="margin-top:4px"><span><b>Tacklers</b>${esc(s.tacklers)}</span></div></div>`;
+}
+
 function kickoffTacklerStats(a,mode){
   let team=selectedTeam();
   if(!team)return [];
@@ -2018,7 +2055,7 @@ function chartPage(a){
   let assigned=repAssignments[playKey(r)],label=viewType==='PUNT'?(viewSide==='unit'?'Punt Team':'Punt Return'):(viewSide==='unit'?'Kickoff Coverage':'Kickoff Return');
   return title(`${label} Look Charting`,'Set the pre-snap alignment, then draw the post-snap responsibility exactly as you coach it.')+unitTabs()+
   `<div class="playControls"><button id="chartPrev">Previous rep</button><button id="chartNext">Next rep</button><button id="copyPrev">Copy previous chart</button><button id="resetChart">Reset positions</button><span class="viz-badge">Rep ${chartIndex+1} of ${plays.length}</span></div>
-  <div class="chartShell"><div class="chartField" id="chartField"><div class="los"></div><div class="losLabel">REFERENCE LINE</div>${depthOverlay(viewType,viewSide)}${pathsOverlay(chartPaths)}${dots}</div>
+  <div class="chartShell"><div class="chartField" id="chartField">${chartOutcomeBar(r)}<div class="los"></div><div class="losLabel">REFERENCE LINE</div>${depthOverlay(viewType,viewSide)}${pathsOverlay(chartPaths)}${dots}</div>
   <div class="chartPanel">${chartWhiteboardTools()}<div class="playCard">${sourceSummary(r)}${postSnapTagSummary(r)}${assigned?`<div class="note">Assigned to ${savedLooks.find(x=>x.id===assigned.lookId)?.name||'saved look'}</div>`:''}</div>${matchMarkup()}
   <div class="playCard"><div class="eyebrow">Save / assign</div><input class="input" id="lookName" placeholder="Look name, e.g. Punt Return 2x Vice"><div class="fieldActions" style="margin-top:8px"><button class="primary wide" id="saveNewLook">Save as new look</button><button class="success wide" id="assignBest">Assign to best match</button><button id="printCurrentLook">Full Page Print</button><button id="mirrorChart">Mirror alignment + paths</button><button id="exportLooks">Export looks</button></div><div class="status" id="chartStatus"></div></div>
   <div class="playCard"><div class="eyebrow">Player coordinates</div><div class="coordTable"><div class="coordLine"><b>Role</b><span>Player</span><b>X</b><b>Y</b></div>${coords}</div></div></div></div>
@@ -2745,6 +2782,7 @@ function fullPageLookSvg(l){
 }
 function fullPageLookDocument(l){
   const field=fullPageLookSvg(l);
+  const repSummary=l.repSummary?`<div class="repSummary"><div><span><b>Result</b>${esc(l.repSummary.result||'No result recorded')}</span> &nbsp; <span><b>Return</b>${esc(l.repSummary.returnText||'none recorded')}</span></div><div style="margin-top:4px"><span><b>Tacklers</b>${esc(l.repSummary.tacklers||'none recorded by PFF')}</span></div></div>`:'';
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(l.name)} - Full Page Look</title>
   <style>
   @page{size:letter portrait;margin:.4in}
@@ -2774,6 +2812,7 @@ function fullPageLookDocument(l){
         <div class="titleLine" contenteditable="true"></div>
         <div class="titleLine" contenteditable="true"></div>
       </div>
+      ${repSummary}
       <div class="fieldShell">${field}</div>
     </section>
   </body></html>`;
@@ -2789,7 +2828,7 @@ function openFullPageLook(l){
 function printCurrentChartLook(){
   let r=activeChartPlay(filtered());if(!r)return;
   let name=($('lookName')?.value||'').trim();
-  let temp={id:'TEMP',name:name||'',unit:viewType,side:viewSide,positions:normalizedPositions(chartPositions),paths:clonePaths(chartPaths),repKeys:[playKey(r)]};
+  let temp={id:'TEMP',name:name||'',unit:viewType,side:viewSide,positions:normalizedPositions(chartPositions),paths:clonePaths(chartPaths),repKeys:[playKey(r)],repSummary:chartOutcomeSummary(r)};
   openFullPageLook(temp)
 }
 
