@@ -1,13 +1,25 @@
-Special Teams Analytics V11.6 — Correct LOS Side
+Special Teams Analytics V11.8 — Hash Direction Filters
 
-The previous change moved the punt front in the wrong direction.
+Hash Intelligence now clearly separates two different ideas:
 
-On this chart:
-- the punter/backfield is BELOW the line of scrimmage
-- therefore the punt line and gunners must also be just BELOW the LOS
-- larger Y values move toward the punt team's backfield
+KICK DIRECTION
+- Source: pff_KICKDIRACTUAL
+- Means where the BALL was actually kicked
+- Left / Middle / Right
 
-V11.6 sets GL, GR, PLS, PLT, PLG, PRG and PRT to Y=52 while the LOS remains at 48.
-That places the full player circles on the punt-team side of the line instead of downfield.
+RETURN DIRECTION
+- Source: pff_RETURNDIRECTION
+- Means where the RETURN actually went after the ball was caught
+- Left / Middle / Right
 
-All V11.5 features remain included.
+Kickoff Team / Coverage filters:
+- Hash
+- Kick Direction — Ball
+
+Kickoff Return filters:
+- Hash
+- Kick Direction — Ball
+- Return Direction — Return
+
+The report explicitly labels the distinction so nobody has to guess whether "Right" means the kick or the return.
+All active season, week and team filters still apply.
