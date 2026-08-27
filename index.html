@@ -995,63 +995,67 @@ function historicalPlayersByNumber(num,season){
 }
 function strictIdentityCheck(num){
   const season=activeSeason();
-  const current=rosterByNumber(num);
+  const currentByNum=rosterByNumber(num);
 
   if(!season || season==='2026'){
     return {
       status:'verified',
       label:'CURRENT ROSTER',
       allowed:true,
-      player:current,
-      current,
-      historical:null
+      player:currentByNum,
+      current:currentByNum,
+      historical:null,
+      changedNumber:false
     };
   }
 
   const matches=historicalPlayersByNumber(num,season);
 
-  if(!current){
+  // If the historical roster has one exact jersey identity, that historical
+  // player owns the historical PFF stats. Then locate that SAME NAME anywhere
+  // on the current roster instead of assuming the jersey number stayed fixed.
+  if(matches.length===1){
+    const historical=matches[0];
+    const currentByName=currentRosterByName(historical.name);
+
+    if(currentByName){
+      const oldNum=normNum(historical.number||num),nowNum=normNum(currentByName.number);
+      const changedNumber=!!(oldNum&&nowNum&&oldNum!==nowNum);
+      return {
+        status:changedNumber?'changed':'verified',
+        label:changedNumber?`ON 2026 ROSTER • NOW #${nowNum}`:`CONFIRMED ${season}`,
+        allowed:true,
+        player:{...historical,...currentByName,number:historical.number||num},
+        current:currentByName,
+        historical,
+        changedNumber
+      };
+    }
+
+    // Still show the historical player. This is useful for Week 1 prep and is
+    // safer than attaching his stats to a different current player wearing the
+    // same number.
     return {
-      status:'unverified',
-      label:'DATA HIDDEN',
-      allowed:false,
-      player:null,
+      status:'offRoster',
+      label:'NOT ON 2026 ROSTER',
+      allowed:true,
+      player:historical,
       current:null,
-      historical:null
+      historical,
+      changedNumber:false
     };
   }
 
-  if(matches.length!==1){
-    return {
-      status:'unverified',
-      label:'DATA HIDDEN',
-      allowed:false,
-      player:current,
-      current,
-      historical:null
-    };
-  }
-
-  const historical=matches[0];
-
-  if(nameKey(current.name)!==nameKey(historical.name)){
-    return {
-      status:'changed',
-      label:'DATA HIDDEN',
-      allowed:false,
-      player:current,
-      current,
-      historical
-    };
-  }
-
+  // Do not make Player Intelligence disappear if historical roster identity is
+  // unavailable. Keep the PFF data visible but do not claim a verified identity.
   return {
-    status:'verified',
-    label:`CONFIRMED ${season}`,
+    status:'unverified',
+    label:'2025 IDENTITY UNVERIFIED',
     allowed:true,
-    player:{...historical,...current,number:historical.number},
-    current,
-    historical
+    player:null,
+    current:null,
+    historical:null,
+    changedNumber:false
   };
 }
 function verifiedIdentity(num){return strictIdentityCheck(num)}
@@ -3227,7 +3231,7 @@ function playerPage(a){
     ?`Official roster loaded: <b>${rosterData.length}</b> players.`
     :`No roster.json loaded yet. Player statistics still come directly from PFF; roster sync adds names, photos and bios.`;
   return reportBanner('Player Intelligence')+
-    title('Player Intelligence','Strict identity mode: historical PFF stats appear only when the historical roster identity and current player identity match exactly. Any mismatch, duplicate jersey number or unverified identity is excluded. Kickoff Team Tacklers shows your team&#39;s kickoff-coverage tacklers. Punt Team Tacklers shows your team&#39;s punt-coverage tacklers.')+
+    title('Player Intelligence','Historical PFF stats stay attached to the actual historical player. If that player is on the 2026 roster under a different jersey number, the app keeps the 2025 stats with him and identifies the number change. Players not on the 2026 roster remain visible for Week 1 prep instead of disappearing. Kickoff Team Tacklers shows your team&#39;s kickoff-coverage tacklers. Punt Team Tacklers shows your team&#39;s punt-coverage tacklers.')+
     `<div class="card"><div class="context">Active team: <b>${selectedTeam()||inferredHomeTeam()||'None selected'}</b>. ${rosterNote}</div></div>`+
     (CLOUD.readOnly?'':rosterManager())+
     categoryTabs()+
