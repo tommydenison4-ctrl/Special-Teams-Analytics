@@ -1,25 +1,12 @@
-Special Teams Analytics V11.8 — Hash Direction Filters
+Special Teams Analytics V12.4
 
-Hash Intelligence now clearly separates two different ideas:
+Fix:
+- V12.3 contained one invalid JavaScript team-map key: M-OH.
+- That single syntax error stopped the app from rendering, which caused the blank dashboard seen in the screenshot.
+- V12.4 quotes that key correctly and the full application JavaScript passes Node syntax validation.
 
-KICK DIRECTION
-- Source: pff_KICKDIRACTUAL
-- Means where the BALL was actually kicked
-- Left / Middle / Right
-
-RETURN DIRECTION
-- Source: pff_RETURNDIRECTION
-- Means where the RETURN actually went after the ball was caught
-- Left / Middle / Right
-
-Kickoff Team / Coverage filters:
-- Hash
-- Kick Direction — Ball
-
-Kickoff Return filters:
-- Hash
-- Kick Direction — Ball
-- Return Direction — Return
-
-The report explicitly labels the distinction so nobody has to guess whether "Right" means the kick or the return.
-All active season, week and team filters still apply.
+V12.3 features retained:
+- expanded readable team-name mapping, including MSSO -> Missouri
+- green kicker/punter outline unless tackle red overrides it
+- jersey number inside player circles with role beneath
+- current-roster / not-on-current-roster status in player hover information
