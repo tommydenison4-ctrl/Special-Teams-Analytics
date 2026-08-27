@@ -1,12 +1,7 @@
-Special Teams Analytics V12.4
+Special Teams Analytics V12.8
 
-Fix:
-- V12.3 contained one invalid JavaScript team-map key: M-OH.
-- That single syntax error stopped the app from rendering, which caused the blank dashboard seen in the screenshot.
-- V12.4 quotes that key correctly and the full application JavaScript passes Node syntax validation.
-
-V12.3 features retained:
-- expanded readable team-name mapping, including MSSO -> Missouri
-- green kicker/punter outline unless tackle red overrides it
-- jersey number inside player circles with role beneath
-- current-roster / not-on-current-roster status in player hover information
+- Moved the play-result / opponent / score / PFF ID information box above the field.
+- Punt Team and Kickoff Coverage receive a taller chart field and a lower reference line, creating roughly 40+ yards of clean lane-drawing space above the line.
+- Coverage player defaults were shifted down to preserve their correct side of the line.
+- 2026 roster status now uses the 2025 historical identity and matches that player by name anywhere on the 2026 roster, so number changes do not incorrectly mark a returning player red.
+- 2025 historical roster now loads automatically on startup.

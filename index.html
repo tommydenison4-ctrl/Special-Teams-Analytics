@@ -27,15 +27,15 @@ main{padding:18px 22px 44px}.toolbar,.unitTabs,.playControls{display:flex;gap:8p
 .depthRuler{position:absolute;left:8px;top:50%;bottom:3%;width:32px;border-left:1px solid rgba(255,255,255,.75);z-index:3;pointer-events:none}
 .depthTick{position:absolute;left:-4px;width:9px;border-top:1px solid rgba(255,255,255,.8)}
 .depthTick span{position:absolute;left:10px;top:-8px;color:#fff;font-size:9px;white-space:nowrap}
-.player{position:absolute;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:#fff;color:#071018;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;z-index:5}.player.return{border-color:#4a9cff}.player.kicker{border-color:#2aa84a}.player.snapper{border-color:#a56be3}.player.returnerTarget{background:#fff8d6!important;box-shadow:0 0 0 4px rgba(235,168,0,.34)}.player.tackler{border-color:#ff4d4f!important;background:#fff1f1!important;box-shadow:0 0 0 3px rgba(255,77,79,.18)}.player.assistTackler{border-style:dashed}.player:hover{transform:translate(-50%,-50%) scale(1.18);z-index:10}.playerInner,.dragPlayerInner{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}.playerNum,.dragPlayerNum{font-size:13px;font-weight:900;color:#071018}.playerNum.offRoster,.dragPlayerNum.offRoster{color:#c62d2d}.playerNum.onRoster,.dragPlayerNum.onRoster{color:#071018}.playerRole,.dragPlayerRole{font-size:7px;opacity:.86;margin-top:1px;letter-spacing:.02em}.smallField .playerNum{font-size:11px}.smallField .playerRole{font-size:6px}.tip{display:none;position:absolute;left:43px;top:-7px;min-width:190px;background:#061018;color:#fff;border:1px solid var(--line);border-radius:7px;padding:8px;font-size:11px;font-weight:500}.player:hover .tip{display:block}
+.player{position:absolute;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:#fff;color:#071018;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;z-index:5}.player.return{border-color:#4a9cff}.player.kicker{border-color:#2aa84a}.player.snapper{border-color:#a56be3}.player.returnerTarget{background:#ffef00!important;border-color:#ffc400!important;box-shadow:0 0 0 5px rgba(255,225,0,.45),0 0 18px rgba(255,225,0,.35)!important}.player.tackler{border-color:#ff4d4f!important;background:#fff1f1!important;box-shadow:0 0 0 3px rgba(255,77,79,.18)}.player.assistTackler{border-style:dashed}.player:hover{transform:translate(-50%,-50%) scale(1.18);z-index:10}.playerInner,.dragPlayerInner{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}.playerNum,.dragPlayerNum{font-size:13px;font-weight:900;color:#071018}.playerNum.offRoster,.dragPlayerNum.offRoster{color:#c62d2d}.playerNum.onRoster,.dragPlayerNum.onRoster{color:#071018}.playerNum.changedRoster,.dragPlayerNum.changedRoster{color:#d67a00}.playerRole,.dragPlayerRole{font-size:7px;opacity:.86;margin-top:1px;letter-spacing:.02em}.smallField .playerNum{font-size:11px}.smallField .playerRole{font-size:6px}.tip{display:none;position:absolute;left:43px;top:-7px;min-width:190px;background:#061018;color:#fff;border:1px solid var(--line);border-radius:7px;padding:8px;font-size:11px;font-weight:500}.player:hover .tip{display:block}
 .structureSide{display:flex;flex-direction:column;gap:10px}.playCard{background:#0c1b25;border:1px solid var(--line);border-radius:11px;padding:12px}.playCard b{font-size:17px}.roleGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.roleChip{background:#102532;border:1px solid #294957;border-radius:8px;padding:7px;font-size:11px}.roleChip strong{color:var(--gold)}
 .familyGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.family{background:#0b1821;border:1px solid var(--line);border-radius:12px;padding:12px}.family h3{margin:0;font-size:17px}.family .smallField{height:330px;position:relative;margin-top:10px;border:2px solid #fff;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden}.smallField:before{content:"";position:absolute;left:0;right:0;top:48%;height:2px;background:#fff}.smallField .player{width:30px;height:30px;font-size:7px;border-width:2px}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}.mini{background:#10232e;border:1px solid #294957;border-radius:8px;padding:7px}.mini b{display:block;font-size:18px}.mini span{font-size:10px;color:var(--muted)}
 .note{margin-top:12px;border-left:3px solid var(--gold);padding-left:10px;color:var(--muted);font-size:12px}
 table.log{width:100%;border-collapse:collapse;font-size:12px}table.log th,table.log td{padding:8px;border-bottom:1px solid #223945;text-align:left;white-space:nowrap}table.log th{color:var(--muted);position:sticky;top:0;background:var(--panel)}.scroll{max-height:450px;overflow:auto}
 
-.chartShell{display:grid;grid-template-columns:minmax(560px,1fr) 360px;gap:14px}.chartField{height:680px;position:relative;border:2px solid #fff;border-radius:10px;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden;touch-action:none}.chartField:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0,transparent calc(10% - 1px),rgba(255,255,255,.18) calc(10% - 1px),rgba(255,255,255,.18) 10%)}.chartOutcomeBar{position:absolute;left:10px;right:10px;top:10px;z-index:9;background:rgba(6,16,24,.88);border:1px solid rgba(255,255,255,.28);border-radius:10px;padding:9px 12px 8px;backdrop-filter:blur(2px);pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}.chartOutcomeLine{display:flex;gap:12px;flex-wrap:wrap;align-items:center;line-height:1.35}.chartOutcomeLine + .chartOutcomeLine{margin-top:4px}.chartOutcomePiece{font-size:12px;color:#f3f7f9}.chartOutcomePiece b{color:var(--gold);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}.chartOutcomeEmpty{color:#b8c8d2}.repSummary{margin:0 0 12px 0;padding:10px 12px;border:1px solid #d7d7d7;border-radius:10px;background:#fff;font-size:12px;line-height:1.45}.repSummary b{color:#61142d;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}
-.dragPlayer{position:absolute;transform:translate(-50%,-50%);width:43px;height:43px;border-radius:50%;background:#fff;color:#071018;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;z-index:8;cursor:grab;user-select:none;box-shadow:0 3px 9px rgba(0,0,0,.35)}.dragPlayer:active{cursor:grabbing}.dragPlayer.return{border-color:#4a9cff}.dragPlayer.kicker{border-color:#2aa84a}.dragPlayer.snapper{border-color:#a56be3}.dragPlayer.returnerTarget{background:#fff8d6!important;box-shadow:0 0 0 4px rgba(235,168,0,.34),0 3px 9px rgba(0,0,0,.35)}.dragPlayer.tackler{border-color:#ff4d4f!important;background:#fff1f1!important;box-shadow:0 0 0 3px rgba(255,77,79,.18),0 3px 9px rgba(0,0,0,.35)}.dragPlayer.assistTackler{border-style:dashed}.dragPlayer.selected{outline:3px solid #fff;outline-offset:2px}
+.chartShell{display:grid;grid-template-columns:minmax(560px,1fr) 360px;gap:14px}.chartField{height:680px;position:relative;border:2px solid #fff;border-radius:10px;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden;touch-action:none}.chartField:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0,transparent calc(10% - 1px),rgba(255,255,255,.18) calc(10% - 1px),rgba(255,255,255,.18) 10%)}.chartOutcomeBar{position:relative;left:auto;right:auto;top:auto;z-index:9;background:rgba(6,16,24,.96);border:1px solid rgba(255,255,255,.28);border-radius:10px;padding:9px 12px 8px;backdrop-filter:blur(2px);pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.25);margin-bottom:10px}.chartField.coverageSpace{height:760px}.chartField.coverageSpace .los{top:62%}.chartField.coverageSpace .losLabel{top:59.5%}.chartField.coverageSpace:before{background:repeating-linear-gradient(0deg,transparent 0,transparent calc(8.333% - 1px),rgba(255,255,255,.18) calc(8.333% - 1px),rgba(255,255,255,.18) 8.333%)}.chartOutcomeLine{display:flex;gap:12px;flex-wrap:wrap;align-items:center;line-height:1.35}.chartOutcomeLine + .chartOutcomeLine{margin-top:4px}.chartOutcomePiece{font-size:12px;color:#f3f7f9}.chartOutcomePiece b{color:var(--gold);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}.chartOutcomeEmpty{color:#b8c8d2}.repSummary{margin:0 0 12px 0;padding:10px 12px;border:1px solid #d7d7d7;border-radius:10px;background:#fff;font-size:12px;line-height:1.45}.repSummary b{color:#61142d;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}
+.dragPlayer{position:absolute;transform:translate(-50%,-50%);width:43px;height:43px;border-radius:50%;background:#fff;color:#071018;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;z-index:8;cursor:grab;user-select:none;box-shadow:0 3px 9px rgba(0,0,0,.35)}.dragPlayer:active{cursor:grabbing}.dragPlayer.return{border-color:#4a9cff}.dragPlayer.kicker{border-color:#2aa84a}.dragPlayer.snapper{border-color:#a56be3}.dragPlayer.returnerTarget{background:#ffef00!important;border-color:#ffc400!important;box-shadow:0 0 0 5px rgba(255,225,0,.45),0 0 18px rgba(255,225,0,.35),0 3px 9px rgba(0,0,0,.35)!important}.dragPlayer.tackler{border-color:#ff4d4f!important;background:#fff1f1!important;box-shadow:0 0 0 3px rgba(255,77,79,.18),0 3px 9px rgba(0,0,0,.35)}.dragPlayer.assistTackler{border-style:dashed}.dragPlayer.selected{outline:3px solid #fff;outline-offset:2px}
 .chartPanel{display:flex;flex-direction:column;gap:10px}.fieldActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.primary{background:var(--maroon);border-color:#A83A48}.success{background:#255f43;border-color:#3e8c67}.danger{background:#6f2228;border-color:#a6434b}.wide{grid-column:1/-1}.input{width:100%;background:#0a1821;color:#fff;border:1px solid var(--line);border-radius:8px;padding:9px}.matchBox{padding:11px;border:1px solid var(--line);border-radius:10px;background:#0a1922}.matchGood{border-color:#3e8c67}.matchNear{border-color:#b58b35}.lookList{display:flex;flex-direction:column;gap:9px}.lookItem{border:1px solid var(--line);border-radius:11px;padding:11px;background:#0b1922;cursor:pointer}.lookItem:hover{border-color:#6f8795}.lookItem.active{border-color:var(--gold)}.lookHead{display:flex;justify-content:space-between;gap:10px}.lookName{font-size:17px;font-weight:800}.lookMeta{font-size:11px;color:var(--muted)}.repRows{margin-top:10px;display:none}.lookItem.open .repRows{display:block}.repRow{display:grid;grid-template-columns:75px 1fr 65px 70px;gap:7px;padding:7px 0;border-top:1px solid #203743;font-size:11px}.repRow button{padding:5px 7px;font-size:10px}.coordTable{max-height:240px;overflow:auto}.coordLine{display:grid;grid-template-columns:54px 1fr 42px 42px;gap:6px;padding:5px 0;border-bottom:1px solid #1f3440;font-size:11px}.status{font-size:12px;color:var(--muted);min-height:18px}.badgeExact{color:#81d4a5}.badgeNear{color:#e6c36f}.badgeNew{color:#f08e94}.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.sourceData{font-size:11px;color:var(--muted);line-height:1.6}.sourceData b{color:#fff}.libraryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.libField{height:320px;position:relative;border:2px solid #fff;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden}.libField:before{content:"";position:absolute;left:0;right:0;top:48%;height:2px;background:#fff}.libDot{position:absolute;transform:translate(-50%,-50%);width:29px;height:29px;border-radius:50%;background:#fff;color:#071018;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900}.lookControls{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.lookControls button{padding:6px 8px;font-size:11px}
 @media(max-width:1150px){.chartShell{grid-template-columns:1fr}.libraryGrid{grid-template-columns:1fr}}
 
@@ -44,7 +44,7 @@ table.log{width:100%;border-collapse:collapse;font-size:12px}table.log th,table.
 .playerFilters{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:9px;margin-bottom:14px}.playerFilters label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.playerFilters select,.playerFilters input{display:block;width:100%;margin-top:4px;background:#0a1821;color:#fff;border:1px solid var(--line);border-radius:8px;padding:8px}.playerTable{width:100%;border-collapse:collapse}.playerTable th,.playerTable td{padding:9px;border-bottom:1px solid #223945;text-align:right}.playerTable th:first-child,.playerTable td:first-child{text-align:left}.playerTable tr[data-player]{cursor:pointer}.playerTable tr[data-player]:hover{background:#132936}.playerTable tr.selected{background:#173341}.profileHead{display:flex;justify-content:space-between;align-items:start;gap:12px}.profileName{font-size:24px;font-weight:900}.chartCard{background:#091720;border:1px solid var(--line);border-radius:12px;padding:12px}.chartCard h3{margin:0 0 3px}.scatter{width:100%;height:330px;display:block;background:#fff;border-radius:8px}.chartGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.dotTip{position:fixed;display:none;z-index:100;background:#061018;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:11px;pointer-events:none}.filterSummary{font-size:11px;color:var(--muted);margin:7px 0}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 8px;margin:2px;font-size:10px}.opportunity{font-size:34px;font-weight:900}.smallNote{font-size:10px;color:var(--muted)}
 @media(max-width:1100px){.playerFilters{grid-template-columns:repeat(3,1fr)}.chartGrid{grid-template-columns:1fr}}
 
-.playerCardGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.playerCard{background:linear-gradient(145deg,#101d26,#071117);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:330px}.playerPhoto{height:190px;background:linear-gradient(145deg,#5b1221,#d2a43b);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}.playerPhoto img{width:100%;height:100%;object-fit:cover;object-position:top center}.playerInitials{font-size:52px;font-weight:900;color:white;letter-spacing:-3px}.playerNo{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 9px;font-size:18px;font-weight:900;color:#fff}.playerNo.offRoster{color:#ff5a5f}.playerNo.onRoster{color:#fff}.playerBody{padding:13px}.playerBody h3{margin:0 0 3px;font-size:18px}.playerMeta{font-size:11px;color:var(--muted);line-height:1.55}.playerStatRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.playerStat{border:1px solid var(--line);border-radius:8px;padding:7px;text-align:center;background:#071018}.playerStat b{display:block;font-size:16px}.playerStat span{font-size:9px;color:var(--muted);text-transform:uppercase}.bioSnippet{font-size:10px;color:#c8d0d5;line-height:1.45;margin-top:9px;min-height:42px}.rosterTools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:end}.rosterBadge{display:inline-block;border:1px solid #d2a43b;color:#f1cf76;border-radius:999px;padding:3px 7px;font-size:9px;margin-left:5px}.profileLink{display:inline-block;margin-top:8px;font-size:10px;color:#f1cf76;text-decoration:none}.profileLink:hover{text-decoration:underline}@media(max-width:1250px){.playerCardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.playerCardGrid{grid-template-columns:1fr}.rosterTools{grid-template-columns:1fr}}
+.playerCardGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.playerCard{background:linear-gradient(145deg,#101d26,#071117);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:330px}.playerPhoto{height:190px;background:linear-gradient(145deg,#5b1221,#d2a43b);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}.playerPhoto img{width:100%;height:100%;object-fit:cover;object-position:top center}.playerInitials{font-size:52px;font-weight:900;color:white;letter-spacing:-3px}.playerNo{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 9px;font-size:18px;font-weight:900;color:#fff}.playerNo.offRoster{color:#ff5a5f}.playerNo.onRoster{color:#fff}.playerNo.changedRoster{color:#ffb14a}.playerBody{padding:13px}.playerBody h3{margin:0 0 3px;font-size:18px}.playerMeta{font-size:11px;color:var(--muted);line-height:1.55}.playerStatRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.playerStat{border:1px solid var(--line);border-radius:8px;padding:7px;text-align:center;background:#071018}.playerStat b{display:block;font-size:16px}.playerStat span{font-size:9px;color:var(--muted);text-transform:uppercase}.bioSnippet{font-size:10px;color:#c8d0d5;line-height:1.45;margin-top:9px;min-height:42px}.rosterTools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:end}.rosterBadge{display:inline-block;border:1px solid #d2a43b;color:#f1cf76;border-radius:999px;padding:3px 7px;font-size:9px;margin-left:5px}.profileLink{display:inline-block;margin-top:8px;font-size:10px;color:#f1cf76;text-decoration:none}.profileLink:hover{text-decoration:underline}@media(max-width:1250px){.playerCardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.playerCardGrid{grid-template-columns:1fr}.rosterTools{grid-template-columns:1fr}}
 
 .reportBanner{display:none}.reportActions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.reportActions input{min-width:220px}.playerCategoryTabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.playerCategoryTabs button.active{background:var(--maroon);border-color:#A83A48}.playerHero{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start}.playerHero .playerPhoto{height:270px;border-radius:12px}.playerBioCard h2{margin:0 0 5px;font-size:30px}.splitGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.splitTable{width:100%;border-collapse:collapse;font-size:12px}.splitTable th,.splitTable td{padding:8px;border-bottom:1px solid #263d49;text-align:left}.splitTable th{color:var(--muted)}.printOnly{display:none}.noPrint{}.report-mode .reportBanner{display:block;background:#fff;color:#111;border:1px solid #d7d7d7;border-radius:8px;padding:14px 18px;margin-bottom:16px}.report-mode .reportBanner h2{margin:0;color:#61142d}.report-mode .reportBanner .meta{font-size:11px;color:#555;margin-top:4px}.report-mode .noPrint,.report-mode header,.report-mode aside,.report-mode .toolbar{display:none!important}.report-mode .shell{display:block}.report-mode main{padding:0}.report-mode body{background:#fff}.report-mode .card{box-shadow:none}.report-mode .printOnly{display:block}
 @media(max-width:900px){.playerHero{grid-template-columns:1fr}.splitGrid{grid-template-columns:1fr}}
@@ -1596,25 +1596,53 @@ function playerNumberFromLabel(s){let m=normPlayerLabel(s).match(/(?:^|\s)([A-Z]
 function displayPlayerNumber(p){
   return normNum(codeNumber(p?.name)||playerNumberFromLabel(p?.name)||p?.number||'');
 }
+function currentRosterByName(name){
+  let nk=nameKey(name);
+  if(!nk)return null;
+  return rosterData.find(x=>nameKey(x.name)===nk)||null;
+}
+function historicalIdentityForPlayer(p,season='2025'){
+  const num=displayPlayerNumber(p);
+  if(!num)return null;
+  const matches=historicalPlayersByNumber(num,season);
+  return matches.length===1?matches[0]:null;
+}
 function playerRosterStatus(p){
   const num=displayPlayerNumber(p);
   const rawName=String(p?.name||'').trim();
   const teamToken=(rawName.split(/\s+/)[0]||'').toUpperCase();
   const selected=normCode(selectedTeam());
-  if(!num)return {text:'Roster status unknown', short:'UNK', current:null};
+  if(!num)return {text:'Roster status unknown', short:'UNK', current:null, changedNumber:false};
   if(selected && teamToken && teamToken!==selected){
-    return {text:'Opponent / external roster not loaded', short:'OPP', current:null};
+    return {text:'Opponent / external roster not loaded', short:'OPP', current:null, changedNumber:false};
   }
-  const current=rosterByNumber(num);
-  if(current)return {text:`Current roster: ${current.name||('#'+num)}`, short:'CUR', current:true, player:current};
-  return {text:'Not on current roster (possible graduate / transfer / number change)', short:'OFF', current:false};
+  const currentByNum=rosterByNumber(num);
+  const hist=historicalIdentityForPlayer(p,'2025');
+  if(hist?.name){
+    const currentByName=currentRosterByName(hist.name);
+    if(currentByName){
+      const nowNum=normNum(currentByName.number);
+      if(nowNum && nowNum!==num){
+        return {text:`On 2026 roster, number changed: ${hist.name} • 2025 #${num}, now #${nowNum}`,short:'NUM',current:true,changedNumber:true,player:currentByName,historical:hist};
+      }
+      return {text:`On 2026 roster: ${currentByName.name}`,short:'CUR',current:true,changedNumber:false,player:currentByName,historical:hist};
+    }
+    if(currentByNum && nameKey(currentByNum.name)!==nameKey(hist.name)){
+      return {text:`Not on 2026 roster: 2025 #${num} was ${hist.name}`,short:'OFF',current:false,changedNumber:false,historical:hist};
+    }
+  }
+  if(currentByNum)return {text:`On 2026 roster: ${currentByNum.name||('#'+num)}`, short:'CUR', current:true, changedNumber:false, player:currentByNum};
+  return {text:'Not on 2026 roster', short:'OFF', current:false, changedNumber:false, historical:hist};
 }
 function rosterNumberClass(p){
   const status=playerRosterStatus(p);
-  return status.current===false?'offRoster':'onRoster';
+  if(status.current===false)return 'offRoster';
+  if(status.changedNumber)return 'changedRoster';
+  return 'onRoster';
 }
 function rosterStateBadge(p){
   const status=playerRosterStatus(p);
+  if(status.changedNumber)return '<span class="rosterState changed">ON 2026 ROSTER • NUMBER CHANGED</span>';
   if(status.current===true)return '<span class="rosterState on">ON 2026 ROSTER</span>';
   if(status.current===false)return '<span class="rosterState off">NOT ON 2026 ROSTER</span>';
   return '';
@@ -1775,6 +1803,17 @@ function chartClockText(r){
 function chartPlayIdText(r){
   return String(v(r,'pff_PLAYID')||v(r,'pff_GSISPLAYID')||'').trim()||'—';
 }
+
+function chartYardLineText(r){
+  const raw=String(v(r,'pff_FIELDPOSITION')||'').trim();
+  if(!raw)return '—';
+  const num=n(raw);
+  if(num==null)return raw;
+  if(num===50||num===-50)return '50';
+  if(num<0)return `Own ${Math.abs(num)}`;
+  if(num>0)return `Opp ${Math.abs(num)}`;
+  return String(Math.abs(num));
+}
 function chartOutcomeSummary(r){
   return {
     result:cleanResultLabel(r),
@@ -1785,6 +1824,7 @@ function chartOutcomeSummary(r){
     score:chartScoreText(r),
     clock:chartClockText(r),
     playId:chartPlayIdText(r),
+    yardLine:chartYardLineText(r),
     hang:v(r,'pff_HANGTIME')||'—',
     kickDir:v(r,'pff_KICKDIRACTUAL')||'—',
     returnDir:v(r,'pff_RETURNDIRECTION')||'—'
@@ -1792,11 +1832,11 @@ function chartOutcomeSummary(r){
 }
 function chartOutcomeBar(r){
   let s=chartOutcomeSummary(r);
-  return `<div class="chartOutcomeBar"><div class="chartOutcomeLine"><span class="chartOutcomePiece"><b>Result</b>${esc(s.result)}</span><span class="chartOutcomePiece"><b>Return</b>${esc(s.returnText)}</span><span class="chartOutcomePiece"><b>Tacklers</b>${esc(s.tacklers)}</span></div><div class="chartOutcomeLine"><span class="chartOutcomePiece"><b>Opponent</b>${esc(String(s.opponent))}</span><span class="chartOutcomePiece"><b>Quarter</b>${esc(String(s.quarter))}</span><span class="chartOutcomePiece"><b>Clock</b>${esc(String(s.clock))}</span><span class="chartOutcomePiece"><b>Score</b>${esc(String(s.score))}</span><span class="chartOutcomePiece"><b>PFF Play ID</b>${esc(String(s.playId))}</span></div><div class="chartOutcomeLine"><span class="chartOutcomePiece"><b>Hang</b>${esc(String(s.hang))}</span><span class="chartOutcomePiece"><b>Kick dir</b>${esc(String(s.kickDir))}</span><span class="chartOutcomePiece"><b>Return dir</b>${esc(String(s.returnDir))}</span></div></div>`;
+  return `<div class="chartOutcomeBar"><div class="chartOutcomeLine"><span class="chartOutcomePiece"><b>Result</b>${esc(s.result)}</span><span class="chartOutcomePiece"><b>Return</b>${esc(s.returnText)}</span><span class="chartOutcomePiece"><b>Tacklers</b>${esc(s.tacklers)}</span></div><div class="chartOutcomeLine"><span class="chartOutcomePiece"><b>Opponent</b>${esc(String(s.opponent))}</span><span class="chartOutcomePiece"><b>Quarter</b>${esc(String(s.quarter))}</span><span class="chartOutcomePiece"><b>Clock</b>${esc(String(s.clock))}</span><span class="chartOutcomePiece"><b>Yard line</b>${esc(String(s.yardLine))}</span><span class="chartOutcomePiece"><b>Score</b>${esc(String(s.score))}</span><span class="chartOutcomePiece"><b>PFF Play ID</b>${esc(String(s.playId))}</span></div><div class="chartOutcomeLine"><span class="chartOutcomePiece"><b>Hang</b>${esc(String(s.hang))}</span><span class="chartOutcomePiece"><b>Kick dir</b>${esc(String(s.kickDir))}</span><span class="chartOutcomePiece"><b>Return dir</b>${esc(String(s.returnDir))}</span></div></div>`;
 }
 function repSummaryMarkup(r){
   let s=chartOutcomeSummary(r);
-  return `<div class="repSummary"><div><span><b>Result</b>${esc(s.result)}</span> &nbsp; <span><b>Return</b>${esc(s.returnText)}</span></div><div style="margin-top:4px"><span><b>Tacklers</b>${esc(s.tacklers)}</span></div><div style="margin-top:4px"><span><b>Opponent</b>${esc(String(s.opponent))}</span> &nbsp; <span><b>Quarter</b>${esc(String(s.quarter))}</span> &nbsp; <span><b>Clock</b>${esc(String(s.clock))}</span></div><div style="margin-top:4px"><span><b>Score</b>${esc(String(s.score))}</span> &nbsp; <span><b>PFF Play ID</b>${esc(String(s.playId))}</span></div></div>`;
+  return `<div class="repSummary"><div><span><b>Result</b>${esc(s.result)}</span> &nbsp; <span><b>Return</b>${esc(s.returnText)}</span></div><div style="margin-top:4px"><span><b>Tacklers</b>${esc(s.tacklers)}</span></div><div style="margin-top:4px"><span><b>Opponent</b>${esc(String(s.opponent))}</span> &nbsp; <span><b>Quarter</b>${esc(String(s.quarter))}</span> &nbsp; <span><b>Clock</b>${esc(String(s.clock))}</span> &nbsp; <span><b>Yard line</b>${esc(String(s.yardLine))}</span></div><div style="margin-top:4px"><span><b>Score</b>${esc(String(s.score))}</span> &nbsp; <span><b>PFF Play ID</b>${esc(String(s.playId))}</span></div></div>`;
 }
 
 function unitTacklerStats(a,unitType,mode='coverage'){
@@ -1834,20 +1874,20 @@ function rolePos(role,i,type,side,play){
  if(type==='PUNT'&&side==='unit'){
   // V11.6: punt-team backfield is below the LOS on this field orientation.
   // LOS is at 48%, so front-line player centers sit at 53.5% to keep the entire circles clearly behind it.
-  if(r==='P'){x=50;y=88}else if(r==='PLS'){x=50;y=53.5}
-  else if(r==='GL'){x=7;y=53.5}else if(r==='GR'){x=93;y=53.5}
-  else if(r==='PLT'){x=34;y=53.5}else if(r==='PLG'){x=43;y=53.5}else if(r==='PRG'){x=57;y=53.5}else if(r==='PRT'){x=66;y=53.5}
-  else if(r==='PPL'){x=32;y=63}else if(r==='PPR'){x=68;y=63}else if(r==='PPRI'){x=60;y=63}else if(r==='PPRO'){x=76;y=63}
-  else if(r==='PLW'){x=22;y=58}else if(r==='PRW'){x=78;y=58}else{x=12+(i%10)*8.4;y=60}
+  if(r==='P'){x=50;y=92}else if(r==='PLS'){x=50;y=66}
+  else if(r==='GL'){x=7;y=66}else if(r==='GR'){x=93;y=66}
+  else if(r==='PLT'){x=34;y=66}else if(r==='PLG'){x=43;y=66}else if(r==='PRG'){x=57;y=66}else if(r==='PRT'){x=66;y=66}
+  else if(r==='PPL'){x=32;y=75}else if(r==='PPR'){x=68;y=75}else if(r==='PPRI'){x=60;y=75}else if(r==='PPRO'){x=76;y=75}
+  else if(r==='PLW'){x=22;y=71}else if(r==='PRW'){x=78;y=71}else{x=12+(i%10)*8.4;y=72}
  }else if(type==='PUNT'){
   if(r==='PR'){x=50;y=89}else if(r==='VL'){x=7;y=47}else if(r==='VR'){x=93;y=47}else if(r==='PLL'){x=16;y=45}else if(r==='PLR'){x=84;y=45}
   else if(/^PDL\d$/.test(r)){let q=+r.slice(-1);x=42-(q-1)*7;y=45+(q%2)*4}
   else if(/^PDR\d$/.test(r)){let q=+r.slice(-1);x=58+(q-1)*7;y=45+(q%2)*4}
   else{x=12+(i%9)*9.5;y=47}
  }else if(type==='KICKOFF'&&side==='unit'){
-  if(r==='PK'){x=50;y=72}
-  else if(/^L[1-5]$/.test(r)){let q=+r.slice(1);x=45-(q-1)*9;y=48+(q%2)*3}
-  else if(/^R[1-5]$/.test(r)){let q=+r.slice(1);x=55+(q-1)*9;y=48+(q%2)*3}
+  if(r==='PK'){x=50;y=90}
+  else if(/^L[1-5]$/.test(r)){let q=+r.slice(1);x=45-(q-1)*9;y=65+(q%2)*2}
+  else if(/^R[1-5]$/.test(r)){let q=+r.slice(1);x=55+(q-1)*9;y=65+(q%2)*2}
   else{x=10+i*8;y=50}
  }else{
   let tagged=String(v(play,'pff_RETURNER')||'').toUpperCase();
@@ -2244,7 +2284,8 @@ function chartPage(a){
   let assigned=repAssignments[playKey(r)],label=viewType==='PUNT'?(viewSide==='unit'?'Punt Team':'Punt Return'):(viewSide==='unit'?'Kickoff Coverage':'Kickoff Return');
   return title(`${label} Look Charting`,'Set the pre-snap alignment, then draw the post-snap responsibility exactly as you coach it.')+unitTabs()+
   `<div class="playControls"><button id="chartPrev">Previous rep</button><button id="chartNext">Next rep</button><button id="copyPrev">Copy previous chart</button><button id="resetChart">Reset positions</button><span class="viz-badge">Rep ${chartIndex+1} of ${plays.length}</span></div>
-  <div class="chartShell"><div class="chartField" id="chartField">${chartOutcomeBar(r)}<div class="los"></div><div class="losLabel">REFERENCE LINE</div>${depthOverlay(viewType,viewSide)}${pathsOverlay(chartPaths)}${dots}</div>
+  ${chartOutcomeBar(r)}
+  <div class="chartShell"><div class="chartField ${(viewSide==='unit'&&(viewType==='PUNT'||viewType==='KICKOFF'))?'coverageSpace':''}" id="chartField"><div class="los"></div><div class="losLabel">REFERENCE LINE</div>${depthOverlay(viewType,viewSide)}${pathsOverlay(chartPaths)}${dots}</div>
   <div class="chartPanel">${chartWhiteboardTools()}<div class="playCard">${sourceSummary(r)}${postSnapTagSummary(r)}${assigned?`<div class="note">Assigned to ${savedLooks.find(x=>x.id===assigned.lookId)?.name||'saved look'}</div>`:''}</div>${matchMarkup()}
   <div class="playCard"><div class="eyebrow">Save / assign</div><input class="input" id="lookName" placeholder="Look name, e.g. Punt Return 2x Vice"><div class="fieldActions" style="margin-top:8px"><button class="primary wide" id="saveNewLook">Save as new look</button><button class="success wide" id="assignBest">Assign to best match</button><button id="printCurrentLook">Full Page Print</button><button id="mirrorChart">Mirror alignment + paths</button><button id="exportLooks">Export looks</button></div><div class="status" id="chartStatus"></div></div>
   <div class="playCard"><div class="eyebrow">Player coordinates</div><div class="coordTable"><div class="coordLine"><b>Role</b><span>Player</span><b>X</b><b>Y</b></div>${coords}</div></div></div></div>
@@ -2951,7 +2992,8 @@ function fullPageLookSvg(l){
     let role=escXml(p.role||'');
     let num=escXml(displayPlayerNumber(p)||'');
     let stroke=(p.role==='P'||p.role==='PK'||p.role==='FK')?'#2aa84a':'#111';
-    let numberFill=rosterNumberClass(p)==='offRoster'?'#c62d2d':'#111';
+    let rosterClass=rosterNumberClass(p);
+    let numberFill=rosterClass==='offRoster'?'#c62d2d':(rosterClass==='changedRoster'?'#d67a00':'#111');
     let px=p.px;
     let py=p.py-deltaBack;
     return `<g transform="translate(${px} ${py})">
@@ -2975,7 +3017,7 @@ function fullPageLookSvg(l){
 }
 function fullPageLookDocument(l){
   const field=fullPageLookSvg(l);
-  const repSummary=l.repSummary?`<div class="repSummary"><div><span><b>Result</b>${esc(l.repSummary.result||'No result recorded')}</span> &nbsp; <span><b>Return</b>${esc(l.repSummary.returnText||'none recorded')}</span></div><div style="margin-top:4px"><span><b>Tacklers</b>${esc(l.repSummary.tacklers||'none recorded by PFF')}</span></div><div style="margin-top:4px"><span><b>Opponent</b>${esc(l.repSummary.opponent||'—')}</span> &nbsp; <span><b>Quarter</b>${esc(l.repSummary.quarter||'—')}</span> &nbsp; <span><b>Clock</b>${esc(l.repSummary.clock||'—')}</span></div><div style="margin-top:4px"><span><b>Score</b>${esc(l.repSummary.score||'—')}</span> &nbsp; <span><b>PFF Play ID</b>${esc(l.repSummary.playId||'—')}</span></div></div>`:'';
+  const repSummary=l.repSummary?`<div class="repSummary"><div><span><b>Result</b>${esc(l.repSummary.result||'No result recorded')}</span> &nbsp; <span><b>Return</b>${esc(l.repSummary.returnText||'none recorded')}</span></div><div style="margin-top:4px"><span><b>Tacklers</b>${esc(l.repSummary.tacklers||'none recorded by PFF')}</span></div><div style="margin-top:4px"><span><b>Opponent</b>${esc(l.repSummary.opponent||'—')}</span> &nbsp; <span><b>Quarter</b>${esc(l.repSummary.quarter||'—')}</span> &nbsp; <span><b>Clock</b>${esc(l.repSummary.clock||'—')}</span> &nbsp; <span><b>Yard line</b>${esc(l.repSummary.yardLine||'—')}</span></div><div style="margin-top:4px"><span><b>Score</b>${esc(l.repSummary.score||'—')}</span> &nbsp; <span><b>PFF Play ID</b>${esc(l.repSummary.playId||'—')}</span></div></div>`:'';
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(l.name)} - Full Page Look</title>
   <style>
   @page{size:letter portrait;margin:.4in}
@@ -3335,6 +3377,7 @@ document.querySelectorAll('.toolbar select').forEach(e=>e.onchange=()=>{playInde
   applyAccessMode();
   await loadProjectCloud();
   await loadRosterFromSupabase();
+  await loadHistoricalRoster('2025');
   await loadPffFromSupabase({render:false});
   setup();
   render();
