@@ -1,126 +1,81 @@
-const BUCKET = 'Special Teams';
-const OBJECT_PATH = 'Current/project.json';
+// V13.6 shared project persistence using a Supabase DATABASE table.
+// This mirrors the cross-device persistence pattern used by the coaching-notes apps.
+// Anyone with the deployed app URL can read/write the single shared project row.
+// SUPABASE_SERVICE_ROLE_KEY remains server-side in Vercel.
 
-function sendJson(res, status, body) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store');
-  res.end(JSON.stringify(body));
+const TABLE = 'special_teams_shared_project';
+const ROW_ID = 'current';
+
+function env(name) {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing ${name}`);
+  return value.replace(/\/$/, '');
 }
 
-async function readJsonBody(req) {
-  if (req.body && typeof req.body === 'object') return req.body;
-  if (typeof req.body === 'string' && req.body.trim()) return JSON.parse(req.body);
-
-  let raw = '';
-  for await (const chunk of req) {
-    raw += chunk;
-    if (raw.length > 2_000_000) throw new Error('Request body is too large.');
-  }
-  return raw.trim() ? JSON.parse(raw) : {};
-}
-
-function environment() {
-  const url = process.env.SUPABASE_URL?.replace(/\/$/, '');
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const adminKey = process.env.SPECIAL_TEAMS_ADMIN_KEY;
-
-  if (!url || !serviceKey) {
-    throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in Vercel.');
-  }
-
-  return { url, serviceKey, adminKey };
-}
-
-function publicUrl(url) {
-  const bucket = encodeURIComponent(BUCKET);
-  const path = OBJECT_PATH.split('/').map(encodeURIComponent).join('/');
-  return `${url}/storage/v1/object/public/${bucket}/${path}`;
-}
-
-function objectUrl(url) {
-  const bucket = encodeURIComponent(BUCKET);
-  const path = OBJECT_PATH.split('/').map(encodeURIComponent).join('/');
-  return `${url}/storage/v1/object/${bucket}/${path}`;
+function headers(serviceKey, extra = {}) {
+  return {
+    apikey: serviceKey,
+    Authorization: `Bearer ${serviceKey}`,
+    ...extra,
+  };
 }
 
 export default async function handler(req, res) {
   try {
-    const { url, serviceKey, adminKey } = environment();
+    const base = env('SUPABASE_URL');
+    const key = env('SUPABASE_SERVICE_ROLE_KEY');
+    const rest = `${base}/rest/v1/${TABLE}`;
+
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
 
     if (req.method === 'GET') {
-      const response = await fetch(`${publicUrl(url)}?v=${Date.now()}`, {
-        cache: 'no-store'
+      const url = `${rest}?id=eq.${encodeURIComponent(ROW_ID)}&select=data,updated_at`;
+      const r = await fetch(url, {
+        method: 'GET',
+        headers: headers(key, { Accept: 'application/json' }),
+        cache: 'no-store',
       });
+      const body = await r.text();
+      if (!r.ok) return res.status(r.status).json({ error: body || 'Could not load shared project' });
+      let rows = [];
+      try { rows = JSON.parse(body); } catch { return res.status(500).json({ error: 'Invalid database response' }); }
+      if (!rows.length) return res.status(404).json({ error: 'Shared project row not found' });
+      const row = rows[0] || {};
+      const data = row.data && typeof row.data === 'object' ? row.data : {};
+      if (!data.updatedAt && row.updated_at) data.updatedAt = row.updated_at;
+      return res.status(200).json({ data });
+    }
 
-      if (response.status === 404) {
-        return sendJson(res, 404, { error: 'project.json not found.' });
+    if (req.method === 'POST') {
+      const incoming = req.body?.data ?? req.body;
+      if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) {
+        return res.status(400).json({ error: 'Missing project data' });
       }
 
-      if (!response.ok) {
-        return sendJson(res, response.status, {
-          error: `Supabase project.json returned ${response.status}.`
-        });
-      }
+      const updatedAt = new Date().toISOString();
+      const payload = {
+        id: ROW_ID,
+        data: { ...incoming, updatedAt },
+        updated_at: updatedAt,
+      };
 
-      return sendJson(res, 200, {
-        data: await response.json()
+      const r = await fetch(`${rest}?on_conflict=id`, {
+        method: 'POST',
+        headers: headers(key, {
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates,return=representation',
+        }),
+        body: JSON.stringify(payload),
       });
+      const body = await r.text();
+      if (!r.ok) return res.status(r.status).json({ error: body || 'Could not save shared project' });
+      return res.status(200).json({ ok: true, updatedAt });
     }
 
-    if (req.method !== 'POST') {
-      return sendJson(res, 405, { error: 'Method not allowed.' });
-    }
-
-    const body = await readJsonBody(req);
-
-    if (String(body.action || 'save') !== 'save') {
-      return sendJson(res, 400, { error: 'Unsupported action.' });
-    }
-
-    if (!adminKey) {
-      return sendJson(res, 500, {
-        error: 'SPECIAL_TEAMS_ADMIN_KEY is not configured in Vercel.'
-      });
-    }
-
-    if (String(body.adminKey || '') !== adminKey) {
-      return sendJson(res, 403, { error: 'Incorrect admin key.' });
-    }
-
-    const data = body.data;
-    if (!data || typeof data !== 'object') {
-      return sendJson(res, 400, { error: 'Missing project data.' });
-    }
-
-    const response = await fetch(objectUrl(url), {
-      method: 'POST',
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        'Content-Type': 'application/json; charset=utf-8',
-        'x-upsert': 'true',
-        'cache-control': '3600'
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      const detail = await response.text();
-      throw new Error(
-        `Supabase project save failed (${response.status}): ${detail || 'unknown error'}`
-      );
-    }
-
-    return sendJson(res, 200, {
-      ok: true,
-      storedAt: `${BUCKET}/${OBJECT_PATH}`,
-      updatedAt: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Storage project API error:', error);
-    return sendJson(res, 500, {
-      error: error?.message || 'Storage project request failed.'
-    });
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (e) {
+    console.error('storage-project error', e);
+    return res.status(500).json({ error: e.message || 'Server error' });
   }
 }
