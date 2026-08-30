@@ -3072,8 +3072,21 @@ function printCurrentChartLook(){
   openFullPageLook(temp)
 }
 
+function assignedRows(look,sourceRows){
+  const keys=new Set((look?.repKeys||[]).map(x=>String(x)));
+  if(!keys.size)return [];
+  return (sourceRows||[]).filter(r=>keys.has(String(playKey(r))));
+}
+
 function libraryPage(a){
-  let ls=savedLooks.filter(l=>(!$('unitF').value||l.unit===$('unitF').value));
+  const unitFilter=$('unitF')?.value||'';
+  let ls=(savedLooks||[]).filter(Boolean).map(l=>({
+    ...l,
+    positions:Array.isArray(l.positions)?l.positions:[],
+    paths:Array.isArray(l.paths)?l.paths:[],
+    repKeys:Array.isArray(l.repKeys)?l.repKeys:[],
+    nearCandidates:Array.isArray(l.nearCandidates)?l.nearCandidates:[]
+  })).filter(l=>(!unitFilter||l.unit===unitFilter));
   if(!ls.length)return title('Look Library','Saved alignments and all underlying rep data')+
     `<div class="empty">No looks have been saved yet. Open Chart Looks, drag the players, and save the first alignment.</div>`;
 
@@ -3109,7 +3122,7 @@ function libraryPage(a){
 async function saveNewLook(r){
   if(!ensureWritableAction('save this look to the shared library'))return;
   let name=($('lookName').value||`${viewType} ${viewSide==='unit'?'Unit':'Return'} Look ${savedLooks.filter(x=>x.unit===viewType&&x.side===viewSide).length+1}`).trim(),id='L'+Date.now();
-  let look={id,name,unit:viewType,side:viewSide,positions:normalizedPositions(chartPositions),paths:clonePaths(chartPaths),repKeys:[playKey(r)],nearCandidates:[],createdAt:new Date().toISOString()};
+  let look={id,name,unit:viewType,side:viewSide,positions:normalizedPositions(chartPositions),paths:clonePaths(chartPaths),repKeys:[playKey(r)],nearCandidates:[],repSummary:chartOutcomeSummary(r),createdAt:new Date().toISOString()};
   savedLooks.push(look);repAssignments[playKey(r)]={lookId:id,match:'seed'};
   let grouped=autoGroupSavedLook(look,r);
   persistLooks(false);
