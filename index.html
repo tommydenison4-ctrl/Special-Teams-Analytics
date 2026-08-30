@@ -818,6 +818,76 @@ button:hover{border-color:#EBA800!important}
   .hashFilterPanel,.hashFilterPanel.two{grid-template-columns:1fr}
 }
 
+
+@page{size:letter landscape;margin:.34in}
+/* V13.7 — Player Profile Pack, matched to Offensive/Defensive Intelligence */
+.print-center-overlay{display:none;position:fixed;inset:0;background:rgba(4,18,31,.78);z-index:10000;align-items:center;justify-content:center;padding:24px}
+.print-center-overlay.open{display:flex}
+.print-center{width:min(900px,96vw);max-height:90vh;overflow:auto;background:#fff;color:#071827;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.42);padding:22px}
+.print-center h2{margin:0 0 4px;color:#071827}
+.print-center .subtle{font-size:11px;color:#667085;line-height:1.45}
+.print-center-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.print-option{border:1px solid #d9dee6;border-radius:14px;padding:16px;background:#fff}
+.print-option h3{margin:0 0 8px;color:#071827}
+.print-layouts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.print-layouts button{background:#fff;color:#071827;border-color:#cdd5df}
+.print-layouts button.active{background:var(--maroon);color:#fff;border-color:var(--maroon)}
+.report-queue{display:flex;gap:7px;flex-wrap:wrap;min-height:42px;margin:10px 0}
+.report-chip{display:flex;align-items:center;gap:6px;border:1px solid #d5dbe3;border-radius:999px;padding:5px 8px;background:#f7f8fa;font-size:11px;color:#172033}
+.report-chip button{padding:0 3px;background:transparent;color:#8a2432;border:0;font-size:15px}
+.report-player-picker{border:1px solid #d9dee6;border-radius:12px;padding:10px;margin:10px 0;max-height:300px;overflow:auto;background:#fafbfc}
+.report-player-search{width:100%;padding:9px 10px;border:1px solid #d5dbe3;border-radius:9px;font:inherit;margin-bottom:8px;background:#fff;color:#071827}
+.report-player-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.report-player-groups{display:flex;flex-direction:column;gap:12px}
+.report-player-group{border:1px solid #e7eaef;border-radius:12px;padding:10px;background:#fff}
+.report-player-group-title{font-size:12px;font-weight:900;color:#172033;letter-spacing:.04em;text-transform:uppercase;margin:0 0 8px}
+.report-player-choice{display:flex;align-items:center;gap:8px;border:1px solid #e2e6eb;border-radius:9px;padding:7px 8px;background:#fff;cursor:pointer}
+.report-player-choice input{margin:0}
+.report-player-choice .rp-main{font-size:11px;font-weight:900;color:#172033}
+.report-player-choice .rp-sub{font-size:9px;color:#667085}
+#printReport{display:none}
+.print-report-head{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #8a2432;padding:0 0 8px;margin-bottom:10px;color:#071827}
+.print-report-brand{display:flex;align-items:center;gap:9px}
+.print-report-brand img{width:36px;height:36px;object-fit:contain}
+.print-report-brand h1{font-size:18px;margin:0;color:#071827}
+.print-report-brand small{font-size:9px;color:#667085}
+.print-sheet{page-break-after:always;break-after:page;display:grid;gap:10px;align-content:stretch}
+.print-sheet:last-child{page-break-after:auto;break-after:auto}
+.print-sheet.pp1{grid-template-columns:1fr;grid-template-rows:1fr}
+.print-sheet.pp2{grid-template-columns:repeat(2,1fr);grid-template-rows:1fr}
+.print-sheet.pp4{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
+.print-sheet.pp8{grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr)}
+.print-profile-card{border:1px solid #cfd6df;border-radius:12px;overflow:hidden;background:#fff;display:flex;flex-direction:column;min-width:0;color:#071827}
+.print-profile-top{display:grid;grid-template-columns:74px 1fr;gap:10px;padding:10px;border-bottom:2px solid #d3a83d;background:linear-gradient(135deg,#fff,#faf7ef)}
+.print-profile-top img{width:74px;height:84px;object-fit:cover;object-position:top;border-radius:8px;background:#eef1f4}
+.print-profile-placeholder{width:74px;height:84px;background:#eef1f4;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#8a2432}
+.print-profile-name{font-size:17px;font-weight:950;color:#8a2432;line-height:1.05}
+.print-profile-meta{font-size:10px;color:#4b5563;margin-top:4px;line-height:1.35}
+.print-profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:8px}
+.print-stat{border:1px solid #e1e5ea;border-radius:7px;padding:6px;min-width:0}
+.print-stat small{display:block;font-size:7px;text-transform:uppercase;color:#667085;font-weight:900}
+.print-stat b{font-size:12px;color:#071827}
+.print-profile-section{padding:7px 9px;border-top:1px solid #e6e9ed}
+.print-profile-section h4{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#8a2432;margin:0 0 5px}
+.print-bio-line{font-size:9px;line-height:1.4;color:#303846}
+.print-profile-card.dense .print-profile-top{grid-template-columns:52px 1fr;padding:7px;gap:7px}
+.print-profile-card.dense .print-profile-top img,.print-profile-card.dense .print-profile-placeholder{width:52px;height:60px}
+.print-profile-card.dense .print-profile-name{font-size:13px}
+.print-profile-card.dense .print-profile-meta{font-size:8px}
+.print-profile-card.dense .print-profile-stats{grid-template-columns:repeat(2,1fr);padding:6px;gap:4px}
+.print-profile-card.dense .print-stat{padding:4px}
+.print-profile-card.dense .print-stat b{font-size:10px}
+.print-profile-card.dense .print-profile-section{padding:5px 7px}
+.print-profile-card.dense .print-bio-line{font-size:8px;line-height:1.25}
+@media(max-width:760px){.print-center-grid,.report-player-list{grid-template-columns:1fr}}
+@media print{
+  body.print-profiles header,body.print-profiles .shell,body.print-profiles .readOnlyBadge,body.print-profiles #printCenterOverlay{display:none!important}
+  body.print-profiles #printReport{display:block!important}
+  body.print-profiles{background:#fff!important;color:#071827!important}
+  body.print-profiles *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  
+}
+
 </style>
 </head>
 <body><div class="readOnlyBadge">SHARED DATABASE • AUTO SAVE</div>
@@ -839,6 +909,42 @@ button:hover{border-color:#EBA800!important}
 </aside>
 <main><div class="toolbar"><select id="seasonF"></select><select id="weekF"></select><select id="teamF"></select><select id="unitF"></select><button id="resetF">Reset</button></div><div id="app"></div></main>
 </div>
+
+<div id="printCenterOverlay" class="print-center-overlay" onclick="if(event.target===this)closePrintCenter()">
+  <div class="print-center">
+    <h2>Print / Save PDF</h2>
+    <div class="subtle">Choose the current Special Teams view or build the same player profile pack used in the offensive and defensive apps.</div>
+    <div class="print-center-grid">
+      <div class="print-option">
+        <h3>Current Special Teams View</h3>
+        <div class="subtle">Print the page you are currently viewing.</div>
+        <div style="margin-top:12px"><button class="primary" onclick="printCurrentSpecialTeamsView()">Print Current View</button></div>
+      </div>
+      <div class="print-option">
+        <h3>Player Profile Pack</h3>
+        <div class="subtle">Hand-select players, then choose how many profiles fit on each landscape page.</div>
+        <div class="print-layouts">
+          <button id="pp1" onclick="setProfilesPerPage(1)">1 / page</button>
+          <button id="pp2" onclick="setProfilesPerPage(2)">2 / page</button>
+          <button id="pp4" class="active" onclick="setProfilesPerPage(4)">4 / page</button>
+          <button id="pp8" onclick="setProfilesPerPage(8)">8 / page</button>
+        </div>
+        <input id="reportPlayerSearch" class="report-player-search" placeholder="Search player name, number or position" oninput="renderReportPlayerPicker()">
+        <div id="reportPlayerPicker" class="report-player-picker"></div>
+        <div class="subtle" style="margin-top:8px">Selected for report</div>
+        <div id="reportQueue" class="report-queue"></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button onclick="selectAllReportPlayers()">Select All</button>
+          <button onclick="clearReportPlayers()">Clear</button>
+          <button class="primary" onclick="printProfilePack()">Print Player Profile Pack</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px"><button onclick="closePrintCenter()">Close</button></div>
+  </div>
+</div>
+<div id="printReport"></div>
+
 <script>
 
 
@@ -1382,6 +1488,7 @@ async function loadPffFromSupabase(options={}){
 
 const EMBEDDED=[];
 let rows=EMBEDDED,page='dashboard',viewType='PUNT',viewSide='unit',playIndex=0,dashKoHash='',dashPuntHash='',dashFgHash='';
+let reportQueue=[];let printProfilesPerPage=4;
 let hashKoHash='',hashKoKickDir='';
 let hashKorHash='',hashKorKickDir='',hashKorReturnDir='';
 let chartIndex=0,chartPositions={},selectedPlayer=null;
@@ -3368,9 +3475,118 @@ function render(){
   bind();
 }
 
+
+function stPrintPos(p){return String(p?.position||'').trim().toUpperCase()||'OTHER'}
+function stPrintRoster(){
+  return (rosterData||[]).slice().sort((a,b)=>{
+    const pa=stPrintPos(a),pb=stPrintPos(b);
+    const order={K:1,P:2,LS:3,KR:4,PR:5,QB:10,RB:11,WR:12,TE:13,OL:14,DL:20,LB:21,DB:22,S:22,CB:22,OTHER:99};
+    return (order[pa]||50)-(order[pb]||50)||(Number(a.number)||999)-(Number(b.number)||999)||String(a.name||'').localeCompare(String(b.name||''));
+  });
+}
+function stPrintStats(p){
+  const num=normNum(p?.number||'');
+  const a=filtered();
+  const out=[];
+  const kr=returnerDashboardStats(a,'KICKOFF').find(x=>normNum(x.num)===num);
+  const pr=returnerDashboardStats(a,'PUNT').find(x=>normNum(x.num)===num);
+  const kt=unitTacklerStats(a,'KICKOFF','coverage').find(x=>normNum(x.num)===num);
+  const pt=unitTacklerStats(a,'PUNT','coverage').find(x=>normNum(x.num)===num);
+  const k=specialistStats(a,'kicker').find(x=>normNum(x.num)===num);
+  const ko=specialistStats(a,'kickoff').find(x=>normNum(x.num)===num);
+  const pu=specialistStats(a,'punter').find(x=>normNum(x.num)===num);
+  if(kr)out.push(...kr.stats.map(x=>['KO '+x[0],x[1]]));
+  if(pr)out.push(...pr.stats.map(x=>['PR '+x[0],x[1]]));
+  if(kt)out.push(['KO Tackles',kt.total||0],['KO Solo',kt.solo||0]);
+  if(pt)out.push(['Punt Tackles',pt.total||0],['Punt Solo',pt.solo||0]);
+  if(k)out.push(...k.stats);
+  if(ko)out.push(...ko.stats);
+  if(pu)out.push(...pu.stats);
+  const seen=new Set();
+  return out.filter(([l])=>{const k=String(l).toLowerCase();if(seen.has(k))return false;seen.add(k);return true});
+}
+function stBioExcerpt(text,max){
+  let s=String(text||'').replace(/\s+/g,' ').trim();
+  if(!s)return '';
+  if(s.length<=max)return s;
+  return s.slice(0,max).replace(/\s+\S*$/,'').trim()+'…';
+}
+function addPlayerToReportST(name){if(name&&!reportQueue.includes(name))reportQueue.push(name);renderReportQueue()}
+function removePlayerFromReportST(name){reportQueue=reportQueue.filter(x=>x!==name);renderReportQueue()}
+function clearReportPlayers(){reportQueue=[];renderReportQueue()}
+function selectAllReportPlayers(){reportQueue=stPrintRoster().map(p=>p.name).filter(Boolean);renderReportQueue()}
+function setProfilesPerPage(n){printProfilesPerPage=n;renderReportQueue()}
+function reportPickerPlayers(){
+  const q=String(document.getElementById('reportPlayerSearch')?.value||'').trim().toLowerCase();
+  const list=stPrintRoster();
+  if(!q)return list;
+  return list.filter(p=>`${p.name||''} ${p.number||''} ${p.position||''}`.toLowerCase().includes(q));
+}
+function renderReportPlayerPicker(){
+  const el=document.getElementById('reportPlayerPicker');if(!el)return;
+  const list=reportPickerPlayers();
+  if(!list.length){el.innerHTML='<div class="subtle">No players match that search.</div>';return}
+  const groups={};
+  list.forEach(p=>{const pos=stPrintPos(p);(groups[pos]||(groups[pos]=[])).push(p)});
+  const order=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+  el.innerHTML=`<div class="report-player-groups">${order.map(pos=>`<div class="report-player-group"><div class="report-player-group-title">${esc(pos)}</div><div class="report-player-list">${groups[pos].map(p=>{
+    const checked=reportQueue.includes(p.name);
+    return `<label class="report-player-choice"><input type="checkbox" ${checked?'checked':''} onchange='toggleReportPlayerST(${JSON.stringify(p.name)},this.checked)'><div><div class="rp-main">#${esc(p.number||'—')} ${esc(p.name||'')}</div><div class="rp-sub">${esc(p.position||'')}</div></div></label>`;
+  }).join('')}</div></div>`).join('')}</div>`;
+}
+function toggleReportPlayerST(name,checked){
+  if(checked){if(!reportQueue.includes(name))reportQueue.push(name)}
+  else reportQueue=reportQueue.filter(x=>x!==name);
+  renderReportQueue();
+}
+function renderReportQueue(){
+  const el=document.getElementById('reportQueue');
+  if(el)el.innerHTML=reportQueue.length?reportQueue.map(n=>`<span class="report-chip">${esc(n)} <button onclick='removePlayerFromReportST(${JSON.stringify(n)})'>×</button></span>`).join(''):'<span class="subtle">No players selected.</span>';
+  [1,2,4,8].forEach(n=>{const b=document.getElementById('pp'+n);if(b)b.classList.toggle('active',printProfilesPerPage===n)});
+  renderReportPlayerPicker();
+}
+function openPrintCenter(){const el=document.getElementById('printCenterOverlay');if(el){el.classList.add('open');renderReportQueue();renderReportPlayerPicker()}}
+function closePrintCenter(){const el=document.getElementById('printCenterOverlay');if(el)el.classList.remove('open')}
+function printCurrentSpecialTeamsView(){closePrintCenter();window.print()}
+function stPrintPlayerCardHTML(p,perPage){
+  const dense=perPage>=8,medium=perPage>=4;
+  const stats=stPrintStats(p),statCount=dense?4:medium?6:9;
+  const maxBio=dense?180:medium?360:700;
+  const bio=stBioExcerpt(p.bio,maxBio);
+  const initials=String(p.name||'').split(/\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase();
+  const img=p.image?`<img src="${esc(p.image)}" alt="">`:`<div class="print-profile-placeholder">${esc(initials||'#')}</div>`;
+  const meta=[p.position,`#${p.number||'—'}`,p.class].filter(Boolean).map(esc).join(' · ')+
+    (p.height||p.weight?`<br>${esc(p.height||'')}${p.height&&p.weight?' · ':''}${p.weight?esc(p.weight)+' lbs':''}`:'')+
+    (p.hometown?`<br>${esc(p.hometown)}`:'')+
+    (p.previousSchool?`<br>Previous: ${esc(p.previousSchool)}`:'');
+  const statHTML=stats.length?`<div class="print-profile-stats">${stats.slice(0,statCount).map(([l,vv])=>`<div class="print-stat"><small>${esc(l)}</small><b>${esc(vv==null?'—':vv)}</b></div>`).join('')}</div>`:'';
+  const bioHTML=bio?`<div class="print-profile-section"><h4>Official Bio</h4><div class="print-bio-line">${esc(bio)}</div></div>`:'';
+  return `<article class="print-profile-card ${dense?'dense':''}">
+    <div class="print-profile-top">${img}<div><div class="print-profile-name">${esc(p.name||'Player')}</div><div class="print-profile-meta">${meta}</div></div></div>
+    ${statHTML}
+    ${bioHTML}
+  </article>`;
+}
+function printProfilePack(){
+  const byName=new Map((rosterData||[]).map(p=>[p.name,p]));
+  const players=reportQueue.map(n=>byName.get(n)).filter(Boolean);
+  if(!players.length){alert('Select at least one player for the report first.');return}
+  closePrintCenter();
+  const sheets=[];
+  for(let i=0;i<players.length;i+=printProfilesPerPage){
+    const group=players.slice(i,i+printProfilesPerPage);
+    sheets.push(`<section class="print-sheet pp${printProfilesPerPage}">${group.map(p=>stPrintPlayerCardHTML(p,printProfilesPerPage)).join('')}</section>`);
+  }
+  const team=teamSettings.teamName||teamSettings.nickname||selectedTeamDisplayName()||'Opponent';
+  document.getElementById('printReport').innerHTML=`<div class="print-report-head"><div class="print-report-brand"><img src="ulm_avg_roundel_edge_star.png"><div><h1>ULM Special Teams Intelligence</h1><small>${esc(team)} · Player Profile Pack</small></div></div><div style="font-size:9px;font-weight:900">SPECIAL TEAMS SCOUTING</div></div>${sheets.join('')}`;
+  document.body.classList.add('print-profiles');
+  setTimeout(()=>window.print(),100);
+}
+window.addEventListener('afterprint',()=>document.body.classList.remove('print-profiles'));
+
 function loadRosterFile(f){if(!f)return;let rd=new FileReader();rd.onload=()=>{try{let x=f.name.toLowerCase().endsWith('.json')?JSON.parse(rd.result):parseRosterCSV(rd.result);if(!Array.isArray(x)||!x.length)throw new Error('No roster rows found');rosterData=x;saveRoster();rosterStatus='Roster file loaded: '+x.length+' players.';saveTeamSettings();render();alert('Roster loaded: '+x.length+' players')}catch(err){alert('Roster load failed: '+err.message)}};rd.readAsText(f)}
 
-function bind(){let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadRosterFromSupabase();await loadHistoricalRoster('2025');await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let epd=$('refreshPlayerDetails');if(epd)epd.onclick=()=>enrichRosterBatches().catch(e=>alert('Player detail refresh failed: '+e.message));let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=()=>window.print();document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;if($('unitF'))$('unitF').value=viewType;playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};resetChartDrawing();render()};if(cn)cn.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex+1)%x.length;chartPositions={};resetChartDrawing();render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filtered());chartPositions=defaultPositions(r);resetChartDrawing();render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);chartPaths=[];let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look){chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));chartPaths=clonePaths(look.paths||[])}drawUndo=[];drawRedo=[];render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);mirrorPaths();render()};if($('saveNewLook')){$('saveNewLook').disabled=(location.protocol==='file:');$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filtered()));}if($('assignBest')){$('assignBest').disabled=(location.protocol==='file:');$('assignBest').onclick=()=>assignBest(activeChartPlay(filtered()));}if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('[data-practice-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.practiceId);if(l)openPracticeCards([l])});document.querySelectorAll('[data-fullpage-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.fullpageId);if(l)openFullPageLook(l)});if($('printCurrentLook'))$('printCurrentLook').onclick=printCurrentChartLook;document.querySelectorAll('.approveNear').forEach(b=>b.onclick=()=>approveNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.rejectNear').forEach(b=>b.onclick=()=>rejectNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.approveAllNear').forEach(b=>b.onclick=()=>approveAllNear(b.dataset.lookId));if($('selectAllLooks'))$('selectAllLooks').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=true);if($('clearLookSelection'))$('clearLookSelection').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=false);if($('printSelectedLooks'))$('printSelectedLooks').onclick=()=>{let ids=[...document.querySelectorAll('[data-look-select]:checked')].map(x=>x.dataset.lookSelect),looks=ids.map(id=>savedLooks.find(l=>l.id===id)).filter(Boolean);openPracticeCards(looks)};document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=async()=>{if(!ensureWritableAction('delete this shared look'))return;let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks(false);await saveProjectCloud({silent:true});render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;loadLookIntoChart(l);page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});
+function bind(){let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadRosterFromSupabase();await loadHistoricalRoster('2025');await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let epd=$('refreshPlayerDetails');if(epd)epd.onclick=()=>enrichRosterBatches().catch(e=>alert('Player detail refresh failed: '+e.message));let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=openPrintCenter;document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;if($('unitF'))$('unitF').value=viewType;playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filtered());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};resetChartDrawing();render()};if(cn)cn.onclick=()=>{let x=chartPlays(filtered());chartIndex=(chartIndex+1)%x.length;chartPositions={};resetChartDrawing();render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filtered());chartPositions=defaultPositions(r);resetChartDrawing();render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filtered()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);chartPaths=[];let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look){chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));chartPaths=clonePaths(look.paths||[])}drawUndo=[];drawRedo=[];render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);mirrorPaths();render()};if($('saveNewLook')){$('saveNewLook').disabled=(location.protocol==='file:');$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filtered()));}if($('assignBest')){$('assignBest').disabled=(location.protocol==='file:');$('assignBest').onclick=()=>assignBest(activeChartPlay(filtered()));}if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('[data-practice-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.practiceId);if(l)openPracticeCards([l])});document.querySelectorAll('[data-fullpage-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.fullpageId);if(l)openFullPageLook(l)});if($('printCurrentLook'))$('printCurrentLook').onclick=printCurrentChartLook;document.querySelectorAll('.approveNear').forEach(b=>b.onclick=()=>approveNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.rejectNear').forEach(b=>b.onclick=()=>rejectNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.approveAllNear').forEach(b=>b.onclick=()=>approveAllNear(b.dataset.lookId));if($('selectAllLooks'))$('selectAllLooks').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=true);if($('clearLookSelection'))$('clearLookSelection').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=false);if($('printSelectedLooks'))$('printSelectedLooks').onclick=()=>{let ids=[...document.querySelectorAll('[data-look-select]:checked')].map(x=>x.dataset.lookSelect),looks=ids.map(id=>savedLooks.find(l=>l.id===id)).filter(Boolean);openPracticeCards(looks)};document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=async()=>{if(!ensureWritableAction('delete this shared look'))return;let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks(false);await saveProjectCloud({silent:true});render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;loadLookIntoChart(l);page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});
 ['hashKoHash','hashKoKickDir','hashKorHash','hashKorKickDir','hashKorReturnDir'].forEach(id=>{
   let e=$(id);if(!e)return;
   e.onchange=()=>{

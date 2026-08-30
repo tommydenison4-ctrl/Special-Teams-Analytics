@@ -1,23 +1,14 @@
-Special Teams Analytics V13.6 — Cross-Device Database Save
+# Special Teams Analytics V13.7 — Print Player Bios
 
-This build moves shared Look Library/project persistence from Supabase Storage project.json to a dedicated Supabase database table, matching the reliable cross-device persistence pattern used by the coaching-notes apps.
+Adds the same Player Profile Pack print workflow used in the ULM offensive/defensive apps:
 
-ONE-TIME SUPABASE SETUP:
-1. Supabase -> SQL Editor -> New query.
-2. Paste/run SUPABASE_SETUP.sql from this package.
-3. Confirm Table Editor shows: special_teams_shared_project
-4. Confirm it has one row with id = current.
+- Print / Save PDF opens a print center instead of immediately printing.
+- Current Special Teams View remains printable.
+- Player Profile Pack lets staff hand-select roster players.
+- 1, 2, 4, or 8 player profiles per landscape page.
+- Player photo, number, position/class/size/hometown/previous school.
+- Special-teams production metrics when available.
+- Official roster bio excerpt.
+- ULM-branded landscape print/PDF layout.
 
-DEPLOYMENT:
-Replace BOTH in the existing GitHub/Vercel repo:
-- index.html
-- api/storage-project.js
-Keep all other existing /api files.
-
-Required Vercel environment variables:
-- SUPABASE_URL
-- SUPABASE_SERVICE_ROLE_KEY
-
-No admin URL or admin password is required.
-Anyone with the live app URL can save shared looks/settings.
-The app checks for updates every 10 seconds and Reload Latest forces a refresh.
+All V13.6 shared-database saving files and Supabase setup are preserved.
