@@ -1,23 +1,23 @@
-Special Teams Analytics V13.4 — Open Shared Save
+Special Teams Analytics V13.6 — Cross-Device Database Save
 
-Permission model:
-- No ?admin=1 URL.
-- No admin-key prompt.
-- Anyone with the live Vercel app URL can save/edit shared looks, assignments and project settings.
-- Local file:// copies remain unable to cloud-save because they do not have the Vercel API routes.
-- Shared project data is stored in Supabase Storage: Special Teams / Current / project.json.
-- Other devices poll for updates every 10 seconds and can also use Reload Latest.
+This build moves shared Look Library/project persistence from Supabase Storage project.json to a dedicated Supabase database table, matching the reliable cross-device persistence pattern used by the coaching-notes apps.
 
-DEPLOYMENT IMPORTANT:
-This package includes a new api/storage-project.js. Deploy BOTH:
-1. index.html
-2. api/storage-project.js
-into the EXISTING GitHub/Vercel repo.
-Keep the rest of the existing /api files (roster, sync-roster, enrich-roster, historical-roster, etc.).
-Do not wipe the existing repo with only this ZIP.
+ONE-TIME SUPABASE SETUP:
+1. Supabase -> SQL Editor -> New query.
+2. Paste/run SUPABASE_SETUP.sql from this package.
+3. Confirm Table Editor shows: special_teams_shared_project
+4. Confirm it has one row with id = current.
 
-Required Vercel environment variables remain:
+DEPLOYMENT:
+Replace BOTH in the existing GitHub/Vercel repo:
+- index.html
+- api/storage-project.js
+Keep all other existing /api files.
+
+Required Vercel environment variables:
 - SUPABASE_URL
 - SUPABASE_SERVICE_ROLE_KEY
 
-SPECIAL_TEAMS_ADMIN_KEY is no longer used by storage-project.js in this build.
+No admin URL or admin password is required.
+Anyone with the live app URL can save shared looks/settings.
+The app checks for updates every 10 seconds and Reload Latest forces a refresh.
