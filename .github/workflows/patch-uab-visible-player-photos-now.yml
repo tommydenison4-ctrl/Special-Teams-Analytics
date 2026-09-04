@@ -1,4 +1,4 @@
-name: Inspect UAB historical photo render path
+name: Fix UAB tackler identities and photos
 
 on:
   push:
@@ -6,26 +6,127 @@ on:
       - '.github/workflows/patch-uab-visible-player-photos-now.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inspect:
+  patch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Print relevant Week 2 template code
+      - name: Patch only Week 2 UAB tackler identity path
         shell: bash
         run: |
+          set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          s=Path('uab/week2-template.html').read_text(errors='replace')
-          for needle in ['historicalPlayerForPffToken','verifiedPffIdentity','unitTacklerStats','playerIntelCard','playerCard','p.image','image||']:
-              print('\n===== '+needle+' =====')
-              start=0
-              hits=0
-              while True:
-                  i=s.find(needle,start)
-                  if i<0 or hits>=4: break
-                  print(s[max(0,i-1800):min(len(s),i+3000)])
-                  start=i+len(needle); hits+=1
+          import re
+
+          path=Path('uab/week2-template.html')
+          s=path.read_text(errors='strict')
+
+          marker='function unitTacklerStats(a,unitType,mode=\'coverage\'){' 
+          if s.count(marker)!=1:
+              raise SystemExit(f'Expected exactly one unitTacklerStats function, found {s.count(marker)}')
+
+          hist="""const UAB_2025_TACKLER_PROFILES={
+ 'ALBI D00':{number:'0',name:'Devin Hightower',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/20/1O2A9979.jpg',profile:'https://uabsports.com/sports/football/roster/devin-hightower/11252'},
+ 'ALBI D01':{number:'1',name:'Sirad Bryant',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/4/1O2A0680.jpg',profile:'https://uabsports.com/sports/football/roster/sirad-bryant/11153'},
+ 'ALBI D03':{number:'3',name:'Jaylyn Ferguson',position:'CB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A6339_large.jpg',profile:'https://uabsports.com/sports/football/roster/jaylyn-ferguson/11162'},
+ 'ALBI D05':{number:'5',name:'Eddy Toussom',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A6656_large.jpg',profile:'https://uabsports.com/sports/football/roster/eddy-toussom/11209'},
+ 'ALBI D06':{number:'6',name:'Calvin Pitcher',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/8/1O2A2239.jpg',profile:'https://uabsports.com/sports/football/roster/calvin-pitcher/11260'},
+ 'ALBI D07':{number:'7',name:'Pierre Royster',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/29/1O2A5365_large.jpg',profile:'https://uabsports.com/sports/football/roster/pierre-royster/11262'},
+ 'ALBI D10':{number:'10',name:'Jalen Cheek',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/060A8314_large.jpg',profile:'https://uabsports.com/sports/football/roster/jalen-cheek/11247'},
+ 'ALBI D12':{number:'12',name:'Tylan McNichols',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/8/1O2A7969_4TETV.jpg',profile:'https://uabsports.com/sports/football/roster/tylan-mcnichols/11189'},
+ 'ALBI D17':{number:'17',name:'Roy Williams',position:'CB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/8/1O2A2603.jpg',profile:'https://uabsports.com/sports/football/roster/roy-williams/11216'},
+ 'ALBI D20':{number:'20',name:'AJ Brown',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A5786.jpg',profile:'https://uabsports.com/sports/football/roster/aj-brown/11150'},
+ 'ALBI D21':{number:'21',name:'Josh Baka',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/2/20/Baka_Josh.jpg',profile:'https://uabsports.com/sports/football/roster/josh-baka/11244'},
+ 'ALBI D23':{number:'23',name:'Donald Lee',position:'CB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2024/10/14/1O2A8645.jpg',profile:'https://uabsports.com/sports/football/roster/donald-lee/11180'},
+ 'ALBI D25':{number:'25',name:'James Smyre',position:'DE',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/10/7/1O2A9851.jpg',profile:'https://uabsports.com/sports/football/roster/james-smyre/11207'},
+ 'ALBI S27':{number:'27',name:'Patrick Foley',position:'P',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2024/9/18/1O2A7375.jpg',profile:'https://uabsports.com/sports/football/roster/patrick-foley/11164'},
+ 'ALBI D28':{number:'28',name:'Brandon Franklin',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/2/20/Franklin_Brandon.jpg',profile:'https://uabsports.com/sports/football/roster/brandon-franklin/11165'},
+ 'ALBI D29':{number:'29',name:"T'sai McDaniel",position:'CB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A5780_large.jpg',profile:'https://uabsports.com/sports/football/roster/tsai-mcdaniel/11187'},
+ 'ALBI D34':{number:'34',name:'Jonathan Allen',position:'DT',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/8/1O2A7210.jpg',profile:'https://uabsports.com/sports/football/roster/jonathan-allen/11144'},
+ 'ALBI S35':{number:'35',name:'Owen Simpson',position:'PK',profile:'https://uabsports.com/sports/football/roster/owen-simpson/12075'},
+ 'ALBI D44':{number:'44',name:'Eli Ennis',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/11/1O2A2053.jpg',profile:'https://uabsports.com/sports/football/roster/eli-ennis/11249'}
+};
+function uab2025TacklerProfile(label){
+ const key=String(label||'').trim().toUpperCase();
+ if(key==='ALBI 05')return null;
+ const h=UAB_2025_TACKLER_PROFILES[key];
+ if(!h)return null;
+ const current=(rosterData||[]).find(p=>String(p.name||'').trim().toLowerCase()===String(h.name||'').trim().toLowerCase());
+ return {...(current||{}),...h,image:h.image||current?.image||'',bio:current?.bio||'',profile:h.profile||current?.profile||''};
+}
+
+"""
+
+          replacement=hist+"""function unitTacklerStats(a,unitType,mode='coverage'){
+  let team=selectedTeam();
+  if(!team)return [];
+  const coverageTeamField=unitType==='PUNT'?'pff_OFFTEAM':'pff_DEFTEAM';
+  const againstTeamField=unitType==='PUNT'?'pff_DEFTEAM':'pff_OFFTEAM';
+  let rs=a.filter(r=>v(r,'pff_SPECIALTEAMSTYPE')===unitType && v(r,mode==='coverage'?coverageTeamField:againstTeamField)===team);
+  let by={};
+  function add(label,row,kind){
+    if(!label)return;
+    let key=normPlayerLabel(label)||label;
+    if(!by[key])by[key]={label,rows:[],solo:0,assist:0};
+    if(!by[key].rows.some(x=>playKey(x)===playKey(row)))by[key].rows.push(row);
+    by[key][kind]++;
+  }
+  rs.forEach(r=>{let t=tackleInfo(r);t.solo.forEach(name=>add(name,r,'solo'));t.assist.forEach(name=>add(name,r,'assist'))});
+  return Object.values(by).map(obj=>{
+    let num=playerNumberFromLabel(obj.label),vf=null,p=null;
+    if(mode==='coverage'){
+      const rawKey=String(obj.label||'').trim().toUpperCase();
+      if(rawKey==='ALBI 05')return null;
+      const historical=normCode(team)==='ALBI'?uab2025TacklerProfile(obj.label):null;
+      let bioText=unitType==='PUNT'
+        ? `${obj.label} recorded punt-team tackles in the loaded PFF special-teams data.`
+        : `${obj.label} recorded kickoff-coverage tackles in the loaded PFF special-teams data.`;
+      if(historical){
+        p={...historical,bio:historical.bio||bioText};
+      }else{
+        vf=verifiedIdentity(num);
+        p=vf.player||rosterByNumber(num)||{name:obj.label,number:num,position:'',height:'',weight:'',class:'',hometown:'',previousSchool:'',image:'',profile:'',bio:bioText};
+      }
+    }else{
+      p={name:obj.label,number:num,position:'Opponent coverage',height:'',weight:'',class:'',hometown:'',previousSchool:'',image:'',profile:'',bio:`${obj.label} made tackles against your ${unitType==='PUNT'?'punt-return':'kickoff-return'} unit in the loaded PFF special-teams data.`};
+    }
+    return {num:num||obj.label,rows:obj.rows,p,verification:vf,solo:obj.solo,assist:obj.assist,total:obj.solo+obj.assist};
+  }).filter(Boolean).filter(x=>mode!=='coverage'||x.verification?.allowed!==false).sort((a,b)=>b.total-a.total||b.solo-a.solo||b.rows.length-a.rows.length)
+}
+"""
+
+          pattern=r"function unitTacklerStats\(a,unitType,mode='coverage'\)\{[\s\S]*?\n\}\n(?=function kickoffTacklerStats)"
+          s2,n=re.subn(pattern,replacement,s,count=1)
+          if n!=1:
+              raise SystemExit(f'Could not replace unitTacklerStats safely; replacements={n}')
+
+          # Guardrails: layout/look code must remain untouched and only one new historical map exists.
+          for needle in [
+              "function sourceKey(type,side){if(type==='PUNT')return side==='unit'?'pff_OFFPLAYERS':'pff_DEFPLAYERS';return side==='unit'?'pff_DEFPLAYERS':'pff_OFFPLAYERS'}",
+              "function rolePos(role,i,type,side,play){",
+              "function kickoffTacklerStats(a,mode){return unitTacklerStats(a,'KICKOFF',mode)}",
+              "function puntTacklerStats(a){return unitTacklerStats(a,'PUNT','coverage')}"
+          ]:
+              if needle not in s2:
+                  raise SystemExit('Guardrail failed: '+needle[:60])
+          if s2.count('const UAB_2025_TACKLER_PROFILES=')!=1:
+              raise SystemExit('Historical tackler map count is not exactly one')
+          if "const coverageTeamField=unitType==='PUNT'?'pff_OFFTEAM':'pff_DEFTEAM';" not in s2:
+              raise SystemExit('Punt/kickoff ownership patch missing')
+          if "if(rawKey==='ALBI 05')return null;" not in s2:
+              raise SystemExit('Ryder Burton exclusion missing')
+
+          path.write_text(s2)
+          print('Patched Week 2 tackler identity/photo path only.')
           PY
+
+          git diff --check
+          git diff -- uab/week2-template.html | head -n 240
+          git config user.name 'tommydenison4-ctrl'
+          git config user.email 'tommydenison4@gmail.com'
+          git add uab/week2-template.html
+          git commit -m 'Fix UAB punt and kickoff tackler identities and photos'
+          git push origin main
