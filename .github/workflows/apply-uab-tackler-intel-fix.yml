@@ -1,0 +1,32 @@
+name: Apply surgical UAB tackler intel fix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-uab-tackler-intel-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Week 2 UAB tackler intel only
+        run: python3 scripts/patch_uab_tackler_intel.py
+      - name: Validate and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = "uab/week2-template.html"
+          grep -q "UAB_2025_TACKLER_PROFILES" uab/week2-template.html
+          grep -q "coverageTeamField=unitType==='PUNT'?'pff_OFFTEAM':'pff_DEFTEAM'" uab/week2-template.html
+          grep -q "if(rawKey==='ALBI 05')return null" uab/week2-template.html
+          git config user.name 'tommydenison4-ctrl'
+          git config user.email 'tommydenison4@gmail.com'
+          git add uab/week2-template.html
+          git commit -m 'Fix UAB punt and kickoff tackler identities and photos'
+          git push origin main
