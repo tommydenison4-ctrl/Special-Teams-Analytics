@@ -1,0 +1,36 @@
+name: Run UAB player photo refresh now
+
+on:
+  push:
+    paths:
+      - '.github/workflows/run-uab-photo-refresh-now.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh official UAB player photos in batches
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://special-teams-analytics.vercel.app/api/enrich-roster-uab"
+          for pass in $(seq 1 20); do
+            echo "---- pass $pass ----"
+            BODY=$(curl --fail-with-body --silent --show-error \
+              --max-time 120 \
+              -X POST "$URL" \
+              -H 'content-type: application/json' \
+              --data '{"publicUabRefresh":true,"batchSize":8}')
+            echo "$BODY"
+            DONE=$(python3 -c 'import json,sys; print(str(json.loads(sys.stdin.read()).get("done",False)).lower())' <<< "$BODY")
+            if [ "$DONE" = "true" ]; then
+              echo "UAB photo refresh complete."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Refresh did not report done after 20 passes."
+          exit 1
