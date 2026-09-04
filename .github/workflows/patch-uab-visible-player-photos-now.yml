@@ -28,10 +28,7 @@ jobs:
           for fn in ('offensive-side.csv','defensive-side.csv'):
               rows += list(csv.DictReader(io.StringIO(get(fn))))
           def val(r,k): return str(r.get(k,'') or '').strip()
-          def split_players(cell):
-              return {x.strip() for x in re.split(r'[;|,]+',str(cell or '')) if x.strip()}
-          def labels(cell):
-              return [x.strip() for x in re.split(r'[;|,]+',str(cell or '')) if x.strip()]
+          def labels(cell): return [x.strip() for x in re.split(r'[;|,]+',str(cell or '')) if x.strip()]
           def token(label):
               m=re.search(r'(?:^|\s)([DS]?)(\d{1,2})$',str(label).strip(),re.I)
               return (m.group(1).upper(), str(int(m.group(2)))) if m else ('','')
@@ -45,17 +42,13 @@ jobs:
           for p in players:
               n=str(p.get('number','')).lstrip('0') or '0'
               bynum.setdefault(n,[]).append(p)
-          phases={'PUNT':('pff_OFFTEAM','pff_OFFPLAYERS'),'KICKOFF':('pff_DEFTEAM','pff_DEFPLAYERS')}
-          for phase,(teamfield,playerfield) in phases.items():
+          phases={'PUNT':'pff_OFFTEAM','KICKOFF':'pff_DEFTEAM'}
+          for phase,teamfield in phases.items():
               counts={}
               for r in rows:
-                  if val(r,'pff_SPECIALTEAMSTYPE').upper()!=phase or val(r,teamfield).upper()!='ALBI':
-                      continue
-                  active=split_players(val(r,playerfield))
+                  if val(r,'pff_SPECIALTEAMSTYPE').upper()!=phase or val(r,teamfield).upper()!='ALBI': continue
                   for fld in ('pff_TACKLE','pff_TACKLEASSIST'):
                       for lab in labels(val(r,fld)):
-                          if active and lab not in active:
-                              continue
                           counts[lab]=counts.get(lab,0)+1
               print('\n### '+phase+' TACKLERS')
               for lab,c in sorted(counts.items(), key=lambda kv:(-kv[1],kv[0])):
@@ -68,7 +61,7 @@ jobs:
                   rec={'label':lab,'events':c,'number':num}
                   if len(candidates)==1:
                       p=candidates[0]
-                      rec.update({'name':p.get('name'),'position':p.get('position'),'hasImage':bool(p.get('image')),'image':p.get('image','')})
+                      rec.update({'name':p.get('name'),'position':p.get('position'),'hasImage':bool(p.get('image'))})
                   else:
                       rec['matches']=[{'name':p.get('name'),'position':p.get('position'),'hasImage':bool(p.get('image'))} for p in candidates]
                   print(json.dumps(rec, ensure_ascii=False))
