@@ -240,7 +240,7 @@ function playerPage(a){
     koCoverageTacklers:kickoffTacklerStats(a,'coverage'),
     puntTeamTacklers:puntTacklerStats(a)
   };
-  var list=playerCategory==='depthChart'?uabDepthItems(uabDepthRolesForCategory('depthChart')):uabMergeDepth(lists[playerCategory]||[],playerCategory);
+  var list=(playerCategory==='depthChart'?uabDepthItems(uabDepthRolesForCategory('depthChart')):uabMergeDepth(lists[playerCategory]||[],playerCategory)).filter(function(x){var p=(x&&x.p)||rosterByNumber(x&&x.num);return nameKey(p&&p.name)!=='ryder burton';});
   var labels={depthChart:'UAB Special Teams Depth Chart',kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers / Kickoff',punters:'Punters',koCoverageTacklers:'Kickoff Team Tacklers',puntTeamTacklers:'Punt Team Tacklers'};
   var rosterNote=rosterData.length?'UAB roster loaded: <b>'+rosterData.length+'</b> players.':'UAB depth-chart players remain visible even when a roster profile has not yet been matched.';
   var cards=list.length?list.map(function(x){return x.depthOnly?uabDepthCard(x):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>';
