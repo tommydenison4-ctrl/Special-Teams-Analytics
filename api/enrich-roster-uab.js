@@ -242,12 +242,13 @@ async function enrichProfile(page, player) {
 
     return {
       ...player,
-      image: player.image || detail.image || '',
-      bio: player.bio || detail.bio || ''
+      image: detail.image || player.image || '',
+      bio: detail.bio || player.bio || '',
+      imageVerifiedAt: new Date().toISOString()
     };
   } catch (error) {
     console.error('Profile enrichment failed:', player.profile, error?.message || error);
-    return player;
+    return { ...player, imageVerifiedAt: new Date().toISOString() };
   }
 }
 
@@ -276,7 +277,7 @@ export default async function handler(req, res) {
     const pendingIndexes = [];
     for (let i = 0; i < players.length; i++) {
       const p = players[i];
-      if (p.profile && (!p.image || !p.bio)) pendingIndexes.push(i);
+      if (p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)) pendingIndexes.push(i);
       if (pendingIndexes.length >= batchSize) break;
     }
 
@@ -288,7 +289,7 @@ export default async function handler(req, res) {
         done: true,
         processed: 0,
         total: players.length,
-        completed: players.filter(p => p.image && p.bio).length,
+        completed: players.filter(p => !p.profile || p.imageVerifiedAt).length,
         photos,
         bios
       });
@@ -321,8 +322,8 @@ export default async function handler(req, res) {
 
     const photos = players.filter(p => p.image).length;
     const bios = players.filter(p => p.bio).length;
-    const completed = players.filter(p => p.image && p.bio).length;
-    const remaining = players.filter(p => p.profile && (!p.image || !p.bio)).length;
+    const completed = players.filter(p => !p.profile || p.imageVerifiedAt).length;
+    const remaining = players.filter(p => p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)).length;
 
     return sendJson(res, 200, {
       ok: true,
