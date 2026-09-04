@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ULM Special Teams • Week 2 • UAB</title>
+  <style>
+    html,body{margin:0;min-height:100%;background:#06131b;color:#fff;font-family:Arial,sans-serif}
+    #boot{display:flex;align-items:center;justify-content:center;min-height:100vh;font-size:16px;opacity:.8}
+  </style>
+</head>
+<body>
+  <div id="boot">Loading Week 2 • UAB…</div>
+  <script>
+  (async function () {
+    const PREFIX = 'ULM_ST_2026_W2_UAB::';
+    const localRef = window.localStorage;
+    const sessionRef = window.sessionStorage;
+    const proto = Storage.prototype;
+    const raw = {
+      getItem: proto.getItem,
+      setItem: proto.setItem,
+      removeItem: proto.removeItem,
+      clear: proto.clear,
+      key: proto.key
+    };
+
+    const isScoped = (store) => store === localRef || store === sessionRef;
+    const scopedKey = (key) => PREFIX + String(key);
+
+    proto.getItem = function (key) {
+      return isScoped(this) ? raw.getItem.call(this, scopedKey(key)) : raw.getItem.call(this, key);
+    };
+    proto.setItem = function (key, value) {
+      return isScoped(this) ? raw.setItem.call(this, scopedKey(key), value) : raw.setItem.call(this, key, value);
+    };
+    proto.removeItem = function (key) {
+      return isScoped(this) ? raw.removeItem.call(this, scopedKey(key)) : raw.removeItem.call(this, key);
+    };
+    proto.clear = function () {
+      if (!isScoped(this)) return raw.clear.call(this);
+      const matches = [];
+      for (let i = 0; i < this.length; i += 1) {
+        const key = raw.key.call(this, i);
+        if (key && key.startsWith(PREFIX)) matches.push(key);
+      }
+      matches.forEach((key) => raw.removeItem.call(this, key));
+    };
+    proto.key = function (index) {
+      if (!isScoped(this)) return raw.key.call(this, index);
+      const matches = [];
+      for (let i = 0; i < this.length; i += 1) {
+        const key = raw.key.call(this, i);
+        if (key && key.startsWith(PREFIX)) matches.push(key.slice(PREFIX.length));
+      }
+      return matches[index] ?? null;
+    };
+
+    window.__ULM_SPECIAL_TEAMS_WORKSPACE__ = {
+      season: 2026,
+      week: 2,
+      opponent: 'UAB',
+      storagePrefix: PREFIX
+    };
+
+    try {
+      let html = await fetch('/uab/week2-template.html', { cache: 'no-store' }).then((response) => {
+        if (!response.ok) throw new Error('Could not load Week 2 template.');
+        return response.text();
+      });
+
+      // Keep the exact Week 1 interface, but route every persistent UAB resource
+      // to its own Supabase location. Week 1 endpoints are never touched.
+      const endpointMap = [
+        ['storage-project', 'storage-project-uab'],
+        ['sync-roster', 'sync-roster-uab'],
+        ['enrich-roster', 'enrich-roster-uab'],
+        ['roster', 'roster-uab']
+      ];
+      endpointMap.forEach(([from, to]) => {
+        const pattern = new RegExp('(^|[^A-Za-z0-9_-])(/?api/' + from + ')(?![A-Za-z0-9_-])', 'g');
+        html = html.replace(pattern, (match, before, path) => before + path.replace(from, to));
+      });
+
+      // The frozen template lives one folder down; keep all original assets pointed
+      // at the repository root without changing the Week 1 file itself.
+      html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
+      html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 2 • UAB</title>');
+
+      document.open();
+      document.write(html);
+      document.close();
+    } catch (error) {
+      document.getElementById('boot').textContent = 'Week 2 UAB could not load: ' + (error?.message || error);
+    }
+  })();
+  </script>
+</body>
+</html>
