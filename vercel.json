@@ -1,6 +1,6 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/weeks/index.html" }
+    { "source": "/", "destination": "/week1/index.html" }
   ]
 }
