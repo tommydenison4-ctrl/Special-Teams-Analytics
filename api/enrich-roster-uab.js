@@ -3,6 +3,7 @@ import puppeteer from 'puppeteer-core';
 
 const BUCKET = 'Special Teams';
 const OBJECT_PATH = 'Opponents/UAB/roster.json';
+const PHOTO_REFRESH_VERSION = 'uab-photos-2026-09-04-v2';
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -244,11 +245,12 @@ async function enrichProfile(page, player) {
       ...player,
       image: detail.image || player.image || '',
       bio: detail.bio || player.bio || '',
-      imageVerifiedAt: new Date().toISOString()
+      imageVerifiedAt: new Date().toISOString(),
+      photoRefreshVersion: PHOTO_REFRESH_VERSION
     };
   } catch (error) {
     console.error('Profile enrichment failed:', player.profile, error?.message || error);
-    return { ...player, imageVerifiedAt: new Date().toISOString() };
+    return { ...player, imageVerifiedAt: new Date().toISOString(), photoRefreshVersion: PHOTO_REFRESH_VERSION };
   }
 }
 
@@ -259,7 +261,8 @@ export default async function handler(req, res) {
     const body = await readJsonBody(req);
     const { url, serviceKey, adminKey } = environment();
 
-    if (String(body.adminKey || '') !== adminKey) {
+    const publicUabRefresh = body.publicUabRefresh === true;
+    if (!publicUabRefresh && String(body.adminKey || '') !== adminKey) {
       return sendJson(res, 403, { error: 'Incorrect admin key.' });
     }
 
@@ -272,12 +275,14 @@ export default async function handler(req, res) {
       await saveRoster(url, serviceKey, meta, players);
     }
 
-    // Skip players already enriched. Also skip profile-less players so one bad record
-    // cannot cause an endless client loop.
+    // Public button refreshes every official UAB profile once per refresh version.
+    // Admin enrichment keeps the existing photo/bio completion behavior.
     const pendingIndexes = [];
     for (let i = 0; i < players.length; i++) {
       const p = players[i];
-      if (p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)) pendingIndexes.push(i);
+      const needsPublicPhotoRefresh = publicUabRefresh && p.profile && p.photoRefreshVersion !== PHOTO_REFRESH_VERSION;
+      const needsAdminEnrichment = !publicUabRefresh && p.profile && (!p.imageVerifiedAt || !p.image || !p.bio);
+      if (needsPublicPhotoRefresh || needsAdminEnrichment) pendingIndexes.push(i);
       if (pendingIndexes.length >= batchSize) break;
     }
 
@@ -289,7 +294,7 @@ export default async function handler(req, res) {
         done: true,
         processed: 0,
         total: players.length,
-        completed: players.filter(p => !p.profile || p.imageVerifiedAt).length,
+        completed: publicUabRefresh ? players.filter(p => !p.profile || p.photoRefreshVersion === PHOTO_REFRESH_VERSION).length : players.filter(p => !p.profile || p.imageVerifiedAt).length,
         photos,
         bios
       });
@@ -322,8 +327,8 @@ export default async function handler(req, res) {
 
     const photos = players.filter(p => p.image).length;
     const bios = players.filter(p => p.bio).length;
-    const completed = players.filter(p => !p.profile || p.imageVerifiedAt).length;
-    const remaining = players.filter(p => p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)).length;
+    const completed = publicUabRefresh ? players.filter(p => !p.profile || p.photoRefreshVersion === PHOTO_REFRESH_VERSION).length : players.filter(p => !p.profile || p.imageVerifiedAt).length;
+    const remaining = publicUabRefresh ? players.filter(p => p.profile && p.photoRefreshVersion !== PHOTO_REFRESH_VERSION).length : players.filter(p => p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)).length;
 
     return sendJson(res, 200, {
       ok: true,
