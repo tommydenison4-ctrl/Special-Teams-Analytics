@@ -1,0 +1,35 @@
+name: Apply official UAB player photos now
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-uab-visible-player-photos-now.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for deploy and patch UAB roster photos
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://special-teams-analytics.vercel.app/api/patch-uab-player-photos"
+          for attempt in $(seq 1 18); do
+            echo "attempt $attempt"
+            TMP=$(mktemp)
+            CODE=$(curl --silent --show-error --max-time 45 -o "$TMP" -w '%{http_code}' \
+              -X POST "$URL" -H 'content-type: application/json' --data '{}') || CODE=000
+            cat "$TMP" || true
+            echo
+            if [ "$CODE" = "200" ]; then
+              echo "UAB photo patch complete."
+              exit 0
+            fi
+            echo "HTTP $CODE; waiting for current Vercel deployment..."
+            sleep 10
+          done
+          echo "UAB photo patch did not complete."
+          exit 1
