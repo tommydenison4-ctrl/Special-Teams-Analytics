@@ -18,11 +18,18 @@ jobs:
           set -euo pipefail
           BASE="https://special-teams-analytics.vercel.app"
           echo "---- roster sync ----"
-          SYNC=$(curl --fail-with-body --silent --show-error --max-time 180 \
+          TMP=$(mktemp)
+          CODE=$(curl --silent --show-error --max-time 180 \
+            -o "$TMP" -w '%{http_code}' \
             -X POST "$BASE/api/sync-uab-now" \
             -H 'content-type: application/json' \
             --data '{}')
-          echo "$SYNC"
+          cat "$TMP"
+          echo
+          echo "HTTP $CODE"
+          if [ "$CODE" -lt 200 ] || [ "$CODE" -ge 300 ]; then
+            exit 1
+          fi
 
           echo "---- profile photo enrichment ----"
           for pass in $(seq 1 25); do
