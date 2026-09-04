@@ -1,0 +1,152 @@
+name: Add UAB photo refresh button
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-uab-photo-button.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch UAB photo refresh endpoint and page
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # 1) Make the fixed UAB enrichment endpoint callable from the UAB page
+          # without exposing an admin key. It can only touch the fixed UAB roster.
+          p = Path('api/enrich-roster-uab.js')
+          s = p.read_text()
+          if "PHOTO_REFRESH_VERSION" not in s:
+              s = s.replace(
+                  "const OBJECT_PATH = 'Opponents/UAB/roster.json';",
+                  "const OBJECT_PATH = 'Opponents/UAB/roster.json';\nconst PHOTO_REFRESH_VERSION = 'uab-photos-2026-09-04-v2';"
+              )
+
+          s = s.replace(
+              "    if (String(body.adminKey || '') !== adminKey) {\n      return sendJson(res, 403, { error: 'Incorrect admin key.' });\n    }\n\n    const batchSize",
+              "    const publicUabRefresh = body.publicUabRefresh === true;\n    if (!publicUabRefresh && String(body.adminKey || '') !== adminKey) {\n      return sendJson(res, 403, { error: 'Incorrect admin key.' });\n    }\n\n    const batchSize"
+          )
+
+          s = s.replace(
+              "      imageVerifiedAt: new Date().toISOString()\n    };",
+              "      imageVerifiedAt: new Date().toISOString(),\n      photoRefreshVersion: PHOTO_REFRESH_VERSION\n    };"
+          )
+          s = s.replace(
+              "    return { ...player, imageVerifiedAt: new Date().toISOString() };",
+              "    return { ...player, imageVerifiedAt: new Date().toISOString(), photoRefreshVersion: PHOTO_REFRESH_VERSION };"
+          )
+
+          old_pending = """    // Skip players already enriched. Also skip profile-less players so one bad record
+    // cannot cause an endless client loop.
+    const pendingIndexes = [];
+    for (let i = 0; i < players.length; i++) {
+      const p = players[i];
+      if (p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)) pendingIndexes.push(i);
+      if (pendingIndexes.length >= batchSize) break;
+    }
+"""
+          new_pending = """    // Public button refreshes every official UAB profile once per refresh version.
+    // Admin enrichment keeps the existing photo/bio completion behavior.
+    const pendingIndexes = [];
+    for (let i = 0; i < players.length; i++) {
+      const p = players[i];
+      const needsPublicPhotoRefresh = publicUabRefresh && p.profile && p.photoRefreshVersion !== PHOTO_REFRESH_VERSION;
+      const needsAdminEnrichment = !publicUabRefresh && p.profile && (!p.imageVerifiedAt || !p.image || !p.bio);
+      if (needsPublicPhotoRefresh || needsAdminEnrichment) pendingIndexes.push(i);
+      if (pendingIndexes.length >= batchSize) break;
+    }
+"""
+          if old_pending in s:
+              s = s.replace(old_pending, new_pending)
+
+          s = s.replace(
+              "        completed: players.filter(p => !p.profile || p.imageVerifiedAt).length,",
+              "        completed: publicUabRefresh ? players.filter(p => !p.profile || p.photoRefreshVersion === PHOTO_REFRESH_VERSION).length : players.filter(p => !p.profile || p.imageVerifiedAt).length,"
+          )
+          s = s.replace(
+              "    const completed = players.filter(p => !p.profile || p.imageVerifiedAt).length;\n    const remaining = players.filter(p => p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)).length;",
+              "    const completed = publicUabRefresh ? players.filter(p => !p.profile || p.photoRefreshVersion === PHOTO_REFRESH_VERSION).length : players.filter(p => !p.profile || p.imageVerifiedAt).length;\n    const remaining = publicUabRefresh ? players.filter(p => p.profile && p.photoRefreshVersion !== PHOTO_REFRESH_VERSION).length : players.filter(p => p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)).length;"
+          )
+          p.write_text(s)
+
+          # 2) Put a visible button directly in the generated Week 2 header and wire it.
+          p = Path('uab/index.html')
+          s = p.read_text()
+          marker = "      document.open();"
+          if 'refreshUabPhotosBtn' not in s:
+              inject = r'''      // Visible Week 2 control: refresh official UAB player photos.
+      html = html.replace(
+        /(<button[^>]*id=["']teamSettingsBtn["'][^>]*>)/i,
+        '<button id="refreshUabPhotosBtn" type="button" title="Refresh UAB player photos from official profiles">Refresh UAB Player Photos</button>$1'
+      );
+
+      const uabPhotoRefreshScript = `<script>
+      (function(){
+        const btn=document.getElementById('refreshUabPhotosBtn');
+        if(!btn)return;
+        btn.addEventListener('click',async function(){
+          if(btn.dataset.busy==='1')return;
+          btn.dataset.busy='1';
+          const original='Refresh UAB Player Photos';
+          btn.disabled=true;
+          btn.textContent='Refreshing UAB Photos…';
+          try{
+            let result=null;
+            for(let pass=0;pass<20;pass++){
+              const r=await fetch('/api/enrich-roster-uab',{
+                method:'POST',
+                headers:{'content-type':'application/json'},
+                body:JSON.stringify({publicUabRefresh:true,batchSize:8})
+              });
+              let j={};
+              try{j=await r.json();}catch(e){}
+              if(!r.ok)throw new Error(j.error||('Photo refresh returned '+r.status));
+              result=j;
+              btn.textContent='UAB Photos '+(j.completed||0)+'/'+(j.total||0);
+              if(j.done)break;
+            }
+            if(typeof loadRosterFromSupabase==='function')await loadRosterFromSupabase();
+            if(typeof render==='function')render();
+            const photos=result&&result.photos!=null?result.photos:'?';
+            btn.textContent='Photos Refreshed • '+photos;
+            setTimeout(function(){btn.textContent=original;btn.disabled=false;btn.dataset.busy='0';},2500);
+          }catch(err){
+            console.error(err);
+            btn.textContent='Photo Refresh Failed';
+            btn.disabled=false;
+            btn.dataset.busy='0';
+            alert('UAB photo refresh failed: '+(err&&err.message?err.message:err));
+          }
+        });
+      })();
+      <\/script>`;
+      html = html.replace('</body>', uabPhotoRefreshScript + '</body>');
+
+'''
+              if marker not in s:
+                  raise SystemExit('document.open marker not found in uab/index.html')
+              s = s.replace(marker, inject + marker, 1)
+          p.write_text(s)
+          PY
+      - name: Verify patch
+        run: |
+          grep -q "refreshUabPhotosBtn" uab/index.html
+          grep -q "publicUabRefresh" api/enrich-roster-uab.js
+          grep -q "PHOTO_REFRESH_VERSION" api/enrich-roster-uab.js
+      - name: Commit generated changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uab/index.html api/enrich-roster-uab.js
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Add visible UAB player photo refresh button"
+            git push
+          fi
