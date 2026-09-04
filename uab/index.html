@@ -168,6 +168,19 @@
       html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
       html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 2 • UAB</title>');
 
+      const navStyle = `<style id="weekJumpStyle">
+        .weekJumpBtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #d1a53a;border-radius:9px;background:#6f1d2b;color:#fff;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.04em;white-space:nowrap}
+        .weekJumpBtn:hover{border-color:#f0c85b;background:#842536}
+        @media(max-width:760px){.weekJumpBtn{width:100%;min-height:42px}}
+      </style>`;
+      html = html.replace('</head>', navStyle + '</head>');
+      const weekButton = '<a class="weekJumpBtn" href="/">← WEEK 1 • MISSISSIPPI STATE</a>';
+      if (html.includes('<div class="ulmHeaderActions">')) {
+        html = html.replace('<div class="ulmHeaderActions">', '<div class="ulmHeaderActions">' + weekButton);
+      } else {
+        html = html.replace('</body>', '<div style="position:fixed;right:14px;top:14px;z-index:20000">' + weekButton + '</div></body>');
+      }
+
       document.open();
       document.write(html);
       document.close();
