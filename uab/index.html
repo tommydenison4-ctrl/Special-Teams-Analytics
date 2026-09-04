@@ -288,54 +288,6 @@ function playerPage(a){
         html = html.replace('</body>', '<div style="position:fixed;right:14px;top:14px;z-index:20000">' + weekButton + '</div></body>');
       }
 
-      // Visible Week 2 control: refresh official UAB player photos.
-      html = html.replace(
-        /(<button[^>]*id=["']teamSettingsBtn["'][^>]*>)/i,
-        '<button id="refreshUabPhotosBtn" type="button" title="Refresh UAB player photos from official profiles">Refresh UAB Player Photos</button>$1'
-      );
-
-      const uabPhotoRefreshScript = `<script>
-      (function(){
-        const btn=document.getElementById('refreshUabPhotosBtn');
-        if(!btn)return;
-        btn.addEventListener('click',async function(){
-          if(btn.dataset.busy==='1')return;
-          btn.dataset.busy='1';
-          const original='Refresh UAB Player Photos';
-          btn.disabled=true;
-          btn.textContent='Refreshing UAB Photos…';
-          try{
-            let result=null;
-            for(let pass=0;pass<20;pass++){
-              const r=await fetch('/api/enrich-roster-uab',{
-                method:'POST',
-                headers:{'content-type':'application/json'},
-                body:JSON.stringify({publicUabRefresh:true,batchSize:8})
-              });
-              let j={};
-              try{j=await r.json();}catch(e){}
-              if(!r.ok)throw new Error(j.error||('Photo refresh returned '+r.status));
-              result=j;
-              btn.textContent='UAB Photos '+(j.completed||0)+'/'+(j.total||0);
-              if(j.done)break;
-            }
-            if(typeof loadRosterFromSupabase==='function')await loadRosterFromSupabase();
-            if(typeof render==='function')render();
-            const photos=result&&result.photos!=null?result.photos:'?';
-            btn.textContent='Photos Refreshed • '+photos;
-            setTimeout(function(){btn.textContent=original;btn.disabled=false;btn.dataset.busy='0';},2500);
-          }catch(err){
-            console.error(err);
-            btn.textContent='Photo Refresh Failed';
-            btn.disabled=false;
-            btn.dataset.busy='0';
-            alert('UAB photo refresh failed: '+(err&&err.message?err.message:err));
-          }
-        });
-      })();
-      <\/script>`;
-      html = html.replace('</body>', uabPhotoRefreshScript + '</body>');
-
       document.open();
       document.write(html);
       document.close();
