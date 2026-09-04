@@ -1,0 +1,107 @@
+      // UAB_PLAYER_INTEL_DEPTH_PATCH
+      // Week 2 Player Intelligence must always include the current UAB ST depth chart.
+      // This changes only the UAB wrapper. Week 1, Chart Looks and Look Library are untouched.
+      html = html.replace(
+        "let playerCategory='kickReturners',selectedSpecialist='';",
+        "let playerCategory='depthChart',selectedSpecialist='';"
+      );
+
+      const uabPlayerIntelPatch = String.raw`
+function uabDepthItems(roles){
+  var st=(typeof UAB_WEEK2_DEPTH!=='undefined'&&UAB_WEEK2_DEPTH&&UAB_WEEK2_DEPTH.specialTeams)||{};
+  var seen={},out=[];
+  (roles||[]).forEach(function(role){
+    var arr=Array.isArray(st[role])?st[role]:[];
+    arr.forEach(function(entry){
+      var num=String(entry&&entry[0]!=null?entry[0]:'');
+      var nm=String(entry&&entry[1]!=null?entry[1]:'');
+      var cls=String(entry&&entry[2]!=null?entry[2]:'');
+      if(!nm)return;
+      var key=nameKey(nm)||('num:'+num);
+      if(seen[key]){
+        if(seen[key].depthRoles.indexOf(role)<0)seen[key].depthRoles.push(role);
+        return;
+      }
+      var p=(rosterData||[]).find(function(r){return nameKey(r.name)===nameKey(nm);})||rosterByNumber(num)||{name:nm,number:num,class:cls,position:'',bio:'Roster profile pending.'};
+      p=Object.assign({},p,{name:p.name||nm,number:p.number||num,class:p.class||cls});
+      var item={num:String(p.number||num),p:p,rows:[],depthOnly:true,depthRoles:[role],verification:{status:'verified',allowed:true}};
+      seen[key]=item;
+      out.push(item);
+    });
+  });
+  return out;
+}
+function uabDepthRolesForCategory(cat){
+  if(cat==='kickReturners')return ['KR'];
+  if(cat==='puntReturners')return ['PR'];
+  if(cat==='kickers')return ['PK','KO'];
+  if(cat==='punters')return ['PT'];
+  if(cat==='depthChart')return ['PT','PK','KO','LS','H','PR','KR'];
+  return [];
+}
+function uabMergeDepth(list,cat){
+  var roles=uabDepthRolesForCategory(cat);
+  if(!roles.length)return (list||[]).slice();
+  var out=(list||[]).slice();
+  uabDepthItems(roles).forEach(function(d){
+    var dn=nameKey(d.p&&d.p.name);
+    var exists=out.some(function(x){
+      var xn=nameKey(x&&x.p&&x.p.name);
+      if(dn&&xn&&dn===xn)return true;
+      if(!xn&&String(x&&x.num||'')===String(d.num||''))return true;
+      return false;
+    });
+    if(!exists)out.push(d);
+  });
+  return out;
+}
+function uabDepthCard(x){
+  var p=x.p||{};
+  var roles=(x.depthRoles||[]).join(' / ')||'ST';
+  var stats=[['Depth Role',roles],['PFF Reps','—'],['Status','DEPTH']];
+  return '<div class="playerSelect" data-playernum="'+esc(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'UAB player',null)+'</div>';
+}
+function uabSelectedProfile(a,cat,list){
+  if(!list.length)return '<div class="empty">No UAB players are listed in this Player Intelligence category.</div>';
+  if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
+  var x=list.find(function(z){return String(z.num)===String(selectedSpecialist);})||list[0];
+  if(!x.depthOnly&&cat!=='depthChart')return selectedProfile(a,cat,list);
+  var p=x.p||{name:'UAB player',number:x.num||'',bio:'Roster profile pending.'};
+  var roles=(x.depthRoles||[]).join(' / ')||'ST';
+  var meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');
+  var photo=playerPhoto(p);
+  var link=p.profile?'<a class="profileLink" href="'+esc(p.profile)+'" target="_blank" rel="noopener">Official biography ↗</a>':'';
+  var bio=esc(p.bio||'Official roster biography has not been loaded yet.');
+  return '<div class="pageBreak">'+reportBanner((p.name||'UAB Player')+' Player Report')+
+    '<div class="card playerHero"><div class="playerPhoto">'+photo+'<div class="playerNo">#'+esc(p.number||x.num||'—')+'</div></div><div class="playerBioCard"><div class="eyebrow">UAB SPECIAL TEAMS DEPTH CHART</div><h2>'+esc(p.name||'UAB player')+'</h2><div class="playerMeta">'+esc(meta||'Current UAB roster')+'</div><div class="bioSnippet">'+bio+'</div>'+link+
+    '<div class="metrics" style="margin-top:14px"><div class="mini"><b>'+esc(roles)+'</b><span>Depth role</span></div><div class="mini"><b>#'+esc(p.number||x.num||'—')+'</b><span>Jersey</span></div><div class="mini"><b>CURRENT</b><span>2026 depth chart</span></div><div class="mini"><b>—</b><span>PFF stats if untagged</span></div></div></div></div></div>';
+}
+function categoryTabs(){
+  var cats=[['depthChart','ST Depth Chart'],['kickReturners','Kick Returners'],['puntReturners','Punt Returners'],['kickers','Kickers / Kickoff'],['punters','Punters'],['koCoverageTacklers','KO Team Tacklers'],['puntTeamTacklers','Punt Team Tacklers']];
+  return '<div class="playerCategoryTabs noPrint">'+cats.map(function(c){return '<button data-pcat="'+c[0]+'" class="'+(playerCategory===c[0]?'active':'')+'">'+c[1]+'</button>';}).join('')+'</div>';
+}
+function playerPage(a){
+  var lists={
+    kickReturners:returnerFullStats(a,'KICKOFF'),
+    puntReturners:returnerFullStats(a,'PUNT'),
+    kickers:specialistFullStats(a,'kicker'),
+    punters:specialistFullStats(a,'punter'),
+    koCoverageTacklers:kickoffTacklerStats(a,'coverage'),
+    puntTeamTacklers:puntTacklerStats(a)
+  };
+  var list=playerCategory==='depthChart'?uabDepthItems(uabDepthRolesForCategory('depthChart')):uabMergeDepth(lists[playerCategory]||[],playerCategory);
+  var labels={depthChart:'UAB Special Teams Depth Chart',kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers / Kickoff',punters:'Punters',koCoverageTacklers:'Kickoff Team Tacklers',puntTeamTacklers:'Punt Team Tacklers'};
+  var rosterNote=rosterData.length?'UAB roster loaded: <b>'+rosterData.length+'</b> players.':'UAB depth-chart players remain visible even when a roster profile has not yet been matched.';
+  var cards=list.length?list.map(function(x){return x.depthOnly?uabDepthCard(x):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>';
+  return reportBanner('Player Intelligence')+
+    title('Player Intelligence','Week 2 UAB player intelligence. Every player on the current UAB special-teams depth chart remains visible here, whether or not he has a tagged PFF statistic in the loaded historical data.')+
+    '<div class="card"><div class="context">Active team: <b>UAB</b>. '+rosterNote+'</div></div>'+
+    categoryTabs()+
+    '<div class="card"><div class="eyebrow">'+(labels[playerCategory]||'UAB Players')+'</div><div class="playerCardGrid" style="margin-top:10px">'+cards+'</div></div><div style="margin-top:14px">'+uabSelectedProfile(a,playerCategory,list)+'</div>';
+}
+`;
+      html = html.replace(
+        'function truthyResult(r,needle){',
+        uabPlayerIntelPatch + '\nfunction truthyResult(r,needle){'
+      );
+
