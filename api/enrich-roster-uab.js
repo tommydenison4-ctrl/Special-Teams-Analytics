@@ -2,7 +2,7 @@ import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
 
 const BUCKET = 'Special Teams';
-const OBJECT_PATH = '2026/Week2_UAB/roster.json';
+const OBJECT_PATH = 'Opponents/UAB/roster.json';
 
 function sendJson(res, status, body) {
   res.statusCode = status;
