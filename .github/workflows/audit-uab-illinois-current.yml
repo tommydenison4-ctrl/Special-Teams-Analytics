@@ -1,0 +1,40 @@
+name: Audit Illinois rows already stored for UAB
+
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-uab-illinois-current.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect Illinois rows currently in UAB Supabase package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import csv, io, json, urllib.request
+          base='https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/UAB'
+          def get(path):
+              with urllib.request.urlopen(base+'/'+path, timeout=60) as r:
+                  return r.read().decode('utf-8-sig')
+          fields=['pff_PLAYID','pff_GAMEDATE','pff_SPECIALTEAMSTYPE','pff_OFFTEAM','pff_DEFTEAM','pff_KICKRESULT','pff_KICKYARDS','pff_HANGTIME','pff_OPERATIONTIME','pff_KICKDIRECTIONACTUAL','pff_KICKDIRECTIONINTENDED','pff_RETURNDIRECTION','pff_RETURNYARDS','pff_TACKLE','pff_TACKLEASSIST']
+          total=0
+          ids=[]
+          for fn in ('offensive-side.csv','defensive-side.csv'):
+              rows=list(csv.DictReader(io.StringIO(get(fn))))
+              ill=[r for r in rows if str(r.get('pff_GAMEDATE','')).startswith('2026-09-03') or 'ILUN' in (str(r.get('pff_OFFTEAM',''))+str(r.get('pff_DEFTEAM','')))]
+              print('FILE',fn,'TOTAL_ROWS',len(rows),'ILLINOIS_ROWS',len(ill))
+              total+=len(ill)
+              for r in ill:
+                  ids.append(str(r.get('pff_PLAYID','')))
+                  rec={k:r.get(k,'') for k in fields}
+                  rec['nonempty_fields']=sum(1 for v in r.values() if str(v or '').strip())
+                  print(json.dumps(rec,ensure_ascii=False))
+          print('ILLINOIS_TOTAL',total)
+          print('ILLINOIS_PLAYIDS',','.join(ids))
+          PY
