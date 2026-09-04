@@ -1,0 +1,41 @@
+name: Add Week Navigation Button
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/add-week-nav.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-week1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Week 2 button directly to Week 1 header
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          marker = 'id="week2NavBtn"'
+          target = '<button id="saveCloudBtn">Save All to Cloud</button>'
+          button = '<button id="week2NavBtn" type="button" onclick="window.location.href=\'/uab/\'">WEEK 2 • UAB →</button>'
+          if marker not in text:
+              if target not in text:
+                  raise SystemExit('Could not find Save All to Cloud button anchor in index.html')
+              text = text.replace(target, button + target, 1)
+              p.write_text(text, encoding='utf-8')
+      - name: Commit Week 1 navigation button
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Week 2 button already present."
+            exit 0
+          fi
+          git commit -m "Add Week 2 button directly to Week 1 app header"
+          git push origin HEAD:main
