@@ -18,24 +18,8 @@
         if (!response.ok) throw new Error('Could not load Week 1 app.');
         return response.text();
       });
-
-      const navStyle = `<style id="weekJumpStyle">
-        .weekJumpBtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #d1a53a;border-radius:9px;background:#6f1d2b;color:#fff;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.04em;white-space:nowrap}
-        .weekJumpBtn:hover{border-color:#f0c85b;background:#842536}
-        @media(max-width:760px){.weekJumpBtn{width:100%;min-height:42px}}
-      </style>`;
-      html = html.replace('</head>', navStyle + '</head>');
-
-      const button = '<a class="weekJumpBtn" href="/uab/">WEEK 2 • UAB →</a>';
-      if (html.includes('<div class="ulmHeaderActions">')) {
-        html = html.replace('<div class="ulmHeaderActions">', '<div class="ulmHeaderActions">' + button);
-      } else {
-        html = html.replace('</body>', '<div style="position:fixed;right:14px;top:14px;z-index:20000">' + button + '</div></body>');
-      }
-
       html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
       html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 1 • Mississippi State</title>');
-
       document.open();
       document.write(html);
       document.close();
