@@ -1,0 +1,43 @@
+name: Sync full UAB roster and photos now
+
+on:
+  push:
+    paths:
+      - '.github/workflows/run-uab-full-roster-photo-sync-now.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync official UAB roster with profile links and roster photos
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://special-teams-analytics.vercel.app"
+          echo "---- roster sync ----"
+          SYNC=$(curl --fail-with-body --silent --show-error --max-time 180 \
+            -X POST "$BASE/api/sync-uab-now" \
+            -H 'content-type: application/json' \
+            --data '{}')
+          echo "$SYNC"
+
+          echo "---- profile photo enrichment ----"
+          for pass in $(seq 1 25); do
+            echo "pass $pass"
+            BODY=$(curl --fail-with-body --silent --show-error --max-time 120 \
+              -X POST "$BASE/api/enrich-roster-uab" \
+              -H 'content-type: application/json' \
+              --data '{"publicUabRefresh":true,"batchSize":8}')
+            echo "$BODY"
+            DONE=$(python3 -c 'import json,sys; print(str(json.loads(sys.stdin.read()).get("done",False)).lower())' <<< "$BODY")
+            if [ "$DONE" = "true" ]; then
+              echo "UAB roster + photo enrichment complete."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Photo enrichment did not report done after 25 passes."
+          exit 1
