@@ -1,0 +1,71 @@
+name: Fix UAB player photo refresh
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-uab-photo-refresh.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Refresh official UAB player images once
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('api/enrich-roster-uab.js')
+          text = path.read_text(encoding='utf-8')
+
+          old = """    return {\n      ...player,\n      image: player.image || detail.image || '',\n      bio: player.bio || detail.bio || ''\n    };"""
+          new = """    return {\n      ...player,\n      image: detail.image || player.image || '',\n      bio: detail.bio || player.bio || '',\n      imageVerifiedAt: new Date().toISOString()\n    };"""
+          if old not in text:
+              raise SystemExit('Could not find enrichProfile return block.')
+          text = text.replace(old, new, 1)
+
+          old = """  } catch (error) {\n    console.error('Profile enrichment failed:', player.profile, error?.message || error);\n    return player;\n  }"""
+          new = """  } catch (error) {\n    console.error('Profile enrichment failed:', player.profile, error?.message || error);\n    return { ...player, imageVerifiedAt: new Date().toISOString() };\n  }"""
+          if old not in text:
+              raise SystemExit('Could not find enrichProfile catch block.')
+          text = text.replace(old, new, 1)
+
+          old = "if (p.profile && (!p.image || !p.bio)) pendingIndexes.push(i);"
+          new = "if (p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)) pendingIndexes.push(i);"
+          if old not in text:
+              raise SystemExit('Could not find pending player condition.')
+          text = text.replace(old, new, 1)
+
+          old = "completed: players.filter(p => p.image && p.bio).length,"
+          new = "completed: players.filter(p => !p.profile || p.imageVerifiedAt).length,"
+          if old not in text:
+              raise SystemExit('Could not find completed response field.')
+          text = text.replace(old, new, 1)
+
+          old = """    const completed = players.filter(p => p.image && p.bio).length;\n    const remaining = players.filter(p => p.profile && (!p.image || !p.bio)).length;"""
+          new = """    const completed = players.filter(p => !p.profile || p.imageVerifiedAt).length;\n    const remaining = players.filter(p => p.profile && (!p.imageVerifiedAt || !p.image || !p.bio)).length;"""
+          if old not in text:
+              raise SystemExit('Could not find final completed/remaining block.')
+          text = text.replace(old, new, 1)
+
+          path.write_text(text, encoding='utf-8')
+          print('UAB enrichment now replaces stale image URLs with fresh official profile images.')
+
+      - name: Commit photo refresh fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api/enrich-roster-uab.js
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Refresh stale UAB player photo URLs"
+          git push origin HEAD:main
