@@ -1,5 +1,5 @@
 const BUCKET='Special Teams';
-const OBJECT_PATH='2026/Week2_UAB/roster.json';
+const OBJECT_PATH='Opponents/UAB/roster.json';
 
 function sendJson(res,status,body){
   res.statusCode=status;
@@ -26,14 +26,14 @@ export default async function handler(req,res){
       headers:{apikey:key,Authorization:`Bearer ${key}`},
       cache:'no-store'
     });
-    if(r.status===404) return sendJson(res,404,{error:'No roster.json found.'});
+    if(r.status===404) return sendJson(res,404,{error:'No UAB roster.json found in Opponents/UAB.'});
     if(!r.ok){
       const detail=await r.text();
-      return sendJson(res,r.status,{error:`Supabase roster read failed (${r.status}): ${detail||'unknown error'}`});
+      return sendJson(res,r.status,{error:`Supabase UAB roster read failed (${r.status}): ${detail||'unknown error'}`});
     }
     const data=await r.json();
     return sendJson(res,200,data);
   }catch(error){
-    return sendJson(res,500,{error:error?.message||'Roster read failed.'});
+    return sendJson(res,500,{error:error?.message||'UAB roster read failed.'});
   }
 }
