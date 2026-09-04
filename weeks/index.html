@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ULM Special Teams • Weekly Opponent Books</title>
+  <style>
+    :root{
+      --bg:#06131b;
+      --panel:#0b1d27;
+      --panel2:#0e2733;
+      --line:#294553;
+      --text:#f6f8f9;
+      --muted:#8ea4b0;
+      --maroon:#8a2432;
+      --maroon2:#5f1723;
+      --gold:#d7ad50;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#15303e 0,#06131b 42%,#041017 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+    .shell{width:min(1040px,100%)}
+    .brand{display:flex;align-items:center;gap:18px;margin-bottom:24px}
+    .brand img{width:78px;height:78px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+    .eyebrow{font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+    h1{margin:4px 0 5px;font-size:34px;line-height:1.05}
+    .sub{color:var(--muted);font-size:14px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .week{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(145deg,var(--panel2),var(--panel));box-shadow:0 16px 42px rgba(0,0,0,.24);transition:.16s transform,.16s border-color,.16s box-shadow}
+    .week:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 20px 48px rgba(0,0,0,.34)}
+    .stripe{height:8px;background:linear-gradient(90deg,var(--maroon2),var(--maroon),var(--gold))}
+    .content{padding:24px}
+    .weeknum{font-size:12px;font-weight:950;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+    h2{margin:7px 0 3px;font-size:26px}
+    .nickname{color:#c8d4da;font-size:13px;font-weight:800;margin-bottom:18px}
+    .meta{display:grid;gap:7px;color:var(--muted);font-size:12px;line-height:1.4;margin-bottom:22px}
+    .open{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.09);padding-top:16px;font-size:12px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}
+    .arrow{font-size:22px;color:var(--gold)}
+    .footer{margin-top:18px;text-align:center;color:#67818e;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+    @media(max-width:720px){body{padding:18px}.grid{grid-template-columns:1fr}.brand{align-items:flex-start}.brand img{width:62px;height:62px}h1{font-size:28px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="brand">
+      <img src="/ulm_avg_roundel_edge_star.png" alt="ULM">
+      <div>
+        <div class="eyebrow">ULM Football</div>
+        <h1>Special Teams Intelligence</h1>
+        <div class="sub">Choose the weekly opponent book.</div>
+      </div>
+    </div>
+
+    <section class="grid">
+      <a class="week" href="/index.html">
+        <div class="stripe"></div>
+        <div class="content">
+          <div class="weeknum">Week 1</div>
+          <h2>Mississippi State</h2>
+          <div class="nickname">Bulldogs</div>
+          <div class="meta">
+            <div>September 5, 2026</div>
+            <div>Mississippi State Special Teams Book</div>
+            <div>Original Week 1 Chart Looks and Look Library</div>
+          </div>
+          <div class="open"><span>Open Week 1</span><span class="arrow">→</span></div>
+        </div>
+      </a>
+
+      <a class="week" href="/uab/">
+        <div class="stripe"></div>
+        <div class="content">
+          <div class="weeknum">Week 2</div>
+          <h2>UAB</h2>
+          <div class="nickname">Blazers</div>
+          <div class="meta">
+            <div>September 12, 2026</div>
+            <div>UAB Special Teams Book</div>
+            <div>Independent Week 2 Chart Looks and Look Library</div>
+          </div>
+          <div class="open"><span>Open Week 2</span><span class="arrow">→</span></div>
+        </div>
+      </a>
+    </section>
+
+    <div class="footer">Weekly opponent books remain independent</div>
+  </main>
+</body>
+</html>
