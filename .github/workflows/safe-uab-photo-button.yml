@@ -1,0 +1,43 @@
+name: Safe UAB photo refresh button
+on:
+  push:
+    paths:
+      - '.github/workflows/safe-uab-photo-button.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore stable wrapper and add button markup only
+        run: |
+          git show b0d83851addc438b068da12d26cdf874dc3da4ea:uab/index.html > uab/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('uab/index.html')
+          s=p.read_text()
+          marker='      document.open();'
+          if marker not in s:
+              raise SystemExit('document.open marker missing')
+          patch='''      const refreshUabPhotoButton = '<button id="refreshUabPhotosBtn" type="button" title="Refresh official UAB roster photos" onclick="(async()=>{const b=this;if(b.dataset.busy===\\'1\\')return;b.dataset.busy=\\'1\\';b.disabled=true;b.textContent=\\'Refreshing UAB Photos…\\';try{for(let i=0;i<20;i++){const r=await fetch(\\'/api/enrich-roster-uab\\',{method:\\'POST\\',headers:{\\'content-type\\':\\'application/json\\'},body:JSON.stringify({publicUabRefresh:true,batchSize:8})});let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.error||(\\'Photo refresh returned \\'+r.status));b.textContent=\\'UAB Photos \\'+(j.completed||0)+\\'/\\'+(j.total||0);if(j.done)break}b.textContent=\\'Photos Refreshed\\';setTimeout(()=>location.reload(),700)}catch(e){console.error(e);b.disabled=false;b.dataset.busy=\\'0\\';b.textContent=\\'Photo Refresh Failed\\';alert(\\'UAB photo refresh failed: \\'+(e&&e.message?e.message:e))}})()">Refresh UAB Player Photos</button>';
+      html = html.replace(/(<button[^>]*id=["']teamSettingsBtn["'][^>]*>)/i, refreshUabPhotoButton + '$1');
+
+'''
+          s=s.replace(marker,patch+marker,1)
+          p.write_text(s)
+          PY
+      - name: Verify page source
+        run: |
+          grep -q "refreshUabPhotosBtn" uab/index.html
+          grep -q "document.write(html)" uab/index.html
+          grep -q "Refresh UAB Player Photos" uab/index.html
+      - name: Commit page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uab/index.html
+          git commit -m "Add safe UAB player photo refresh button"
+          git push
