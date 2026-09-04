@@ -1,0 +1,176 @@
+name: Build Week 2 UAB workspace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-uab-week2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-uab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out restored Week 1 baseline
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create isolated Week 2 UAB workspace
+        shell: python
+        run: |
+          from pathlib import Path
+          import shutil
+          import re
+
+          root = Path('.')
+          uab = root / 'uab'
+          uab.mkdir(exist_ok=True)
+
+          # Freeze an exact copy of the restored Week 1 app for Week 2.
+          shutil.copyfile(root / 'index.html', uab / 'week2-template.html')
+
+          # UAB gets its own Supabase shared-project row.
+          storage = (root / 'api' / 'storage-project.js').read_text(encoding='utf-8')
+          storage = storage.replace("const ROW_ID = 'current';", "const ROW_ID = '2026_week2_uab';")
+          storage = storage.replace(
+              "if (!rows.length) return res.status(404).json({ error: 'Shared project row not found' });",
+              "if (!rows.length) return res.status(200).json({ data: {} });"
+          )
+          (root / 'api' / 'storage-project-uab.js').write_text(storage, encoding='utf-8')
+
+          # UAB roster storage is physically separate from Week 1 in the same Supabase bucket.
+          for source, target in [
+              ('roster.js', 'roster-uab.js'),
+              ('sync-roster.js', 'sync-roster-uab.js'),
+              ('enrich-roster.js', 'enrich-roster-uab.js'),
+          ]:
+              text = (root / 'api' / source).read_text(encoding='utf-8')
+              text = text.replace(
+                  "const OBJECT_PATH = 'Current/roster.json';",
+                  "const OBJECT_PATH = '2026/Week2_UAB/roster.json';"
+              )
+              text = text.replace(
+                  "const OBJECT_PATH='Current/roster.json';",
+                  "const OBJECT_PATH='2026/Week2_UAB/roster.json';"
+              )
+              (root / 'api' / target).write_text(text, encoding='utf-8')
+
+          wrapper = r'''<!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>ULM Special Teams • Week 2 • UAB</title>
+            <style>
+              html,body{margin:0;min-height:100%;background:#06131b;color:#fff;font-family:Arial,sans-serif}
+              #boot{display:flex;align-items:center;justify-content:center;min-height:100vh;font-size:16px;opacity:.8}
+            </style>
+          </head>
+          <body>
+            <div id="boot">Loading Week 2 • UAB…</div>
+            <script>
+            (async function () {
+              const PREFIX = 'ULM_ST_2026_W2_UAB::';
+              const localRef = window.localStorage;
+              const sessionRef = window.sessionStorage;
+              const proto = Storage.prototype;
+              const raw = {
+                getItem: proto.getItem,
+                setItem: proto.setItem,
+                removeItem: proto.removeItem,
+                clear: proto.clear,
+                key: proto.key
+              };
+
+              const isScoped = (store) => store === localRef || store === sessionRef;
+              const scopedKey = (key) => PREFIX + String(key);
+
+              proto.getItem = function (key) {
+                return isScoped(this) ? raw.getItem.call(this, scopedKey(key)) : raw.getItem.call(this, key);
+              };
+              proto.setItem = function (key, value) {
+                return isScoped(this) ? raw.setItem.call(this, scopedKey(key), value) : raw.setItem.call(this, key, value);
+              };
+              proto.removeItem = function (key) {
+                return isScoped(this) ? raw.removeItem.call(this, scopedKey(key)) : raw.removeItem.call(this, key);
+              };
+              proto.clear = function () {
+                if (!isScoped(this)) return raw.clear.call(this);
+                const matches = [];
+                for (let i = 0; i < this.length; i += 1) {
+                  const key = raw.key.call(this, i);
+                  if (key && key.startsWith(PREFIX)) matches.push(key);
+                }
+                matches.forEach((key) => raw.removeItem.call(this, key));
+              };
+              proto.key = function (index) {
+                if (!isScoped(this)) return raw.key.call(this, index);
+                const matches = [];
+                for (let i = 0; i < this.length; i += 1) {
+                  const key = raw.key.call(this, i);
+                  if (key && key.startsWith(PREFIX)) matches.push(key.slice(PREFIX.length));
+                }
+                return matches[index] ?? null;
+              };
+
+              window.__ULM_SPECIAL_TEAMS_WORKSPACE__ = {
+                season: 2026,
+                week: 2,
+                opponent: 'UAB',
+                storagePrefix: PREFIX
+              };
+
+              try {
+                let html = await fetch('/uab/week2-template.html', { cache: 'no-store' }).then((response) => {
+                  if (!response.ok) throw new Error('Could not load Week 2 template.');
+                  return response.text();
+                });
+
+                // Keep the exact Week 1 interface, but route every persistent UAB resource
+                // to its own Supabase location. Week 1 endpoints are never touched.
+                const endpointMap = [
+                  ['storage-project', 'storage-project-uab'],
+                  ['sync-roster', 'sync-roster-uab'],
+                  ['enrich-roster', 'enrich-roster-uab'],
+                  ['roster', 'roster-uab']
+                ];
+                endpointMap.forEach(([from, to]) => {
+                  const pattern = new RegExp('(^|[^A-Za-z0-9_-])(/?api/' + from + ')(?![A-Za-z0-9_-])', 'g');
+                  html = html.replace(pattern, (match, before, path) => before + path.replace(from, to));
+                });
+
+                // The frozen template lives one folder down; keep all original assets pointed
+                // at the repository root without changing the Week 1 file itself.
+                html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
+                html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 2 • UAB</title>');
+
+                document.open();
+                document.write(html);
+                document.close();
+              } catch (error) {
+                document.getElementById('boot').textContent = 'Week 2 UAB could not load: ' + (error?.message || error);
+              }
+            })();
+            </script>
+          </body>
+          </html>
+          '''
+          (uab / 'index.html').write_text(wrapper, encoding='utf-8')
+
+          readme = '''# Week 2 — UAB\n\nThis folder is a frozen Week 2 clone of the restored Week 1 Special Teams app.\n\nIsolation rules:\n- Week 1 root app remains untouched.\n- Week 2 browser storage is prefixed with `ULM_ST_2026_W2_UAB::`.\n- Week 2 shared Supabase state uses row `2026_week2_uab`.\n- Week 2 roster storage uses `Special Teams/2026/Week2_UAB/roster.json`.\n- `week2-template.html` is the exact restored Week 1 `index.html` snapshot at the time this workspace was created.\n\nThe UAB page is `/uab/`.\n'''
+          (uab / 'README.md').write_text(readme, encoding='utf-8')
+
+      - name: Commit Week 2 workspace
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uab api/storage-project-uab.js api/roster-uab.js api/sync-roster-uab.js api/enrich-roster-uab.js
+          if git diff --cached --quiet; then
+            echo "Week 2 workspace already exists."
+            exit 0
+          fi
+          git commit -m "Add isolated Week 2 UAB Special Teams workspace"
+          git push origin HEAD:main
