@@ -1,0 +1,98 @@
+name: Repair UAB photo refresh button
+
+on:
+  push:
+    paths:
+      - '.github/workflows/repair-uab-photo-button.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore stable UAB wrapper and add safe photo button
+        run: |
+          git show b0d83851addc438b068da12d26cdf874dc3da4ea:uab/index.html > uab/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('uab/index.html')
+          s = p.read_text()
+
+          marker = "      document.open();"
+          if marker not in s:
+              raise SystemExit('document.open marker not found')
+
+          safe_patch = r'''      // UAB PHOTO REFRESH BUTTON - SAFE PATCH
+      // Add the button as ordinary app markup, and inject its handler into the
+      // existing template script. No nested <script> tag is created here.
+      html = html.replace(
+        /(<button[^>]*id=["']teamSettingsBtn["'][^>]*>)/i,
+        '<button id="refreshUabPhotosBtn" type="button" onclick="refreshUabPlayerPhotos()" title="Refresh official UAB roster photos">Refresh UAB Player Photos</button>$1'
+      );
+
+      const refreshUabPlayerPhotosSource = [
+        "async function refreshUabPlayerPhotos(){",
+        "  const btn=document.getElementById('refreshUabPhotosBtn');",
+        "  if(!btn||btn.dataset.busy==='1')return;",
+        "  btn.dataset.busy='1'; btn.disabled=true;",
+        "  const original='Refresh UAB Player Photos';",
+        "  btn.textContent='Refreshing UAB Photos…';",
+        "  try{",
+        "    let result=null;",
+        "    for(let pass=0;pass<20;pass++){",
+        "      const r=await fetch('/api/enrich-roster-uab',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({publicUabRefresh:true,batchSize:8})});",
+        "      let j={}; try{j=await r.json();}catch(e){}",
+        "      if(!r.ok)throw new Error(j.error||('Photo refresh returned '+r.status));",
+        "      result=j;",
+        "      btn.textContent='UAB Photos '+(j.completed||0)+'/'+(j.total||0);",
+        "      if(j.done)break;",
+        "    }",
+        "    if(typeof loadRosterFromSupabase==='function')await loadRosterFromSupabase();",
+        "    if(typeof render==='function')render();",
+        "    btn.textContent='Photos Refreshed • '+(result&&result.photos!=null?result.photos:'done');",
+        "    setTimeout(function(){btn.textContent=original;btn.disabled=false;btn.dataset.busy='0';},2500);",
+        "  }catch(err){",
+        "    console.error(err);",
+        "    btn.textContent='Photo Refresh Failed'; btn.disabled=false; btn.dataset.busy='0';",
+        "    alert('UAB photo refresh failed: '+(err&&err.message?err.message:err));",
+        "  }",
+        "}",
+        "function ensureAdminKey(){return '';}"
+      ].join('\\n');
+      html = html.replace("function ensureAdminKey(){return '';}", refreshUabPlayerPhotosSource);
+
+'''
+
+          s = s.replace(marker, safe_patch + marker, 1)
+          p.write_text(s)
+          PY
+
+      - name: Verify repaired wrapper
+        run: |
+          grep -q "refreshUabPhotosBtn" uab/index.html
+          grep -q "refreshUabPlayerPhotosSource" uab/index.html
+          ! grep -q "uabPhotoRefreshScript" uab/index.html
+          ! grep -q "<\\/script>" uab/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('uab/index.html').read_text()
+          assert s.count('document.open();') == 1
+          assert 'refreshUabPhotosBtn' in s
+          assert 'uabPhotoRefreshScript' not in s
+          print('UAB wrapper repair checks passed')
+          PY
+
+      - name: Commit repaired UAB page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uab/index.html
+          git commit -m "Repair UAB photo refresh button safely"
+          git push
