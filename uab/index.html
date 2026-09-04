@@ -14,6 +14,7 @@
   <script>
   (async function () {
     const PREFIX = 'ULM_ST_2026_W2_UAB::';
+    const UAB_PACKAGE_BASE = 'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/UAB';
     const localRef = window.localStorage;
     const sessionRef = window.sessionStorage;
     const proto = Storage.prototype;
@@ -60,17 +61,61 @@
       season: 2026,
       week: 2,
       opponent: 'UAB',
+      rawTeamCode: 'ALBI',
+      sourcePackage: 'Special Teams/Opponents/UAB',
       storagePrefix: PREFIX
     };
 
-    try {
-      let html = await fetch('/uab/week2-template.html', { cache: 'no-store' }).then((response) => {
-        if (!response.ok) throw new Error('Could not load Week 2 template.');
-        return response.text();
-      });
+    const fallbackDepth = {
+      team:'UAB', nickname:'Blazers', season:2026, updated:'2026-09-03', source:'Ourlads',
+      specialTeams:{
+        PT:[['20','Badger Hargett'],['30','Carson Tinsley'],['46','Oliver Straw']],
+        PK:[['39','Jonah Delange'],['35','Owen Simpson']],
+        KO:[['35','Owen Simpson'],['39','Jonah Delange']],
+        LS:[['50','Evan Bishop'],['47','Noah Medlen']],
+        H:[['20','Badger Hargett'],['30','Carson Tinsley'],['16','Nate Rogers']],
+        PR:[['13','CD Gill'],['0','Ty Mims'],['26','Jayson Moll'],['3','Bam McReynolds']],
+        KR:[['7',"Ja'Vin Simpkins"],['3','Bam McReynolds'],['26','Jayson Moll'],['21','Hudson Higgins'],['0','Ty Mims']]
+      }
+    };
 
-      // Keep the exact Week 1 interface, but route every persistent UAB resource
-      // to its own Supabase location. Week 1 endpoints are never touched.
+    function uabDepthPage(){
+      const st=UAB_WEEK2_DEPTH.specialTeams||{};
+      const order=['PT','PK','KO','LS','H','PR','KR'];
+      const entries=order.map(pos=>[pos,Array.isArray(st[pos])?st[pos]:[]]);
+      const maxDepth=Math.max(3,...entries.map(([,arr])=>arr.length));
+      const ordinal=(i)=>i===0?'1ST':i===1?'2ND':i===2?'3RD':(i+1)+'TH';
+      const playerCell=(entry)=>{
+        if(!entry||!entry[1])return '';
+        const num=String(entry[0]??''),name=String(entry[1]??''),klass=String(entry[2]??'');
+        return '<button class="depthPlayerBtn" type="button" data-depth-player="'+esc(name)+'" data-depth-num="'+esc(num)+'">'+(num?'<span class="depthNo">#'+esc(num)+'</span>':'')+esc(name)+(klass?' <span style="color:#7f96a4;font-weight:600">('+esc(klass)+')</span>':'')+'</button>';
+      };
+      const heads=Array.from({length:maxDepth},(_,i)=>'<th>'+ordinal(i)+'</th>').join('');
+      const body=entries.map(([pos,arr])=>'<tr><td>'+pos+'</td>'+Array.from({length:maxDepth},(_,i)=>'<td>'+playerCell(arr[i])+'</td>').join('')+'</tr>').join('');
+      const first=(pos)=>Array.isArray(st[pos])&&st[pos][0]?st[pos][0]:null;
+      const chip=(label,e)=>e?'<span><b>'+label+'</b> '+(e[0]?'#'+esc(e[0])+' ':'')+esc(e[1])+'</span>':'';
+      const chips=[chip('PR1',first('PR')),chip('KR1',first('KR')),chip('PK',first('PK')),chip('PT',first('PT'))].join('');
+      const source=UAB_WEEK2_DEPTH.source||'Ourlads';
+      const updated=UAB_WEEK2_DEPTH.updated?String(UAB_WEEK2_DEPTH.updated).slice(0,10):'2026-09-03';
+      return '<div class="depthChartPage">'+
+        '<div class="depthChartHero"><div class="depthChartHeroTop"><div><div class="eyebrow">WEEK 2 • UAB</div><h2>Special Teams Depth Chart</h2><div class="depthChartMeta">September 12, 2026 • 2:30 PM CT • Protective Stadium • ESPN+</div></div></div></div>'+
+        '<div class="card"><div class="depthChartQuick">'+chips+'</div><div class="depthChartTableWrap"><table class="depthChartTable"><thead><tr><th>POS</th>'+heads+'</tr></thead><tbody>'+body+'</tbody></table></div><div class="depthChartNote">Click any player name to open his UAB roster profile. Source: '+esc(source)+(updated?' • Updated '+esc(updated):'')+'.</div></div></div>';
+    }
+
+    try {
+      const [templateResponse, depthResponse] = await Promise.all([
+        fetch('/uab/week2-template.html', { cache: 'no-store' }),
+        fetch(UAB_PACKAGE_BASE + '/depth-chart.json?v=' + Date.now(), { cache: 'no-store' }).catch(()=>null)
+      ]);
+      if (!templateResponse.ok) throw new Error('Could not load Week 2 template.');
+      let html = await templateResponse.text();
+      let uabDepth = fallbackDepth;
+      if (depthResponse && depthResponse.ok) {
+        try { uabDepth = await depthResponse.json(); } catch (_) { uabDepth = fallbackDepth; }
+      }
+
+      // Week 2 has its own cloud row/local storage, but reads the already-built UAB
+      // opponent package from Supabase. Week 1 remains frozen and untouched.
       const endpointMap = [
         ['storage-project', 'storage-project-uab'],
         ['sync-roster', 'sync-roster-uab'],
@@ -82,8 +127,44 @@
         html = html.replace(pattern, (match, before, path) => before + path.replace(from, to));
       });
 
-      // The frozen template lives one folder down; keep all original assets pointed
-      // at the repository root without changing the Week 1 file itself.
+      // Point the restored Week 1 analytics engine at UAB's existing PFF package.
+      html = html.replace(
+        'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Current',
+        UAB_PACKAGE_BASE
+      );
+      html = html.replace(
+        "files:['offense-side.csv','defense-side.csv']",
+        "files:['offensive-side.csv','defensive-side.csv']"
+      );
+
+      // This is a dedicated UAB page, so ALBI is the PFF team identity from first boot.
+      html = html.replace(
+        "const DEFAULT_TEAM_SETTINGS={teamName:'',nickname:'',teamCode:'',rosterUrl:'',season:'2025'};",
+        "const DEFAULT_TEAM_SETTINGS={teamName:'UAB',nickname:'Blazers',teamCode:'ALBI',rosterUrl:'https://uabsports.com/sports/football/roster',season:'2025'};"
+      );
+      html = html.replace(
+        "if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings};",
+        "if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings,teamName:'UAB',nickname:'Blazers',teamCode:'ALBI',rosterUrl:'https://uabsports.com/sports/football/roster'};"
+      );
+      html = html.replace("ULM:'ULM',LAMON:'ULM',", "ULM:'ULM',LAMON:'ULM',ALBI:'UAB',UAB:'UAB',");
+      html = html.replace('Week 1 ST Depth Chart', 'Week 2 ST Depth Chart');
+
+      // Replace only the Week 1 hard-coded depth-chart renderer. Chart Looks,
+      // Look Library, field geometry, player positioning and unit logic are untouched.
+      const depthCode = 'const UAB_WEEK2_DEPTH=' + JSON.stringify(uabDepth) + ';\n' +
+        uabDepthPage.toString().replace(/^function uabDepthPage/, 'function week1DepthChartPage') +
+        '\n\nfunction depthRosterPlayer';
+      html = html.replace(
+        /function week1DepthChartPage\(\)\{[\s\S]*?\n\}\n\nfunction depthRosterPlayer/,
+        depthCode
+      );
+
+      // Keep the existing roster-card behavior, changing only Week 1/MSST copy in that card.
+      html = html.replace(
+        /function depthBioMarkup\(name,num\)\{[\s\S]*?\n\}\nfunction openDepthBio/,
+        (block) => block.replace(/MISSISSIPPI STATE/g,'UAB').replace(/Week 1/g,'Week 2')
+      );
+
       html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
       html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 2 • UAB</title>');
 
