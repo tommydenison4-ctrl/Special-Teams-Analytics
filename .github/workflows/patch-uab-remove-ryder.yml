@@ -1,0 +1,48 @@
+name: Remove Ryder Burton from UAB Player Intelligence
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-uab-remove-ryder.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove Ryder Burton from Week 2 Player Intelligence
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('uab/index.html')
+          text = path.read_text(encoding='utf-8')
+          old = "  var list=playerCategory==='depthChart'?uabDepthItems(uabDepthRolesForCategory('depthChart')):uabMergeDepth(lists[playerCategory]||[],playerCategory);"
+          new = "  var list=(playerCategory==='depthChart'?uabDepthItems(uabDepthRolesForCategory('depthChart')):uabMergeDepth(lists[playerCategory]||[],playerCategory)).filter(function(x){var p=(x&&x.p)||rosterByNumber(x&&x.num);return nameKey(p&&p.name)!=='ryder burton';});"
+          if new in text:
+              print('Ryder Burton filter already present.')
+              raise SystemExit(0)
+          if old not in text:
+              raise SystemExit('Could not find UAB Player Intelligence list anchor.')
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          print('Removed Ryder Burton from all Week 2 Player Intelligence lists.')
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uab/index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Exclude Ryder Burton from UAB Player Intelligence"
+          git push origin HEAD:main
