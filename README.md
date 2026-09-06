@@ -94,3 +94,58 @@ All V13.6 shared-database saving files and Supabase setup are preserved.
 - Fixed Look Library thumbnails so saved looks keep visible player numbers.
 - Each saved player dot now shows jersey number prominently, with the role label beneath it.
 - Hover text still shows player label plus role for quick verification.
+
+
+## V15.1
+- Fixed the root cause of player numbers disappearing after saving a look.
+- Saved look positions now persist jersey number as a first-class field alongside role, name, X and Y.
+- Existing saved looks backfill the number from the stored PFF player label when loaded.
+- Look Library thumbnails display saved jersey number first, with role underneath.
+
+
+## V15.2
+- Corrected NCAA/GSIS school-code mapping: MSSO = Southern Miss (Southern Mississippi), not Missouri.
+- Missouri mappings remain MIZ / MIZZ / MIZZOU / MIZZO.
+
+
+## V15.3 — UAB Opponent Prep
+- Added Prep Opponent selector: Mississippi State / UAB.
+- Mississippi State remains in the existing Current workflow and is not deleted or moved.
+- UAB roster loads live from Special Teams / Opponents / UAB / roster.json.
+- UAB depth chart loads live from Special Teams / Opponents / UAB / depth-chart.json.
+- Opponent Special Teams Depth Chart switches between Mississippi State and UAB.
+- Depth-chart players open against the selected opponent roster.
+- UAB selection is explicitly prep-only for now; existing PFF analytics continue using Current until UAB PFF CSVs are uploaded.
+
+## V15.5 — UAB Full Analytics Switch
+- PREP OPPONENT now switches the complete live package, not only the depth chart.
+- Mississippi State uses Special Teams/Current.
+- UAB uses Special Teams/Opponents/UAB.
+- UAB loads roster.json, depth-chart.json, offense-side.csv and defense-side.csv.
+- Player Intelligence switches to the UAB roster and UAB PFF rows.
+- Dashboard, Hash Intelligence, Spray Reports, Viewer and other PFF-driven pages switch with the selected opponent.
+- Raw PFF team code ALBI is preserved internally but displayed as UAB.
+- Mississippi State files remain untouched and are restored by selecting Mississippi State.
+- UAB historical 2025 identity is clearly marked unverified where only jersey-number matching is available.
+
+## V15.6 — UAB Historical Identity
+- Loads Opponents/UAB/historical-roster-2025.json from Supabase.
+- Historical rosters are isolated by opponent and season so UAB and Mississippi State cannot overwrite each other in memory.
+- UAB now uses the same strict identity flow as Mississippi State:
+  1. historical 2025 jersey resolves to exactly one 2025 player;
+  2. that historical name is matched against the current 2026 UAB roster;
+  3. same player with a new 2026 jersey is flagged as number changed;
+  4. a historical player missing from the 2026 roster is shown as not on current roster.
+- Switching opponents and Reload Latest both reload the correct historical roster source.
+
+## V15.7 — UAB CSV Filename Fix
+- Fixed UAB PFF load error caused by uploaded filenames.
+- UAB now loads offensive-side.csv and defensive-side.csv exactly as they exist in Supabase.
+- It falls back to offense-side.csv / defense-side.csv for compatibility.
+- Mississippi State Current filenames remain unchanged.
+
+
+## V15.8 — UAB Current-Week Default
+- UAB is now the default prep opponent on first load for the current game week.
+- Existing browsers are migrated to UAB once when this version is first opened.
+- After that, staff can still manually switch back to Mississippi State and the app will remember their selection.
