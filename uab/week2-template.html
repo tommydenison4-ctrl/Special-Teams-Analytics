@@ -1251,14 +1251,18 @@ const CLOUD={
   loading:false,
   saveTimer:null,
   lastLoadedAt:'',
-  pollTimer:null
+  pollTimer:null,
+  needsLookLibraryReset:false
 };
+
+const LOOK_LIBRARY_SCOPE='UAB_2026_V1';
 
 function cloudPayload(){
   return {
     teamSettings,
     savedLooks,
     repAssignments,
+    lookLibraryScope:LOOK_LIBRARY_SCOPE,
     updatedAt:new Date().toISOString()
   };
 }
@@ -1274,7 +1278,7 @@ function ensureWritableAction(action='save shared changes'){
 async function pollForCloudUpdates(){
   if(location.protocol==='file:'||CLOUD.loading)return false;
   try{
-    const r=await fetch('/api/storage-project?action=load&v='+Date.now(),{cache:'no-store'});
+    const r=await fetch('/api/storage-project-uab?action=load&v='+Date.now(),{cache:'no-store'});
     if(!r.ok)return false;
     const j=await r.json(),d=j.data||{};
     if(d.updatedAt&&d.updatedAt!==CLOUD.lastLoadedAt){
@@ -1313,7 +1317,7 @@ function mergeLooksById(remoteLooks=[],localLooks=[]){
 async function latestCloudProject(){
   if(location.protocol==='file:')return null;
   try{
-    const r=await fetch('/api/storage-project?action=load&v='+Date.now(),{cache:'no-store'});
+    const r=await fetch('/api/storage-project-uab?action=load&v='+Date.now(),{cache:'no-store'});
     if(!r.ok)return null;
     const j=await r.json();
     return j.data||null;
@@ -1345,7 +1349,7 @@ async function saveProjectCloud(options={}){
 
   try{
     const payload=cloudPayload();
-    const r=await fetch('/api/storage-project',{
+    const r=await fetch('/api/storage-project-uab',{
       method:'POST',
       headers:{'content-type':'application/json'},
       body:JSON.stringify({action:'save',data:payload})
@@ -1379,7 +1383,7 @@ async function loadProjectCloud(options={}){
   CLOUD.loading=true;
 
   try{
-    const r=await fetch('/api/storage-project?action=load&v='+Date.now(),{cache:'no-store'});
+    const r=await fetch('/api/storage-project-uab?action=load&v='+Date.now(),{cache:'no-store'});
     if(r.status===404){
       CLOUD.status='Shared database row not found yet';
       return false;
@@ -1390,8 +1394,16 @@ async function loadProjectCloud(options={}){
 
     const d=j.data||{};
     if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings};
-    if(Array.isArray(d.savedLooks))savedLooks=d.savedLooks.map(migrateLookPerspective);
-    if(d.repAssignments&&typeof d.repAssignments==='object')repAssignments=d.repAssignments;
+    if(d.lookLibraryScope!==LOOK_LIBRARY_SCOPE){
+      // One-time cleanup: the old UAB cloud row was initially cloned from the
+      // Mississippi State project.  Do not import those legacy looks into UAB.
+      savedLooks=[];
+      repAssignments={};
+      CLOUD.needsLookLibraryReset=true;
+    }else{
+      if(Array.isArray(d.savedLooks))savedLooks=d.savedLooks.map(migrateLookPerspective);
+      if(d.repAssignments&&typeof d.repAssignments==='object')repAssignments=d.repAssignments;
+    }
     CLOUD.lastLoadedAt=d.updatedAt||CLOUD.lastLoadedAt||'';
 
     saveTeamSettings(false);
@@ -1584,8 +1596,13 @@ let hashKorHash='',hashKorKickDir='',hashKorReturnDir='';
 let chartIndex=0,chartPositions={},selectedPlayer=null;
 let chartPaths=[],drawMode='move',drawUndo=[],drawRedo=[],activeDraw=null;
 let drawWidth=5,drawDash='solid';
-let savedLooks=(JSON.parse(localStorage.getItem('st_saved_looks_v4')||'[]')||[]).map(migrateLookPerspective);
-let repAssignments=JSON.parse(localStorage.getItem('st_rep_assignments_v4')||'{}');
+// UAB owns a completely separate Look Library.  These keys intentionally do
+// not match the Mississippi State workspace, even when this template is opened
+// directly without the /uab wrapper that scopes the rest of localStorage.
+const LOOK_LIBRARY_STORAGE_KEY='st_saved_looks_v4_uab_2026';
+const LOOK_ASSIGNMENTS_STORAGE_KEY='st_rep_assignments_v4_uab_2026';
+let savedLooks=(JSON.parse(localStorage.getItem(LOOK_LIBRARY_STORAGE_KEY)||'[]')||[]).map(migrateLookPerspective);
+let repAssignments=JSON.parse(localStorage.getItem(LOOK_ASSIGNMENTS_STORAGE_KEY)||'{}');
 const $=id=>document.getElementById(id),v=(r,k)=>r?.[k]??'',n=x=>{let z=parseFloat(x);return Number.isFinite(z)?z:null},fmt=(x,d=1)=>x==null||Number.isNaN(x)?'—':Number(x).toFixed(d);
 const avg=a=>{let z=a.map(n).filter(x=>x!=null);return z.length?z.reduce((s,x)=>s+x,0)/z.length:null},med=a=>{let z=a.map(n).filter(x=>x!=null).sort((a,b)=>a-b);if(!z.length)return null;let m=Math.floor(z.length/2);return z.length%2?z[m]:(z[m-1]+z[m])/2},uniq=a=>[...new Set(a.filter(x=>x!==''&&x!=null))].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));
 function parseCSV(t){let rs=[],r=[],c='',q=false;for(let i=0;i<t.length;i++){let x=t[i],y=t[i+1];if(x=='"'&&q&&y=='"'){c+='"';i++}else if(x=='"')q=!q;else if(x==','&&!q){r.push(c);c=''}else if((x=='\n'||x=='\r')&&!q){if(x=='\r'&&y=='\n')i++;r.push(c);if(r.some(z=>z!==''))rs.push(r);r=[];c=''}else c+=x}if(c||r.length){r.push(c);rs.push(r)}let h=rs.shift()||[];return rs.map(a=>Object.fromEntries(h.map((x,i)=>[x,a[i]??''])))}
@@ -1627,7 +1644,9 @@ function filteredWithoutUnit(){
   );
 }
 function pageUsesIndependentUnit(){
-  return ['dashboard','hash','spray','viewer','chart','library','players','relationships','families','depthchart'].includes(page);
+  // Spray Reports intentionally uses the main Units selector so coaches can
+  // switch between Punt Return and Kickoff Return spray charts.
+  return ['dashboard','hash','viewer','chart','library','players','relationships','families','depthchart'].includes(page);
 }
 function selectedTeam(){return $('teamF')?.value||''}
 function unitTeamField(type,side){if(type==='PUNT')return side==='unit'?'pff_OFFTEAM':'pff_DEFTEAM';return side==='unit'?'pff_DEFTEAM':'pff_OFFTEAM'}
@@ -2184,7 +2203,7 @@ function groups(a){let m={};unitRows(a).forEach(r=>{let s=signature(r,viewType,v
 function familyCard(g,i,total){let dots=g.players.map((p,j)=>playerDot(p,j,viewType,viewSide,g.rows[0],true)).join(''),rr=g.rows.filter(r=>n(v(r,'pff_RETURNYARDS'))!=null);return `<div class="family"><h3>Look ${i+1}</h3><div class="meta">${g.players.length} players • ${g.rows.length} plays • ${(100*g.rows.length/(total||1)).toFixed(1)}%</div><div class="smallField">${depthOverlay(viewType,viewSide)}${dots}</div><div class="metrics"><div class="mini"><b>${g.rows.length}</b><span>Plays</span></div><div class="mini"><b>${fmt(avg(g.rows.map(r=>v(r,'pff_HANGTIME'))),2)}</b><span>Hang</span></div><div class="mini"><b>${fmt(avg(rr.map(r=>v(r,'pff_RETURNYARDS'))),1)}</b><span>Return yds</span></div><div class="mini"><b>${fmt(avg(g.rows.map(r=>v(r,'pff_EXPECTED_POINTS_ADDED'))),3)}</b><span>EPA</span></div></div></div>`}
 function families(a){let gs=groups(a),total=gs.reduce((s,g)=>s+g.rows.length,0),label=phaseLabel(viewType,viewSide);return title(`${label} Structure Families`,'Top recurring 11-player role structures')+unitTabs()+`<div class="familyGrid">${gs.slice(0,8).map((g,i)=>familyCard(g,i,total)).join('')}</div><div class="note">Families are grouped by the full set of 11 PFF role labels.</div>`}
 
-function persistLooks(auto=true){localStorage.setItem('st_saved_looks_v4',JSON.stringify(savedLooks));localStorage.setItem('st_rep_assignments_v4',JSON.stringify(repAssignments));if(auto)queueAutoSave('Chart looks updated')}
+function persistLooks(auto=true){localStorage.setItem(LOOK_LIBRARY_STORAGE_KEY,JSON.stringify(savedLooks));localStorage.setItem(LOOK_ASSIGNMENTS_STORAGE_KEY,JSON.stringify(repAssignments));if(auto)queueAutoSave('UAB Look Library updated')}
 function playKey(r){return String(v(r,'pff_PLAYID')||v(r,'pff_TEAMWORKS_PLAY_ID')||[v(r,'pff_GAMEID'),v(r,'pff_SORTORDER')].join('_'))}
 function chartFilterRows(){let team=$('teamF').value;return rows.filter(r=>(!$('seasonF').value||String(v(r,'pff_GAMESEASON'))==$('seasonF').value)&&(!$('weekF').value||String(v(r,'pff_WEEK'))==$('weekF').value)&&(!team||v(r,'pff_OFFTEAM')==team||v(r,'pff_DEFTEAM')==team))}
 function chartPlays(a){return unitRows(chartFilterRows())}
@@ -3912,6 +3931,10 @@ document.querySelectorAll('.toolbar select').forEach(e=>e.onchange=()=>{playInde
 (async()=>{
   applyAccessMode();
   await loadProjectCloud();
+  if(CLOUD.needsLookLibraryReset){
+    CLOUD.needsLookLibraryReset=false;
+    await saveProjectCloud({silent:true});
+  }
   await loadRosterFromSupabase();
   await loadHistoricalRoster('2025');
   await loadPffFromSupabase({render:false});
