@@ -4,7 +4,9 @@
 // SUPABASE_SERVICE_ROLE_KEY remains server-side in Vercel.
 
 const TABLE = 'special_teams_shared_project';
-const ROW_ID = '2026_week2_uab';
+// V2 starts UAB on a clean project row. The original UAB row was populated
+// with Mississippi State's saved looks before opponent isolation was added.
+const ROW_ID = '2026_week2_uab_v2';
 
 function env(name) {
   const value = process.env[name];
