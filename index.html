@@ -1894,7 +1894,9 @@ function filteredWithoutUnit(){
   );
 }
 function pageUsesIndependentUnit(){
-  return ['dashboard','hash','spray','viewer','chart','library','players','relationships','families','depthchart'].includes(page);
+  // Spray Reports intentionally uses the main Units selector so coaches can
+  // switch between Punt Return and Kickoff Return spray charts.
+  return ['dashboard','hash','viewer','chart','library','players','relationships','families','depthchart'].includes(page);
 }
 function selectedTeam(){return $('teamF')?.value||''}
 function unitTeamField(type,side){if(type==='PUNT')return side==='unit'?'pff_OFFTEAM':'pff_DEFTEAM';return side==='unit'?'pff_DEFTEAM':'pff_OFFTEAM'}
