@@ -213,11 +213,11 @@ function selaDepthCard(x){
   return '<div class="playerSelect" data-playernum="'+esc(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'Southeastern Louisiana player',null)+'</div>';
 }
 function selaSelectedProfile(a,cat,list){
-  if(!list.length)return '<div class="empty">No UAB players are listed in this Player Intelligence category.</div>';
+  if(!list.length)return '<div class="empty">No Southeastern Louisiana players are listed in this Player Intelligence category.</div>';
   if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
   var x=list.find(function(z){return String(z.num)===String(selectedSpecialist);})||list[0];
   if(!x.depthOnly&&cat!=='depthChart')return selectedProfile(a,cat,list);
-  var p=x.p||{name:'UAB player',number:x.num||'',bio:'Roster profile pending.'};
+  var p=x.p||{name:'Southeastern Louisiana player',number:x.num||'',bio:'Roster profile pending.'};
   var roles=(x.depthRoles||[]).join(' / ')||'ST';
   var meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');
   var photo=playerPhoto(p);
@@ -259,7 +259,7 @@ function playerPage(a){
       // Replace only the Week 1 hard-coded depth-chart renderer. Chart Looks,
       // Look Library, field geometry, player positioning and unit logic are untouched.
       const depthCode = 'const SELA_WEEK3_DEPTH=' + JSON.stringify(uabDepth) + ';\n' +
-        uabDepthPage.toString().replace(/^function selaDepthPage/, 'function week1DepthChartPage') +
+        selaDepthPage.toString().replace(/^function selaDepthPage/, 'function week1DepthChartPage') +
         '\n\nfunction depthRosterPlayer';
       html = html.replace(
         /function week1DepthChartPage\(\)\{[\s\S]*?\n\}\n\nfunction depthRosterPlayer/,
