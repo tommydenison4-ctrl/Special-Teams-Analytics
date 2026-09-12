@@ -12,27 +12,22 @@ jobs:
   debug:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect official roster HTML
+      - name: Inspect official player profile HTML
         shell: bash
         run: |
           set -euo pipefail
-          for URL in 'https://lionsports.net/sports/football/roster' 'https://lionsports.net/sports/football/roster/2025'; do
-            echo "=== $URL ==="
-            curl -LfsS -A 'Mozilla/5.0' "$URL" -o /tmp/roster.html
-            wc -c /tmp/roster.html
-            echo 'sidearm roster cards:' $(grep -o 'sidearm-roster-player' /tmp/roster.html | wc -l)
-            echo 'profile hrefs:' $(grep -o '/sports/football/roster/[^"?]*' /tmp/roster.html | sort -u | wc -l)
-            python3 - <<'PY'
+          URL='https://lionsports.net/sports/football/roster/kyree-paul/11721'
+          curl -LfsS -A 'Mozilla/5.0' "$URL" -o /tmp/profile.html
+          wc -c /tmp/profile.html
+          python3 - <<'PY'
           from pathlib import Path
           import re
-          s=Path('/tmp/roster.html').read_text(errors='ignore')
-          for needle in ['Kyree Paul','Dkhai Joseph','Jirrea Johnson']:
+          s=Path('/tmp/profile.html').read_text(errors='ignore')
+          for needle in ['2025 (Freshman)','Career Notes','sidearm-roster-player-bio','Istrouma']:
+              print('needle',needle,'count',s.count(needle))
               i=s.find(needle)
               if i>=0:
-                  print('---',needle,'---')
-                  chunk=s[max(0,i-1800):i+2200]
-                  chunk=re.sub(r'\s+',' ',chunk)
-                  print(chunk[:4000])
-                  break
+                  chunk=re.sub(r'\s+',' ',s[max(0,i-2500):i+5000])
+                  print(chunk[:7500])
+                  print('---')
           PY
-          done
