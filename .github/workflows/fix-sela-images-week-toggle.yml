@@ -14,14 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Patch image extraction and week navigation
+      - name: Patch Southeastern image extraction and fixed week navigation
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          # 1) Southeastern roster sync: profile links stay locked to lionsports.net,
-          # but official Sidearm/CDN player photos are allowed.
+          # Allow official Lions/Sidearm CDN player images while keeping profile links locked to lionsports.net.
           p = Path('lib/sela-sync.js')
           s = p.read_text()
           new_sync = """function highResImage(value, pageUrl) {
@@ -29,30 +28,31 @@ jobs:
             try {
               const url = new URL(value, pageUrl);
               const host = url.hostname.toLowerCase();
-              const allowed = host === OFFICIAL_HOST || host.endsWith('.sidearmdev.com') || host.endsWith('.cloudfront.net');
-              if (!allowed) return '';
+              const allowed = host === OFFICIAL_HOST || host.endsWith('.lionsports.net') || host === 'images.sidearmdev.com' || host.endsWith('.sidearmdev.com') || host.endsWith('.cloudfront.net');
+              if (!allowed || url.protocol !== 'https:') return '';
               url.searchParams.delete('width');
               return url.href;
             } catch {
               return '';
             }
           }"""
-          s2, n = re.subn(r"function highResImage\(value, pageUrl\) \{[\s\S]*?\n\}", new_sync, s, count=1)
+          s, n = re.subn(r"function highResImage\(value, pageUrl\) \{[\s\S]*?\n\}", new_sync, s, count=1)
           if n != 1:
             raise SystemExit('sync highResImage block not found')
-          p.write_text(s2)
+          p.write_text(s)
 
-          # 2) Southeastern enrichment: force every profile through a fresh image pass.
           p = Path('lib/sela-enrich.js')
           s = p.read_text()
-          s = re.sub(r"const BIO_REFRESH_VERSION = '[^']+';", "const BIO_REFRESH_VERSION = 'sela-bios-2026-09-12-v3-photo-fix';", s, count=1)
+          s, n = re.subn(r"const BIO_REFRESH_VERSION = '[^']+';", "const BIO_REFRESH_VERSION = 'sela-assets-2026-09-12-v4';", s, count=1)
+          if n != 1:
+            raise SystemExit('refresh version not found')
           new_enrich = """function highResImage(raw, pageUrl) {
             if (!raw) return '';
             try {
               const url = new URL(raw, pageUrl);
               const host = url.hostname.toLowerCase();
-              const allowed = host === OFFICIAL_HOST || host.endsWith('.sidearmdev.com') || host.endsWith('.cloudfront.net');
-              if (!allowed) return '';
+              const allowed = host === OFFICIAL_HOST || host.endsWith('.lionsports.net') || host === 'images.sidearmdev.com' || host.endsWith('.sidearmdev.com') || host.endsWith('.cloudfront.net');
+              if (!allowed || url.protocol !== 'https:') return '';
               url.searchParams.delete('width');
               return url.href;
             } catch {
@@ -62,67 +62,96 @@ jobs:
           s, n = re.subn(r"function highResImage\(raw, pageUrl\) \{[\s\S]*?\n\}", new_enrich, s, count=1)
           if n != 1:
             raise SystemExit('enrich highResImage block not found')
-          s = s.replace("const tags = html.match(/<img\\b[^>]*>/gi) || [];", "const tags = html.match(/<(?:img|source)\\b[^>]*>/gi) || [];", 1)
-          s = s.replace(
-            "const raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src');\n    const candidate = highResImage(raw, profile.href);",
-            "let raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src') || attr(tag, 'srcset');\n    if (raw && raw.includes(',')) { const parts = raw.split(',').map(x => x.trim().split(/\\s+/)[0]).filter(Boolean); raw = parts[parts.length - 1] || raw; }\n    const candidate = highResImage(raw, profile.href);",
-            1
-          )
+
+          old_tags = "const tags = html.match(/<img\\b[^>]*>/gi) || [];"
+          if old_tags in s:
+            s = s.replace(old_tags, "const tags = html.match(/<(?:img|source|meta)\\b[^>]*>/gi) || [];", 1)
+          elif "const tags = html.match(/<(?:img|source)\\b[^>]*>/gi) || [];" in s:
+            s = s.replace("const tags = html.match(/<(?:img|source)\\b[^>]*>/gi) || [];", "const tags = html.match(/<(?:img|source|meta)\\b[^>]*>/gi) || [];", 1)
+
+          old_raw = "const raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src');\n    const candidate = highResImage(raw, profile.href);"
+          new_raw = "let raw = attr(tag, 'content') || attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'data-srcset') || attr(tag, 'src') || attr(tag, 'srcset');\n    if (raw && raw.includes(',')) { const parts = raw.split(',').map(x => x.trim().split(/\\s+/)[0]).filter(Boolean); raw = parts[parts.length - 1] || raw; }\n    const candidate = highResImage(raw, profile.href);"
+          if old_raw in s:
+            s = s.replace(old_raw, new_raw, 1)
+          else:
+            old_raw2 = "let raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src') || attr(tag, 'srcset');\n    if (raw && raw.includes(',')) { const parts = raw.split(',').map(x => x.trim().split(/\\s+/)[0]).filter(Boolean); raw = parts[parts.length - 1] || raw; }\n    const candidate = highResImage(raw, profile.href);"
+            if old_raw2 in s:
+              s = s.replace(old_raw2, new_raw, 1)
+            else:
+              raise SystemExit('enrich image candidate block not found')
+
+          score_line = "if (target && alt.includes(target)) score += 150;"
+          if score_line in s and "og:image" not in s[s.find(score_line):s.find(score_line)+300]:
+            s = s.replace(score_line, score_line + "\n    if (/property=[\\\"']og:image/i.test(tag)) score += 120;", 1)
           p.write_text(s)
 
-          # 3) Restore the week buttons. The live header has extra classes on
-          # ulmHeaderActions, so exact-string matching misses it.
+          # Guaranteed visible week buttons: inject a fixed dock into the generated inner app.
           for filename in ['uab/index.html', 'southeastern/index.html']:
             p = Path(filename)
             s = p.read_text()
-            pattern = re.compile(r"\s*if \(html\.includes\('<div class=\\\"ulmHeaderActions\\\">'\)\) \{[\s\S]*?html = html\.replace\('</body>', '<div style=\\\"position:fixed;right:14px;top:14px;z-index:20000\\\">' \+ weekButton \+ '</div></body>'\);\n\s*\}")
-            replacement = """
-              const weekActionsRe = /<div class=\"ulmHeaderActions([^\"]*)\">/i;
-              if (weekActionsRe.test(html)) {
-                html = html.replace(weekActionsRe, (match) => match + weekButton);
-              } else {
-                html = html.replace('</body>', '<div style=\"position:fixed;right:14px;top:14px;z-index:20000;display:flex;gap:8px\">' + weekButton + '</div></body>');
-              }"""
-            s2, n = pattern.subn(replacement, s, count=1)
-            if n != 1:
-              raise SystemExit(f'week nav block not found in {filename}')
-            p.write_text(s2)
+            button_pos = s.find('      const weekButton = ')
+            doc_pos = s.find('      document.open();', button_pos)
+            if button_pos < 0 or doc_pos < 0:
+              raise SystemExit(f'week button/document marker missing in {filename}')
+            block_start = s.find("      if (html.includes('<div class=\"ulmHeaderActions\">')) {", button_pos)
+            if block_start < 0:
+              block_start = s.find('      const weekActionsRe = ', button_pos)
+            if block_start < 0:
+              raise SystemExit(f'old week nav block missing in {filename}')
+            fixed = "      html = html.replace('</body>', '<div id=\"weekJumpDockFixed\" style=\"position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center\">' + weekButton + '</div></body>');\n\n"
+            s = s[:block_start] + fixed + s[doc_pos:]
+            p.write_text(s)
 
-      - name: Commit fixes
+          # Week 1 gets a visible Week 2 jump as well, so all weekly books remain navigable.
+          p = Path('week1/index.html')
+          s = p.read_text()
+          if 'weekJumpDockFixed' not in s:
+            marker = "      html = html.replace(/<title>[\\s\\S]*?<\\/title>/i, '<title>ULM Special Teams • Week 1 • Mississippi State</title>');\n"
+            if marker not in s:
+              raise SystemExit('Week 1 title marker not found')
+            addition = "      html = html.replace('</head>', '<style>.weekJumpBtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #d1a53a;border-radius:9px;background:#6f1d2b;color:#fff;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.04em;white-space:nowrap}</style></head>');\n      html = html.replace('</body>', '<div id=\"weekJumpDockFixed\" style=\"position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px\"><a class=\"weekJumpBtn\" href=\"/uab/\">WEEK 2 • UAB →</a></div></body>');\n"
+            s = s.replace(marker, marker + addition, 1)
+            p.write_text(s)
+
+      - name: Commit code fixes
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/sela-sync.js lib/sela-enrich.js uab/index.html southeastern/index.html
-          git commit -m 'Fix Southeastern photos and restore week navigation'
+          git add lib/sela-sync.js lib/sela-enrich.js week1/index.html uab/index.html southeastern/index.html
+          git diff --check
+          git commit -m 'Fix Southeastern photos and weekly navigation'
           git push
 
-      - name: Wait for Vercel to deploy photo fix
+      - name: Wait for Vercel deployment
         shell: bash
         run: |
           set -euo pipefail
-          for i in $(seq 1 30); do
+          for i in $(seq 1 36); do
             RESP=$(curl -fsS --retry 1 'https://special-teams-analytics.vercel.app/api/sela?route=enrich' || true)
             echo "$RESP"
-            if echo "$RESP" | grep -q 'v3-photo-fix'; then exit 0; fi
+            if echo "$RESP" | grep -q 'sela-assets-2026-09-12-v4'; then exit 0; fi
             sleep 10
           done
           echo 'Timed out waiting for Vercel deployment' >&2
           exit 1
 
-      - name: Re-enrich Southeastern photos now
+      - name: Rebuild and re-enrich Southeastern roster
         shell: bash
         run: |
           set -euo pipefail
-          for i in $(seq 1 20); do
-            RESP=$(curl -fsS --retry 2 --retry-delay 2 -X POST 'https://special-teams-analytics.vercel.app/api/sela?route=enrich-step')
+          echo 'BOOTSTRAP:'
+          curl -fsS --retry 2 --retry-delay 2 'https://special-teams-analytics.vercel.app/api/sela?route=bootstrap'
+          echo
+          for i in $(seq 1 24); do
+            RESP=$(curl -fsS --retry 2 --retry-delay 2 'https://special-teams-analytics.vercel.app/api/sela?route=enrich-step')
             echo "batch $i: $RESP"
             DONE=$(python3 -c 'import json,sys; print(str(bool(json.load(sys.stdin).get("done"))).lower())' <<< "$RESP")
             if [ "$DONE" = 'true' ]; then break; fi
           done
 
-      - name: Verify photo coverage
+      - name: Verify visible Southeastern player photos
         shell: bash
         run: |
           set -euo pipefail
@@ -132,9 +161,14 @@ jobs:
           d=json.load(open('/tmp/sela-roster.json'))
           players=d if isinstance(d,list) else d.get('players',[])
           current=[p for p in players if 2026 in (p.get('rosterSeasons') or ([p.get('rosterSeason')] if p.get('rosterSeason') else []))]
-          with_photo=[p for p in current if p.get('image')]
-          print('current players',len(current),'current photos',len(with_photo))
-          print('missing sample',[(p.get('number'),p.get('name')) for p in current if not p.get('image')][:20])
-          if len(with_photo) < 50:
-              raise SystemExit('Photo coverage is still unexpectedly low')
+          photos=[p for p in current if p.get('image')]
+          missing=[(p.get('number'),p.get('name')) for p in current if not p.get('image')]
+          print('merged players',len(players),'current players',len(current),'current photos',len(photos))
+          print('current missing photos',missing)
+          targets=['Tylin Jackson','Bradley Wainwright','EJ Reid','AJ Johnson']
+          for name in targets:
+            matches=[p for p in players if (p.get('name') or '').lower()==name.lower()]
+            print('TARGET',name,[(p.get('number'),bool(p.get('image')),p.get('image')) for p in matches])
+          if len(photos) < max(90, len(current)-15):
+            raise SystemExit('Current roster photo coverage is still too low')
           PY
