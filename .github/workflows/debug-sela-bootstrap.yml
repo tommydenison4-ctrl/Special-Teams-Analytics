@@ -12,16 +12,27 @@ jobs:
   debug:
     runs-on: ubuntu-latest
     steps:
-      - name: Print bootstrap response
+      - name: Inspect official roster HTML
         shell: bash
         run: |
-          set +e
-          curl -sS -D /tmp/headers.txt -o /tmp/body.txt 'https://special-teams-analytics.vercel.app/api/sela?route=bootstrap'
-          CODE=$?
-          echo 'curl exit:' $CODE
-          echo '--- headers ---'
-          cat /tmp/headers.txt
-          echo '--- body ---'
-          cat /tmp/body.txt
-          echo
-          exit 0
+          set -euo pipefail
+          for URL in 'https://lionsports.net/sports/football/roster' 'https://lionsports.net/sports/football/roster/2025'; do
+            echo "=== $URL ==="
+            curl -LfsS -A 'Mozilla/5.0' "$URL" -o /tmp/roster.html
+            wc -c /tmp/roster.html
+            echo 'sidearm roster cards:' $(grep -o 'sidearm-roster-player' /tmp/roster.html | wc -l)
+            echo 'profile hrefs:' $(grep -o '/sports/football/roster/[^"?]*' /tmp/roster.html | sort -u | wc -l)
+            python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('/tmp/roster.html').read_text(errors='ignore')
+          for needle in ['Kyree Paul','Dkhai Joseph','Jirrea Johnson']:
+              i=s.find(needle)
+              if i>=0:
+                  print('---',needle,'---')
+                  chunk=s[max(0,i-1800):i+2200]
+                  chunk=re.sub(r'\s+',' ',chunk)
+                  print(chunk[:4000])
+                  break
+          PY
+          done
