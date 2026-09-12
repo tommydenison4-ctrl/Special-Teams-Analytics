@@ -1,0 +1,168 @@
+name: Fix Southeastern player images and week navigation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-sela-images-week-toggle.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch image extraction and week navigation
+        shell: python
+        run: |
+          from pathlib import Path
+
+          # 1) Southeastern roster sync: keep profile links locked to lionsports.net,
+          # but allow official Sidearm/CDN player-photo hosts.
+          p = Path('lib/sela-sync.js')
+          s = p.read_text()
+          old = """function highResImage(value, pageUrl) {
+            const absolute = absoluteOfficial(value, pageUrl);
+            if (!absolute) return '';
+            try {
+              const url = new URL(absolute);
+              url.searchParams.delete('width');
+              return url.href;
+            } catch {
+              return absolute;
+            }
+          }"""
+          new = """function highResImage(value, pageUrl) {
+            if (!value) return '';
+            try {
+              const url = new URL(value, pageUrl);
+              const host = url.hostname.toLowerCase();
+              const allowed = host === OFFICIAL_HOST || host.endsWith('.sidearmdev.com') || host.endsWith('.cloudfront.net');
+              if (!allowed) return '';
+              url.searchParams.delete('width');
+              return url.href;
+            } catch {
+              return '';
+            }
+          }"""
+          if old not in s:
+            raise SystemExit('sync highResImage block not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+
+          # 2) Southeastern enrichment: re-run every profile and accept the official
+          # Sidearm/CDN image hosts instead of rejecting everything not on lionsports.net.
+          p = Path('lib/sela-enrich.js')
+          s = p.read_text()
+          s = s.replace("const BIO_REFRESH_VERSION = 'sela-bios-2026-09-12-v2';", "const BIO_REFRESH_VERSION = 'sela-bios-2026-09-12-v3-photo-fix';", 1)
+          old = """function highResImage(raw, pageUrl) {
+            if (!raw) return '';
+            try {
+              const url = new URL(raw, pageUrl);
+              if (url.hostname.toLowerCase() !== OFFICIAL_HOST) return '';
+              url.searchParams.delete('width');
+              return url.href;
+            } catch {
+              return '';
+            }
+          }"""
+          new = """function highResImage(raw, pageUrl) {
+            if (!raw) return '';
+            try {
+              const url = new URL(raw, pageUrl);
+              const host = url.hostname.toLowerCase();
+              const allowed = host === OFFICIAL_HOST || host.endsWith('.sidearmdev.com') || host.endsWith('.cloudfront.net');
+              if (!allowed) return '';
+              url.searchParams.delete('width');
+              return url.href;
+            } catch {
+              return '';
+            }
+          }"""
+          if old not in s:
+            raise SystemExit('enrich highResImage block not found')
+          s = s.replace(old, new, 1)
+          s = s.replace("const tags = html.match(/<img\\b[^>]*>/gi) || [];", "const tags = html.match(/<(?:img|source)\\b[^>]*>/gi) || [];", 1)
+          old_raw = "const raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src');\n    const candidate = highResImage(raw, profile.href);"
+          new_raw = "let raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src') || attr(tag, 'srcset');\n    if (raw && raw.includes(',')) { const parts = raw.split(',').map(x => x.trim().split(/\\s+/)[0]).filter(Boolean); raw = parts[parts.length - 1] || raw; }\n    const candidate = highResImage(raw, profile.href);"
+          if old_raw not in s:
+            raise SystemExit('enrich image-source block not found')
+          s = s.replace(old_raw, new_raw, 1)
+          p.write_text(s)
+
+          # 3) The wrappers were looking only for an exact ulmHeaderActions class.
+          # The live template can carry additional classes, so the buttons silently vanished.
+          # Use a regex that matches ulmHeaderActions with or without extra classes.
+          for filename in ['uab/index.html', 'southeastern/index.html']:
+            p = Path(filename)
+            s = p.read_text()
+            old = """      if (html.includes('<div class=\"ulmHeaderActions\">')) {
+                html = html.replace('<div class=\"ulmHeaderActions\">', '<div class=\"ulmHeaderActions\">' + weekButton);
+              } else {
+                html = html.replace('</body>', '<div style=\"position:fixed;right:14px;top:14px;z-index:20000\">' + weekButton + '</div></body>');
+              }"""
+            new = """      const weekActionsRe = /<div class=\"ulmHeaderActions([^\"]*)\">/i;
+              if (weekActionsRe.test(html)) {
+                html = html.replace(weekActionsRe, (match) => match + weekButton);
+              } else {
+                html = html.replace('</body>', '<div style=\"position:fixed;right:14px;top:14px;z-index:20000;display:flex;gap:8px\">' + weekButton + '</div></body>');
+              }"""
+            if old not in s:
+              raise SystemExit(f'week nav block not found in {filename}')
+            s = s.replace(old, new, 1)
+            p.write_text(s)
+
+      - name: Commit fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/sela-sync.js lib/sela-enrich.js uab/index.html southeastern/index.html
+          git commit -m 'Fix Southeastern photos and restore week navigation'
+          git push
+
+      - name: Wait for Vercel to deploy photo fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            RESP=$(curl -fsS --retry 1 'https://special-teams-analytics.vercel.app/api/sela?route=enrich' || true)
+            echo "$RESP"
+            if echo "$RESP" | grep -q 'v3-photo-fix'; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Timed out waiting for Vercel deployment' >&2
+          exit 1
+
+      - name: Re-enrich Southeastern photos now
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 20); do
+            RESP=$(curl -fsS --retry 2 --retry-delay 2 -X POST 'https://special-teams-analytics.vercel.app/api/sela?route=enrich-step')
+            echo "batch $i: $RESP"
+            DONE=$(python3 -c 'import json,sys; print(str(bool(json.load(sys.stdin).get("done"))).lower())' <<< "$RESP")
+            if [ "$DONE" = 'true' ]; then break; fi
+          done
+
+      - name: Verify photo coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS 'https://special-teams-analytics.vercel.app/api/sela?route=roster' > /tmp/sela-roster.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/sela-roster.json'))
+          players=d if isinstance(d,list) else d.get('players',[])
+          current=[p for p in players if 2026 in (p.get('rosterSeasons') or ([p.get('rosterSeason')] if p.get('rosterSeason') else []))]
+          with_photo=[p for p in current if p.get('image')]
+          print('current players',len(current),'current photos',len(with_photo))
+          print('missing sample',[(p.get('number'),p.get('name')) for p in current if not p.get('image')][:20])
+          if len(with_photo) < 50:
+              raise SystemExit('Photo coverage is still unexpectedly low')
+          PY
