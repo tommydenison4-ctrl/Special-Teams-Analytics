@@ -1,0 +1,27 @@
+name: Debug Southeastern roster bootstrap
+
+on:
+  push:
+    paths:
+      - '.github/workflows/debug-sela-bootstrap.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print bootstrap response
+        shell: bash
+        run: |
+          set +e
+          curl -sS -D /tmp/headers.txt -o /tmp/body.txt 'https://special-teams-analytics.vercel.app/api/sela?route=bootstrap'
+          CODE=$?
+          echo 'curl exit:' $CODE
+          echo '--- headers ---'
+          cat /tmp/headers.txt
+          echo '--- body ---'
+          cat /tmp/body.txt
+          echo
+          exit 0
