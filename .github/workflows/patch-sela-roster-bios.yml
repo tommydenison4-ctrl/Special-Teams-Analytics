@@ -1,0 +1,77 @@
+name: Patch Southeastern Louisiana roster and bios
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-sela-roster-bios.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Week 3 roster ingestion and bios
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          # 1) Make the Southeastern roster scraper understand Sidearm roster cards
+          # and combine the current 2026 roster with the official 2025 roster.
+          p=Path('lib/sela-sync.js')
+          s=p.read_text()
+
+          anchor='''        if (image) images.set(key, image);\n      });\n\n      let text = clean(document.body.innerText);'''
+          card_parser='''        if (image) images.set(key, image);\n      });\n\n      // Southeastern Louisiana uses Sidearm roster cards. Parse those directly first.\n      const rosterSeason = Number((document.title.match(/(20\\d{2})\\s+Football Roster/i) || [])[1] || 0) || null;\n      const cardPlayers = [];\n      const cardSeen = new Set();\n      const cards = [...document.querySelectorAll('.sidearm-roster-player')];\n      const pickText = (card, selectors) => {\n        for (const selector of selectors) {\n          const node = card.querySelector(selector);\n          const value = clean(node?.textContent || '');\n          if (value) return value;\n        }\n        return '';\n      };\n\n      for (const card of cards) {\n        const anchors = [...card.querySelectorAll('a[href*="/sports/football/roster/"]')];\n        const nameAnchor =\n          card.querySelector('.sidearm-roster-player-name a[href*="/roster/"]') ||\n          anchors.find(a => !/^\\s*Full Bio/i.test(clean(a.textContent))) ||\n          anchors[0];\n        if (!nameAnchor) continue;\n\n        const name = clean(nameAnchor.textContent)\n          .replace(/^Full Bio for\\s+/i, '')\n          .replace(/^Expand for more info about\\s+/i, '')\n          .trim();\n        if (!name || name.length > 100) continue;\n\n        const key = normalizeName(name);\n        if (!key || cardSeen.has(key)) continue;\n        cardSeen.add(key);\n\n        const numberText = pickText(card, [\n          '.sidearm-roster-player-jersey-number',\n          '[class*="jersey-number"]'\n        ]);\n        const number = (numberText.match(/\\d{1,3}/) || [])[0] || '';\n        const position = pickText(card, [\n          '.sidearm-roster-player-position-long-short',\n          '.sidearm-roster-player-position',\n          '[class*="player-position"]'\n        ]);\n        const playerClass = pickText(card, [\n          '.sidearm-roster-player-academic-year',\n          '.sidearm-roster-player-class',\n          '[class*="academic-year"]'\n        ]);\n        const height = pickText(card, ['.sidearm-roster-player-height','[class*="player-height"]']);\n        const weight = pickText(card, ['.sidearm-roster-player-weight','[class*="player-weight"]']).replace(/\\s*lbs?\\.?$/i,'');\n        const hometown = pickText(card, ['.sidearm-roster-player-hometown','[class*="player-hometown"]']);\n        const previousSchool = pickText(card, [\n          '.sidearm-roster-player-highschool',\n          '.sidearm-roster-player-previous-school',\n          '[class*="highschool"]',\n          '[class*="previous-school"]'\n        ]);\n        const profile = absolute(nameAnchor.getAttribute('href')) || profiles.get(key) || '';\n        const image = bestImageFromNode(card, name) || images.get(key) || '';\n\n        cardPlayers.push({\n          number, name, position, class: playerClass, height, weight,\n          hometown, previousSchool, image, profile, bio: '', rosterSeason\n        });\n      }\n\n      if (cardPlayers.length >= 20) {\n        return { source: window.location.href, pageTitle: document.title, players: cardPlayers };\n      }\n\n      let text = clean(document.body.innerText);'''
+          if anchor not in s:
+              raise SystemExit('Sidearm insertion point not found')
+          s=s.replace(anchor,card_parser,1)
+
+          start=s.index('    const rosterUrl = await validatePublicUrl(body.url);')
+          end=s.index('  } catch (error) {', start)
+          replacement='''    const rosterUrl = await validatePublicUrl(body.url);\n    const result = await scrapeRoster(rosterUrl.href);\n\n    // Keep current Week 3 identities first, while retaining 2025 players for\n    // historical PFF special-teams labels and bios.\n    const secondaryRaw = body.secondaryUrl || 'https://lionsports.net/sports/football/roster/2025';\n    let historical = null;\n    if (secondaryRaw) {\n      const historicalUrl = await validatePublicUrl(secondaryRaw);\n      historical = await scrapeRoster(historicalUrl.href);\n    }\n\n    if (!result.players.length && !(historical && historical.players.length)) {\n      return sendJson(res, 422, {\n        error: 'The Southeastern Louisiana roster pages rendered, but no players were recognized.',\n        pageTitle: result.pageTitle,\n        source: result.source\n      });\n    }\n\n    const nameKey = value => String(value || '')\n      .toLowerCase()\n      .replace(/[“”"'’.,()]/g, '')\n      .replace(/\\s+/g, ' ')\n      .trim();\n    const merged = new Map();\n    const absorb = (player, preferCurrent=false) => {\n      const key = nameKey(player.name);\n      if (!key) return;\n      const season = Number(player.rosterSeason || 0) || null;\n      const existing = merged.get(key);\n      if (!existing) {\n        merged.set(key, {\n          ...player,\n          rosterSeasons: season ? [season] : [],\n          historicalNumbers: season && player.number ? { [season]: String(player.number) } : {}\n        });\n        return;\n      }\n      const rosterSeasons = [...new Set([...(existing.rosterSeasons || []), ...(season ? [season] : [])])].sort((a,b)=>b-a);\n      const historicalNumbers = { ...(existing.historicalNumbers || {}) };\n      if (season && player.number) historicalNumbers[season] = String(player.number);\n      const combined = preferCurrent\n        ? { ...existing, ...player, rosterSeasons, historicalNumbers }\n        : { ...player, ...existing, rosterSeasons, historicalNumbers };\n      merged.set(key, combined);\n    };\n\n    result.players.forEach(player => absorb(player, true));\n    if (historical) historical.players.forEach(player => absorb(player, false));\n    const players = [...merged.values()];\n\n    await saveRosterToSupabase(players, {\n      source: [result.source, historical?.source].filter(Boolean).join(' | '),\n      teamName: body.teamName,\n      nickname: body.nickname,\n      teamCode: body.teamCode\n    });\n\n    return sendJson(res, 200, {\n      ok: true,\n      count: players.length,\n      currentCount: result.players.length,\n      historicalCount: historical?.players?.length || 0,\n      source: result.source,\n      historicalSource: historical?.source || '',\n      storedAt: `${BUCKET}/${OBJECT_PATH}`\n    });\n'''
+          s=s[:start]+replacement+s[end:]
+          p.write_text(s)
+
+          # 2) Make the existing profile enrichment Southeastern-specific while\n          # keeping compatibility with the inherited UAB UI flag.
+          p=Path('lib/sela-enrich.js')
+          s=p.read_text()
+          s=s.replace("const PHOTO_REFRESH_VERSION = 'uab-photos-2026-09-04-v2';", "const PHOTO_REFRESH_VERSION = 'sela-bios-2026-09-12-v1';")
+          s=s.replace('const publicUabRefresh = body.publicUabRefresh === true;', "const publicRosterRefresh = body.publicSelaRefresh === true || body.publicUabRefresh === true;")
+          s=s.replace('publicUabRefresh', 'publicRosterRefresh')
+          s=s.replace('Public button refreshes every official UAB profile once per refresh version.', 'Public refresh processes every official Southeastern Louisiana profile once per refresh version.')
+          p.write_text(s)
+
+          # 3) Fixed routes: bootstrap both official rosters and allow a constrained\n          # server-side enrichment step for this one Supabase roster object.
+          p=Path('api/sela.js')
+          s=p.read_text()
+          s=s.replace("url: 'https://lionsports.net/sports/football/roster',", "url: 'https://lionsports.net/sports/football/roster',\n        secondaryUrl: 'https://lionsports.net/sports/football/roster/2025',")
+          marker='''  const load = HANDLERS[route];'''
+          enrich_route='''  if (route === 'enrich-step') {\n    try {\n      const mod = await import('../lib/sela-enrich.js');\n      req.method = 'POST';\n      req.body = { publicSelaRefresh: true, batchSize: 8 };\n      return await mod.default(req, res);\n    } catch (error) {\n      console.error('SELA enrichment step failed', error);\n      if (!res.headersSent) res.status(500).json({ ok: false, error: error?.message || String(error) });\n      return;\n    }\n  }\n\n  const load = HANDLERS[route];'''
+          if marker not in s: raise SystemExit('SELA route insertion point not found')
+          s=s.replace(marker,enrich_route,1)
+          p.write_text(s)
+
+          # 4) The Week 3 wrapper was originally generated with separate API names.\n          # Point only those generated Week 3 calls at the consolidated SELA function.\n          p=Path('southeastern/index.html')
+          s=p.read_text()
+          marker='''      endpointMap.forEach(([from, to]) => {\n        const pattern = new RegExp('(^|[^A-Za-z0-9_-])(/?api/' + from + ')(?![A-Za-z0-9_-])', 'g');\n        html = html.replace(pattern, (match, before, path) => before + path.replace(from, to));\n      });'''
+          routes=marker+'''\n      html = html.replace(/\\/api\\/storage-project-sela/g, '/api/sela?route=storage');\n      html = html.replace(/\\/api\\/sync-roster-sela/g, '/api/sela?route=sync');\n      html = html.replace(/\\/api\\/enrich-roster-sela/g, '/api/sela?route=enrich');\n      html = html.replace(/\\/api\\/roster-sela/g, '/api/sela?route=roster');'''
+          if marker not in s: raise SystemExit('SELA wrapper API insertion point not found')
+          s=s.replace(marker,routes,1)
+          p.write_text(s)
+
+          print('Patched Southeastern Louisiana official 2026 + 2025 roster and bio pipeline.')
+          PY
+
+          git diff --check
+          git status --short
+          git config user.name 'tommydenison4-ctrl'
+          git config user.email 'tommydenison4@gmail.com'
+          git add lib/sela-sync.js lib/sela-enrich.js api/sela.js southeastern/index.html
+          git commit -m 'Load Southeastern 2026 and 2025 rosters with bios'
+          git push origin main
