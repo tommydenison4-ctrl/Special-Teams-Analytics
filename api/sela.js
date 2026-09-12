@@ -8,14 +8,14 @@ const HANDLERS = {
 export default async function handler(req, res) {
   const route = String(req.query?.route || '').toLowerCase();
 
-  // Fixed one-time Week 3 roster bootstrap. No caller-controlled URL,
-  // team identity or Supabase destination is accepted here.
+  // Fixed Week 3 roster bootstrap. The caller cannot choose a URL, team identity,
+  // or Supabase destination; only the official Southeastern Louisiana pages are used.
   if (route === 'bootstrap') {
     try {
       const mod = await import('../lib/sela-sync.js');
       req.method = 'POST';
+      req.__internalSelaBootstrap = true;
       req.body = {
-        adminKey: process.env.SPECIAL_TEAMS_ADMIN_KEY || '',
         url: 'https://lionsports.net/sports/football/roster',
         secondaryUrl: 'https://lionsports.net/sports/football/roster/2025',
         teamName: 'Southeastern Louisiana',
@@ -30,11 +30,14 @@ export default async function handler(req, res) {
     }
   }
 
+  // Fixed enrichment step. It can only update the Southeastern roster.json and
+  // only follows official lionsports.net player profile URLs already in that roster.
   if (route === 'enrich-step') {
     try {
       const mod = await import('../lib/sela-enrich.js');
       req.method = 'POST';
-      req.body = { publicSelaRefresh: true, batchSize: 8 };
+      req.__internalSelaEnrich = true;
+      req.body = { batchSize: 8 };
       return await mod.default(req, res);
     } catch (error) {
       console.error('SELA enrichment step failed', error);
