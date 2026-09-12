@@ -1,0 +1,47 @@
+name: Add Southeastern to prep opponent selector
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-southeastern-to-prep-opponent.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Southeastern Louisiana to root opponent selector
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('index.html')
+          s=p.read_text()
+          old='''<select id="opponentWorkspaceSelect" aria-label="Prep opponent">
+  <option value="/uab/" selected>UAB</option>
+</select>
+<div class="opponentSwitchNote">UAB roster + depth + PFF analytics active</div>'''
+          new='''<select id="opponentWorkspaceSelect" aria-label="Prep opponent">
+  <option value="/uab/" selected>UAB</option>
+  <option value="/southeastern/">Southeastern Louisiana</option>
+</select>
+<div class="opponentSwitchNote">Choose opponent workspace</div>'''
+          if old not in s:
+              raise SystemExit('Expected PREP OPPONENT block not found; refusing unrelated edit')
+          if s.count(old) != 1:
+              raise SystemExit(f'Expected one selector block, found {s.count(old)}')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          git diff --check
+          grep -n -A6 -B2 'id="opponentWorkspaceSelect"' index.html
+          git config user.name 'tommydenison4-ctrl'
+          git config user.email 'tommydenison4@gmail.com'
+          git add index.html
+          git commit -m 'Add Southeastern to prep opponent selector'
+          git push origin main
