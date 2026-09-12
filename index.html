@@ -953,7 +953,7 @@ button:hover{border-color:#EBA800!important}
 <button class="nav" data-page="plays">≡ <span>Play Log</span></button>
 <button class="nav" data-page="settings">⚙ <span>Team Settings</span></button>
 </aside>
-<main><div class="toolbar"><div class="prepOpponentWrap"><span>PREP OPPONENT</span><select id="prepOpponentF"><option value="MSST">Mississippi State</option><option value="UAB">UAB</option></select><small id="prepOpponentStatus">Mississippi State prep • PFF analytics active</small></div><select id="seasonF"></select><select id="weekF"></select><select id="teamF"></select><select id="unitF"></select><button id="resetF">Reset</button></div><div id="app"></div></main>
+<main><div class="toolbar"><div class="prepOpponentWrap"><span>PREP OPPONENT</span><select id="prepOpponentF"><option value="MSST">Mississippi State</option><option value="UAB">UAB</option><option value="SELA">Southeastern Louisiana</option></select><small id="prepOpponentStatus">Mississippi State prep • PFF analytics active</small></div><select id="seasonF"></select><select id="weekF"></select><select id="teamF"></select><select id="unitF"></select><button id="resetF">Reset</button></div><div id="app"></div></main>
 </div>
 
 <div id="printCenterOverlay" class="print-center-overlay" onclick="if(event.target===this)closePrintCenter()">
@@ -1230,6 +1230,11 @@ function seasonStatsTag(){let s=activeSeason();return `<div class="seasonStatsTa
 async function loadHistoricalRoster(season='2025'){
   const key=historicalRosterKey(season);
   if(historicalRosters[key]?.length)return;
+  if(prepOpponent==='SELA'){
+    const yr=Number(season);
+    historicalRosters[key]=(prepRosterData||[]).filter(p=>Array.isArray(p.rosterSeasons)?p.rosterSeasons.map(Number).includes(yr):Number(p.rosterSeason)===yr).map(p=>({...p,number:String((p.historicalNumbers||{})[season]||(p.historicalNumbers||{})[yr]||p.number||'')}));
+    return;
+  }
   try{
     let r;
     if(prepOpponent==='UAB'){
@@ -1474,13 +1479,14 @@ function copyShareLink(){
 const PREP_STORAGE_BASE='https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams';
 const PREP_OPPONENTS={
   MSST:{id:'MSST',label:'Mississippi State',short:'MISSISSIPPI STATE',week:'WEEK 1',game:'September 5, 2026 • 6:30 PM CT • Davis Wade Stadium • ESPNU',analytics:true,rawTeam:'MSST'},
-  UAB:{id:'UAB',label:'UAB',short:'UAB',week:'NEXT OPPONENT',game:'ULM opponent prep • UAB Blazers',folder:'Opponents/UAB',analytics:true,rawTeam:'ALBI'}
+  UAB:{id:'UAB',label:'UAB',short:'UAB',week:'WEEK 2',game:'ULM opponent prep • UAB Blazers',folder:'Opponents/UAB',analytics:true,rawTeam:'ALBI'},
+  SELA:{id:'SELA',label:'Southeastern Louisiana',short:'SOUTHEASTERN LOUISIANA',week:'WEEK 3',game:'September 19, 2026 • 3:30 PM CT • Malone Stadium • ESPN+',folder:'Opponents/SoutheasternLA',analytics:true,rawTeam:'LASE'}
 };
-const PREP_WEEK_DEFAULT_KEY='stPrepWeekDefault_2026_UAB';
-let prepOpponent=localStorage.getItem('stPrepOpponentV1')||'UAB';
+const PREP_WEEK_DEFAULT_KEY='stPrepWeekDefault_2026_SELA';
+let prepOpponent=localStorage.getItem('stPrepOpponentV1')||'SELA';
 if(!localStorage.getItem(PREP_WEEK_DEFAULT_KEY)){
-  prepOpponent='UAB';
-  localStorage.setItem('stPrepOpponentV1','UAB');
+  prepOpponent='SELA';
+  localStorage.setItem('stPrepOpponentV1','SELA');
   localStorage.setItem(PREP_WEEK_DEFAULT_KEY,'1');
 }
 let prepRosterData=[];
@@ -1640,7 +1646,7 @@ const PFF_STORAGE={
   roster:'roster.json'
 };
 function activePffFiles(){
-  if(prepOpponent==='UAB'){
+  if(prepOpponent!=='MSST'){
     return [
       ['offensive-side.csv','offense-side.csv'],
       ['defensive-side.csv','defense-side.csv']
@@ -2234,7 +2240,7 @@ const TEAM_NAME_MAP={
   NIU:'Northern Illinois',TOL:'Toledo',BGSU:'Bowling Green','M-OH':'Miami (OH)',MIAOH:'Miami (OH)',OHIO:'Ohio',AKR:'Akron',
   KENT:'Kent State',BUFF:'Buffalo',CMU:'Central Michigan',EMU:'Eastern Michigan',WMU:'Western Michigan',BALL:'Ball State',
   LIB:'Liberty',JAXST:'Jacksonville State',SHSU:'Sam Houston',UTSA:'UTSA',NTX:'North Texas',UNT:'North Texas',
-  RICE:'Rice',TULN:'Tulane',TLSA:'Tulsa',ECU:'East Carolina',NAVY:'Navy',ARMY:'Army',TEM:'Temple',UAB:'UAB',ALBI:'UAB',FAU:'FAU',USF:'USF',MEM:'Memphis',CHAR:'Charlotte',
+  RICE:'Rice',TULN:'Tulane',TLSA:'Tulsa',ECU:'East Carolina',NAVY:'Navy',ARMY:'Army',TEM:'Temple',UAB:'UAB',ALBI:'UAB',LASE:'Southeastern Louisiana',FAU:'FAU',USF:'USF',MEM:'Memphis',CHAR:'Charlotte',
   WKU:'Western Kentucky',MTSU:'Middle Tennessee',FIU:'FIU',NMSU:'New Mexico State',UTEP1:'UTEP',KSUU:'Kennesaw State',
   ORU:'Oregon',SALA1:'South Alabama'
 };
@@ -3870,7 +3876,7 @@ function playerPage(a){
   return reportBanner('Player Intelligence')+
     title('Player Intelligence','Historical PFF stats stay attached to the actual historical player. If that player is on the 2026 roster under a different jersey number, the app keeps the 2025 stats with him and identifies the number change. Players not on the 2026 roster remain visible for Week 1 prep instead of disappearing. Kickoff Team Tacklers shows your team&#39;s kickoff-coverage tacklers. Punt Team Tacklers shows your team&#39;s punt-coverage tacklers.')+
     `<div class="card"><div class="context">Active team: <b>${selectedTeam()||inferredHomeTeam()||'None selected'}</b>. ${rosterNote}</div></div>`+
-    (prepOpponent==='MSST'?rosterManager():`<div class="card"><div class="context"><b>UAB opponent package active.</b> Roster, depth chart and PFF files are loaded from <b>Opponents/UAB</b>.</div></div>`)+
+    (prepOpponent==='MSST'?rosterManager():`<div class="card"><div class="context"><b>${esc(prepConfig().label)} opponent package active.</b> Roster, depth chart and PFF files are loaded from <b>${esc(prepConfig().folder||'opponent package')}</b>.</div></div>`)+
     categoryTabs()+
     `<div class="card"><div class="eyebrow">${labels[playerCategory]}</div><div class="playerCardGrid" style="margin-top:10px">${list.length?list.map(x=>cardForCategory(x,playerCategory)).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>'}</div></div><div style="margin-top:14px">${selectedProfile(a,playerCategory,list)}</div>`
 }
@@ -4013,7 +4019,7 @@ function opponentDepthChartPage(){
         <div><div class="eyebrow">${esc(c.week)} • ${esc(c.short)}</div><h2>Special Teams Depth Chart</h2><div class="depthChartMeta">${esc(c.game)} • ${esc(prepLoadStatus)}</div></div>
       </div>
     </div>
-    ${prepOpponent==='UAB'?`<div class="prepOpponentAlert"><b>UAB package is active.</b> Roster, depth chart and PFF analytics are loading from <b>Opponents/UAB</b>. Mississippi State remains available by switching PREP OPPONENT back to Mississippi State.</div>`:''}
+    ${prepOpponent!=='MSST'?`<div class="prepOpponentAlert"><b>${esc(c.label)} package is active.</b> Roster, depth chart and PFF analytics are loading from <b>${esc(c.folder||'opponent package')}</b>. Other opponents remain available from PREP OPPONENT.</div>`:''}
     <div class="card">
       <div class="depthChartQuick">${depthQuickChips()}</div>
       <div class="depthChartTableWrap"><table class="depthChartTable"><thead><tr><th>POS</th>${heads}</tr></thead><tbody>${body}</tbody></table></div>
@@ -4202,7 +4208,7 @@ let prepSel=$('prepOpponentF');
 if(prepSel){
   prepSel.value=prepOpponent;
   prepSel.onchange=async()=>{
-    const nextOpponent=prepSel.value||'UAB';
+    const nextOpponent=prepSel.value||'SELA';
     switchLookLibrary(nextOpponent);
     prepOpponent=nextOpponent;
     localStorage.setItem('stPrepOpponentV1',prepOpponent);
