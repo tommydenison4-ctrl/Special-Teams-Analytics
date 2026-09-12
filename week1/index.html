@@ -20,6 +20,8 @@
       });
       html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
       html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 1 • Mississippi State</title>');
+      html = html.replace('</head>', '<style>.weekJumpBtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #d1a53a;border-radius:9px;background:#6f1d2b;color:#fff;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.04em;white-space:nowrap}</style></head>');
+      html = html.replace('</body>', '<div id="weekJumpDockFixed" style="position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px"><a class="weekJumpBtn" href="/uab/">WEEK 2 • UAB →</a></div></body>');
       document.open();
       document.write(html);
       document.close();

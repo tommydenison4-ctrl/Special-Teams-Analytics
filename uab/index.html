@@ -282,11 +282,7 @@ function playerPage(a){
       </style>`;
       html = html.replace('</head>', navStyle + '</head>');
       const weekButton = '<a class="weekJumpBtn" href="/">← WEEK 1 • MISSISSIPPI STATE</a><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA →</a>';
-      if (html.includes('<div class="ulmHeaderActions">')) {
-        html = html.replace('<div class="ulmHeaderActions">', '<div class="ulmHeaderActions">' + weekButton);
-      } else {
-        html = html.replace('</body>', '<div style="position:fixed;right:14px;top:14px;z-index:20000">' + weekButton + '</div></body>');
-      }
+      html = html.replace('</body>', '<div id="weekJumpDockFixed" style="position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' + weekButton + '</div></body>');
 
       document.open();
       document.write(html);
