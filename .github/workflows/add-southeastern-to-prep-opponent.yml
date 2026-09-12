@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add Southeastern Louisiana to root opponent selector
+      - name: Wire Southeastern Louisiana into root prep opponent
         shell: bash
         run: |
           set -euo pipefail
@@ -21,26 +21,63 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text()
-          sela='<option value="/southeastern/">Southeastern Louisiana</option>'
-          uab='<option value="/uab/" selected>UAB</option>'
-          if sela not in s:
-              if s.count(uab) != 1:
-                  raise SystemExit(f'Expected one UAB prep option, found {s.count(uab)}')
-              s=s.replace(uab, uab+'\n          '+sela, 1)
-          oldnote='UAB roster + depth + PFF analytics active'
-          if oldnote in s:
-              s=s.replace(oldnote, 'Choose opponent workspace', 1)
+
+          def one(old,new,label):
+              global s
+              if old not in s:
+                  if new in s:
+                      return
+                  raise SystemExit(f'{label} anchor not found')
+              if s.count(old)!=1:
+                  raise SystemExit(f'{label} expected once, found {s.count(old)}')
+              s=s.replace(old,new,1)
+
+          one('<select id="prepOpponentF"><option value="MSST">Mississippi State</option><option value="UAB">UAB</option></select>',
+              '<select id="prepOpponentF"><option value="MSST">Mississippi State</option><option value="UAB">UAB</option><option value="SELA">Southeastern Louisiana</option></select>',
+              'prep selector')
+
+          one("  UAB:{id:'UAB',label:'UAB',short:'UAB',week:'NEXT OPPONENT',game:'ULM opponent prep • UAB Blazers',folder:'Opponents/UAB',analytics:true,rawTeam:'ALBI'}\n};",
+              "  UAB:{id:'UAB',label:'UAB',short:'UAB',week:'WEEK 2',game:'ULM opponent prep • UAB Blazers',folder:'Opponents/UAB',analytics:true,rawTeam:'ALBI'},\n  SELA:{id:'SELA',label:'Southeastern Louisiana',short:'SOUTHEASTERN LOUISIANA',week:'WEEK 3',game:'September 19, 2026 • 3:30 PM CT • Malone Stadium • ESPN+',folder:'Opponents/SoutheasternLA',analytics:true,rawTeam:'LASE'}\n};",
+              'prep config')
+
+          s=s.replace("const PREP_WEEK_DEFAULT_KEY='stPrepWeekDefault_2026_UAB';","const PREP_WEEK_DEFAULT_KEY='stPrepWeekDefault_2026_SELA';",1)
+          s=s.replace("let prepOpponent=localStorage.getItem('stPrepOpponentV1')||'UAB';","let prepOpponent=localStorage.getItem('stPrepOpponentV1')||'SELA';",1)
+          s=s.replace("  prepOpponent='UAB';\n  localStorage.setItem('stPrepOpponentV1','UAB');\n  localStorage.setItem(PREP_WEEK_DEFAULT_KEY,'1');","  prepOpponent='SELA';\n  localStorage.setItem('stPrepOpponentV1','SELA');\n  localStorage.setItem(PREP_WEEK_DEFAULT_KEY,'1');",1)
+          s=s.replace("const nextOpponent=prepSel.value||'UAB';","const nextOpponent=prepSel.value||'SELA';",1)
+
+          one("function activePffFiles(){\n  if(prepOpponent==='UAB'){\n    return [\n      ['offensive-side.csv','offense-side.csv'],\n      ['defensive-side.csv','defense-side.csv']\n    ];\n  }\n  return [\n    ['offense-side.csv'],\n    ['defense-side.csv']\n  ];\n}",
+              "function activePffFiles(){\n  if(prepOpponent!=='MSST'){\n    return [\n      ['offensive-side.csv','offense-side.csv'],\n      ['defensive-side.csv','defense-side.csv']\n    ];\n  }\n  return [\n    ['offense-side.csv'],\n    ['defense-side.csv']\n  ];\n}",
+              'PFF file routing')
+
+          hist="  if(historicalRosters[key]?.length)return;\n  try{"
+          hist_new="  if(historicalRosters[key]?.length)return;\n  if(prepOpponent==='SELA'){\n    const yr=Number(season);\n    historicalRosters[key]=(prepRosterData||[]).filter(p=>Array.isArray(p.rosterSeasons)?p.rosterSeasons.map(Number).includes(yr):Number(p.rosterSeason)===yr).map(p=>({...p,number:String((p.historicalNumbers||{})[season]||(p.historicalNumbers||{})[yr]||p.number||'')}));\n    return;\n  }\n  try{"
+          one(hist,hist_new,'SELA historical roster')
+
+          one("UAB:'UAB',ALBI:'UAB',FAU:'FAU'","UAB:'UAB',ALBI:'UAB',LASE:'Southeastern Louisiana',FAU:'FAU'",'team display name')
+
+          one("(prepOpponent==='MSST'?rosterManager():`<div class=\"card\"><div class=\"context\"><b>UAB opponent package active.</b> Roster, depth chart and PFF files are loaded from <b>Opponents/UAB</b>.</div></div>`)+",
+              "(prepOpponent==='MSST'?rosterManager():`<div class=\"card\"><div class=\"context\"><b>${esc(prepConfig().label)} opponent package active.</b> Roster, depth chart and PFF files are loaded from <b>${esc(prepConfig().folder||'opponent package')}</b>.</div></div>`)+",
+              'player intel package copy')
+
+          one("${prepOpponent==='UAB'?`<div class=\"prepOpponentAlert\"><b>UAB package is active.</b> Roster, depth chart and PFF analytics are loading from <b>Opponents/UAB</b>. Mississippi State remains available by switching PREP OPPONENT back to Mississippi State.</div>`:''}",
+              "${prepOpponent!=='MSST'?`<div class=\"prepOpponentAlert\"><b>${esc(c.label)} package is active.</b> Roster, depth chart and PFF analytics are loading from <b>${esc(c.folder||'opponent package')}</b>. Other opponents remain available from PREP OPPONENT.</div>`:''}",
+              'depth chart package copy')
+
           p.write_text(s)
           PY
+
           git diff --check
-          grep -n -A7 -B2 'id="opponentWorkspaceSelect"' index.html
-          grep -q '<option value="/southeastern/">Southeastern Louisiana</option>' index.html
+          grep -n -C 2 'prepOpponentF' index.html | head -20
+          grep -n -A6 'const PREP_OPPONENTS' index.html | head -12
+          grep -q '<option value="SELA">Southeastern Louisiana</option>' index.html
+          grep -q "folder:'Opponents/SoutheasternLA'" index.html
+          grep -q "rawTeam:'LASE'" index.html
           git config user.name 'tommydenison4-ctrl'
           git config user.email 'tommydenison4@gmail.com'
           git add index.html
           if git diff --cached --quiet; then
-            echo 'Selector already contains Southeastern Louisiana.'
+            echo 'Southeastern already wired into root prep opponent.'
             exit 0
           fi
-          git commit -m 'Add Southeastern to prep opponent selector'
+          git commit -m 'Wire Southeastern into root prep opponent'
           git push origin main
