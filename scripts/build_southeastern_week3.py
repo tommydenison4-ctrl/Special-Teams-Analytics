@@ -10,6 +10,12 @@ out.mkdir(exist_ok=True)
 
 s = (root / 'uab/index.html').read_text()
 
+# Normalize the copied UAB navigation first so a rebuild never inherits the
+# Week 3 forward button into the Week 3 page itself.
+uab_nav_single = "const weekButton = '<a class=\"weekJumpBtn\" href=\"/\">← WEEK 1 • MISSISSIPPI STATE</a>';"
+uab_nav_combo = "const weekButton = '<a class=\"weekJumpBtn\" href=\"/\">← WEEK 1 • MISSISSIPPI STATE</a><a class=\"weekJumpBtn\" href=\"/southeastern/\">WEEK 3 • SOUTHEASTERN LA →</a>';"
+s = s.replace(uab_nav_combo, uab_nav_single)
+
 # Core workspace identity. These are wrapper-only substitutions.
 reps = [
     ('ULM Special Teams • Week 2 • UAB', 'ULM Special Teams • Week 3 • Southeastern Louisiana'),
@@ -22,6 +28,7 @@ reps = [
     ("rawTeamCode: 'ALBI',", "rawTeamCode: 'LASE',"),
     ("sourcePackage: 'Special Teams/Opponents/UAB',", "sourcePackage: 'Special Teams/Opponents/SoutheasternLA',"),
     ('function uabDepthPage', 'function selaDepthPage'),
+    ('uabDepthPage.toString()', 'selaDepthPage.toString()'),
     ('UAB_WEEK2_DEPTH', 'SELA_WEEK3_DEPTH'),
     ("fetch('/uab/week2-template.html'", "fetch('/southeastern/week3-template.html'"),
     ("'storage-project-uab'", "'storage-project-sela'"),
@@ -81,6 +88,8 @@ s = s.replace(
 s = s.replace("ULM:'ULM',LAMON:'ULM',ALBI:'UAB',UAB:'UAB',", "ULM:'ULM',LAMON:'ULM',LASE:'Southeastern Louisiana',")
 
 # Human-facing Player Intelligence copy only.
+s = s.replace('No UAB players are listed in this Player Intelligence category.', 'No Southeastern Louisiana players are listed in this Player Intelligence category.')
+s = s.replace("{name:'UAB player'", "{name:'Southeastern Louisiana player'")
 s = s.replace('UAB roster loaded:', 'Southeastern Louisiana roster loaded:')
 s = s.replace('UAB depth-chart players remain visible', 'Southeastern Louisiana depth-chart players remain visible')
 s = s.replace('UAB Special Teams Depth Chart', 'Southeastern Louisiana Special Teams Depth Chart')
@@ -101,10 +110,7 @@ s = s.replace(ryder, '')
 s = s.replace(".replace(/MISSISSIPPI STATE/g,'UAB').replace(/Week 1/g,'Week 2')", ".replace(/MISSISSIPPI STATE/g,'SOUTHEASTERN LOUISIANA').replace(/Week 1/g,'Week 3')")
 
 # Week 3 returns to Week 2 UAB.
-s = s.replace(
-    "const weekButton = '<a class=\"weekJumpBtn\" href=\"/\">← WEEK 1 • MISSISSIPPI STATE</a>';",
-    "const weekButton = '<a class=\"weekJumpBtn\" href=\"/uab/\">← WEEK 2 • UAB</a>';"
-)
+s = s.replace(uab_nav_single, "const weekButton = '<a class=\"weekJumpBtn\" href=\"/uab/\">← WEEK 2 • UAB</a>';", 1)
 
 (out / 'index.html').write_text(s)
 (out / 'README.md').write_text("""# Week 3 — Southeastern Louisiana
@@ -149,15 +155,15 @@ now = now.replace("teamCode: 'ALBI'", "teamCode: 'LASE'")
 # Add only a forward navigation button to the existing UAB wrapper.
 upath = root / 'uab/index.html'
 u = upath.read_text()
-old = "const weekButton = '<a class=\"weekJumpBtn\" href=\"/\">← WEEK 1 • MISSISSIPPI STATE</a>';"
-new = "const weekButton = '<a class=\"weekJumpBtn\" href=\"/\">← WEEK 1 • MISSISSIPPI STATE</a><a class=\"weekJumpBtn\" href=\"/southeastern/\">WEEK 3 • SOUTHEASTERN LA →</a>';"
-if old not in u:
-    raise SystemExit('Could not find safe UAB navigation insertion point')
-upath.write_text(u.replace(old, new, 1))
+if uab_nav_combo not in u:
+    if uab_nav_single not in u:
+        raise SystemExit('Could not find safe UAB navigation insertion point')
+    u = u.replace(uab_nav_single, uab_nav_combo, 1)
+upath.write_text(u)
 
 # Guardrails: do not allow accidental Week 2 engine edits.
 checks = {
-    'southeastern/index.html': ['ULM_ST_2026_W3_SELA::', 'Opponents/SoutheasternLA', "teamCode:'LASE'", 'Week 3 ST Depth Chart', '/southeastern/week3-template.html', 'Drew Talley', 'Jack Hunter', 'Kyree Paul'],
+    'southeastern/index.html': ['ULM_ST_2026_W3_SELA::', 'Opponents/SoutheasternLA', "teamCode:'LASE'", 'Week 3 ST Depth Chart', '/southeastern/week3-template.html', 'selaDepthPage.toString()', 'Drew Talley', 'Jack Hunter', 'Kyree Paul'],
     'api/storage-project-sela.js': ['2026_week3_sela_v1'],
     'api/roster-sela.js': ['Opponents/SoutheasternLA/roster.json'],
     'api/sync-roster-sela.js': ['Opponents/SoutheasternLA/roster.json'],
@@ -169,5 +175,8 @@ for fn, needles in checks.items():
     for needle in needles:
         if needle not in text:
             raise SystemExit(f'Guardrail failed: {fn} missing {needle}')
+
+if 'uabDepthPage.toString()' in (out / 'index.html').read_text():
+    raise SystemExit('Guardrail failed: Week 3 still references UAB depth renderer')
 
 print('Week 3 Southeastern Louisiana workspace built safely.')
