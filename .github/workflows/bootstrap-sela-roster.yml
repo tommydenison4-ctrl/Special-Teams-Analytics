@@ -1,0 +1,33 @@
+name: Bootstrap Southeastern Louisiana roster
+
+on:
+  push:
+    paths:
+      - '.github/workflows/bootstrap-sela-roster.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync official Southeastern Louisiana roster
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'Bootstrap response:'
+          curl -fsS --retry 3 --retry-delay 2 'https://special-teams-analytics.vercel.app/api/sela?route=bootstrap'
+          echo
+          sleep 2
+          echo 'Roster verification:'
+          curl -fsS --retry 3 --retry-delay 2 'https://special-teams-analytics.vercel.app/api/roster-sela' > /tmp/roster.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/roster.json'))
+          players=p if isinstance(p,list) else p.get('players',[])
+          print('players',len(players))
+          print('sample',[(x.get('number'),x.get('name'),x.get('position')) for x in players[:8]])
+          if len(players)<40:
+              raise SystemExit('Roster unexpectedly small')
+          PY
