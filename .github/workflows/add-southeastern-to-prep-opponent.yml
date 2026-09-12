@@ -21,18 +21,26 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text()
-          old='<select id="opponentWorkspaceSelect" aria-label="Prep opponent">\n  <option value="/uab/" selected>UAB</option>\n</select>\n<div class="opponentSwitchNote">UAB roster + depth + PFF analytics active</div>'
-          new='<select id="opponentWorkspaceSelect" aria-label="Prep opponent">\n  <option value="/uab/" selected>UAB</option>\n  <option value="/southeastern/">Southeastern Louisiana</option>\n</select>\n<div class="opponentSwitchNote">Choose opponent workspace</div>'
-          if old not in s:
-              raise SystemExit('Expected PREP OPPONENT block not found; refusing unrelated edit')
-          if s.count(old) != 1:
-              raise SystemExit(f'Expected one selector block, found {s.count(old)}')
-          p.write_text(s.replace(old,new,1))
+          sela='<option value="/southeastern/">Southeastern Louisiana</option>'
+          uab='<option value="/uab/" selected>UAB</option>'
+          if sela not in s:
+              if s.count(uab) != 1:
+                  raise SystemExit(f'Expected one UAB prep option, found {s.count(uab)}')
+              s=s.replace(uab, uab+'\n          '+sela, 1)
+          oldnote='UAB roster + depth + PFF analytics active'
+          if oldnote in s:
+              s=s.replace(oldnote, 'Choose opponent workspace', 1)
+          p.write_text(s)
           PY
           git diff --check
-          grep -n -A6 -B2 'id="opponentWorkspaceSelect"' index.html
+          grep -n -A7 -B2 'id="opponentWorkspaceSelect"' index.html
+          grep -q '<option value="/southeastern/">Southeastern Louisiana</option>' index.html
           git config user.name 'tommydenison4-ctrl'
           git config user.email 'tommydenison4@gmail.com'
           git add index.html
+          if git diff --cached --quiet; then
+            echo 'Selector already contains Southeastern Louisiana.'
+            exit 0
+          fi
           git commit -m 'Add Southeastern to prep opponent selector'
           git push origin main
