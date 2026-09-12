@@ -1,6 +1,10 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/api/storage-project-sela", "destination": "/api/sela?route=storage" },
+    { "source": "/api/roster-sela", "destination": "/api/sela?route=roster" },
+    { "source": "/api/sync-roster-sela", "destination": "/api/sela?route=sync" },
+    { "source": "/api/enrich-roster-sela", "destination": "/api/sela?route=enrich" },
     { "source": "/", "destination": "/week1/index.html" }
   ]
 }
