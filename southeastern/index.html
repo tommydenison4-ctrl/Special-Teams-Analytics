@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ULM Special Teams • Week 2 • UAB</title>
+  <title>ULM Special Teams • Week 3 • Southeastern Louisiana</title>
   <style>
     html,body{margin:0;min-height:100%;background:#06131b;color:#fff;font-family:Arial,sans-serif}
     #boot{display:flex;align-items:center;justify-content:center;min-height:100vh;font-size:16px;opacity:.8}
   </style>
 </head>
 <body>
-  <div id="boot">Loading Week 2 • UAB…</div>
+  <div id="boot">Loading Week 3 • Southeastern Louisiana…</div>
   <script>
   (async function () {
-    const PREFIX = 'ULM_ST_2026_W2_UAB::';
-    const UAB_PACKAGE_BASE = 'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/UAB';
+    const PREFIX = 'ULM_ST_2026_W3_SELA::';
+    const SELA_PACKAGE_BASE = 'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/SoutheasternLA';
     const localRef = window.localStorage;
     const sessionRef = window.sessionStorage;
     const proto = Storage.prototype;
@@ -59,28 +59,28 @@
 
     window.__ULM_SPECIAL_TEAMS_WORKSPACE__ = {
       season: 2026,
-      week: 2,
-      opponent: 'UAB',
-      rawTeamCode: 'ALBI',
-      sourcePackage: 'Special Teams/Opponents/UAB',
+      week: 3,
+      opponent: 'Southeastern Louisiana',
+      rawTeamCode: 'LASE',
+      sourcePackage: 'Special Teams/Opponents/SoutheasternLA',
       storagePrefix: PREFIX
     };
 
     const fallbackDepth = {
-      team:'UAB', nickname:'Blazers', season:2026, updated:'2026-09-03', source:'Ourlads',
+      team:'Southeastern Louisiana', nickname:'Lions', season:2026, updated:'2026-09-12', source:'2026 Southeastern Louisiana Football Game Notes',
       specialTeams:{
-        PT:[['20','Badger Hargett'],['30','Carson Tinsley'],['46','Oliver Straw']],
-        PK:[['39','Jonah Delange'],['35','Owen Simpson']],
-        KO:[['35','Owen Simpson'],['39','Jonah Delange']],
-        LS:[['50','Evan Bishop'],['47','Noah Medlen']],
-        H:[['20','Badger Hargett'],['30','Carson Tinsley'],['16','Nate Rogers']],
-        PR:[['13','CD Gill'],['0','Ty Mims'],['26','Jayson Moll'],['3','Bam McReynolds']],
-        KR:[['7',"Ja'Vin Simpkins"],['3','Bam McReynolds'],['26','Jayson Moll'],['21','Hudson Higgins'],['0','Ty Mims']]
+        PT:[['46','Jack Hunter','Sr.'],['28','Aiden Parker','So.']],
+        PK:[['29','Drew Talley','So.'],['27','Owen Wiley','Jr.']],
+        KO:[['27','Owen Wiley','Jr.'],['29','Drew Talley','So.']],
+        LS:[['41','Shawn Puissegur','So.'],['13','Conner Nelson','So.']],
+        H:[['46','Jack Hunter','Sr.']],
+        PR:[['9','Dkhai Joseph','Jr.'],['82','Desmen Jefferson','Fr.'],['19','Blake Smith','Fr.']],
+        KR:[['2','Kyree Paul','So.'],['4','Tristan Goodly','Sr.']]
       }
     };
 
-    function uabDepthPage(){
-      const st=UAB_WEEK2_DEPTH.specialTeams||{};
+    function selaDepthPage(){
+      const st=SELA_WEEK3_DEPTH.specialTeams||{};
       const order=['PT','PK','KO','LS','H','PR','KR'];
       const entries=order.map(pos=>[pos,Array.isArray(st[pos])?st[pos]:[]]);
       const maxDepth=Math.max(3,...entries.map(([,arr])=>arr.length));
@@ -95,17 +95,17 @@
       const first=(pos)=>Array.isArray(st[pos])&&st[pos][0]?st[pos][0]:null;
       const chip=(label,e)=>e?'<span><b>'+label+'</b> '+(e[0]?'#'+esc(e[0])+' ':'')+esc(e[1])+'</span>':'';
       const chips=[chip('PR1',first('PR')),chip('KR1',first('KR')),chip('PK',first('PK')),chip('PT',first('PT'))].join('');
-      const source=UAB_WEEK2_DEPTH.source||'Ourlads';
-      const updated=UAB_WEEK2_DEPTH.updated?String(UAB_WEEK2_DEPTH.updated).slice(0,10):'2026-09-03';
+      const source=SELA_WEEK3_DEPTH.source||'2026 Southeastern Louisiana Football Game Notes';
+      const updated=SELA_WEEK3_DEPTH.updated?String(SELA_WEEK3_DEPTH.updated).slice(0,10):'2026-09-12';
       return '<div class="depthChartPage">'+
-        '<div class="depthChartHero"><div class="depthChartHeroTop"><div><div class="eyebrow">WEEK 2 • UAB</div><h2>Special Teams Depth Chart</h2><div class="depthChartMeta">September 12, 2026 • 2:30 PM CT • Protective Stadium • ESPN+</div></div></div></div>'+
-        '<div class="card"><div class="depthChartQuick">'+chips+'</div><div class="depthChartTableWrap"><table class="depthChartTable"><thead><tr><th>POS</th>'+heads+'</tr></thead><tbody>'+body+'</tbody></table></div><div class="depthChartNote">Click any player name to open his UAB roster profile. Source: '+esc(source)+(updated?' • Updated '+esc(updated):'')+'.</div></div></div>';
+        '<div class="depthChartHero"><div class="depthChartHeroTop"><div><div class="eyebrow">WEEK 3 • SOUTHEASTERN LOUISIANA</div><h2>Special Teams Depth Chart</h2><div class="depthChartMeta">September 19, 2026 • 3:30 PM CT • Malone Stadium • ESPN+</div></div></div></div>'+
+        '<div class="card"><div class="depthChartQuick">'+chips+'</div><div class="depthChartTableWrap"><table class="depthChartTable"><thead><tr><th>POS</th>'+heads+'</tr></thead><tbody>'+body+'</tbody></table></div><div class="depthChartNote">Click any player name to open his Southeastern Louisiana roster profile. Source: '+esc(source)+(updated?' • Updated '+esc(updated):'')+'.</div></div></div>';
     }
 
     try {
       const [templateResponse, depthResponse] = await Promise.all([
-        fetch('/uab/week2-template.html', { cache: 'no-store' }),
-        fetch(UAB_PACKAGE_BASE + '/depth-chart.json?v=' + Date.now(), { cache: 'no-store' }).catch(()=>null)
+        fetch('/southeastern/week3-template.html', { cache: 'no-store' }),
+        fetch(SELA_PACKAGE_BASE + '/depth-chart.json?v=' + Date.now(), { cache: 'no-store' }).catch(()=>null)
       ]);
       if (!templateResponse.ok) throw new Error('Could not load Week 2 template.');
       let html = await templateResponse.text();
@@ -117,10 +117,10 @@
       // Week 2 has its own cloud row/local storage, but reads the already-built UAB
       // opponent package from Supabase. Week 1 remains frozen and untouched.
       const endpointMap = [
-        ['storage-project', 'storage-project-uab'],
-        ['sync-roster', 'sync-roster-uab'],
-        ['enrich-roster', 'enrich-roster-uab'],
-        ['roster', 'roster-uab']
+        ['storage-project', 'storage-project-sela'],
+        ['sync-roster', 'sync-roster-sela'],
+        ['enrich-roster', 'enrich-roster-sela'],
+        ['roster', 'roster-sela']
       ];
       endpointMap.forEach(([from, to]) => {
         const pattern = new RegExp('(^|[^A-Za-z0-9_-])(/?api/' + from + ')(?![A-Za-z0-9_-])', 'g');
@@ -130,7 +130,7 @@
       // Point the restored Week 1 analytics engine at UAB's existing PFF package.
       html = html.replace(
         'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Current',
-        UAB_PACKAGE_BASE
+        SELA_PACKAGE_BASE
       );
       html = html.replace(
         "files:['offense-side.csv','defense-side.csv']",
@@ -140,16 +140,16 @@
       // This is a dedicated UAB page, so ALBI is the PFF team identity from first boot.
       html = html.replace(
         "const DEFAULT_TEAM_SETTINGS={teamName:'',nickname:'',teamCode:'',rosterUrl:'',season:'2025'};",
-        "const DEFAULT_TEAM_SETTINGS={teamName:'UAB',nickname:'Blazers',teamCode:'ALBI',rosterUrl:'https://uabsports.com/sports/football/roster',season:'2025'};"
+        "const DEFAULT_TEAM_SETTINGS={teamName:'Southeastern Louisiana',nickname:'Lions',teamCode:'LASE',rosterUrl:'https://lionsports.net/sports/football/roster',season:'2025'};"
       );
       html = html.replace(
         "if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings};",
-        "if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings,teamName:'UAB',nickname:'Blazers',teamCode:'ALBI',rosterUrl:'https://uabsports.com/sports/football/roster'};"
+        "if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings,teamName:'Southeastern Louisiana',nickname:'Lions',teamCode:'LASE',rosterUrl:'https://lionsports.net/sports/football/roster'};"
       );
-      html = html.replace("ULM:'ULM',LAMON:'ULM',", "ULM:'ULM',LAMON:'ULM',ALBI:'UAB',UAB:'UAB',");
-      html = html.replace('Week 1 ST Depth Chart', 'Week 2 ST Depth Chart');
+      html = html.replace("ULM:'ULM',LAMON:'ULM',", "ULM:'ULM',LAMON:'ULM',LASE:'Southeastern Louisiana',");
+      html = html.replace('Week 1 ST Depth Chart', 'Week 3 ST Depth Chart');
 
-      // UAB_PLAYER_INTEL_DEPTH_PATCH
+      // SELA_PLAYER_INTEL_DEPTH_PATCH
       // Week 2 Player Intelligence must always include the current UAB ST depth chart.
       // This changes only the UAB wrapper. Week 1, Chart Looks and Look Library are untouched.
       html = html.replace(
@@ -157,9 +157,9 @@
         "let playerCategory='depthChart',selectedSpecialist='';"
       );
 
-      const uabPlayerIntelPatch = String.raw`
-function uabDepthItems(roles){
-  var st=(typeof UAB_WEEK2_DEPTH!=='undefined'&&UAB_WEEK2_DEPTH&&UAB_WEEK2_DEPTH.specialTeams)||{};
+      const selaPlayerIntelPatch = String.raw`
+function selaDepthItems(roles){
+  var st=(typeof SELA_WEEK3_DEPTH!=='undefined'&&SELA_WEEK3_DEPTH&&SELA_WEEK3_DEPTH.specialTeams)||{};
   var seen={},out=[];
   (roles||[]).forEach(function(role){
     var arr=Array.isArray(st[role])?st[role]:[];
@@ -182,7 +182,7 @@ function uabDepthItems(roles){
   });
   return out;
 }
-function uabDepthRolesForCategory(cat){
+function selaDepthRolesForCategory(cat){
   if(cat==='kickReturners')return ['KR'];
   if(cat==='puntReturners')return ['PR'];
   if(cat==='kickers')return ['PK','KO'];
@@ -190,11 +190,11 @@ function uabDepthRolesForCategory(cat){
   if(cat==='depthChart')return ['PT','PK','KO','LS','H','PR','KR'];
   return [];
 }
-function uabMergeDepth(list,cat){
-  var roles=uabDepthRolesForCategory(cat);
+function selaMergeDepth(list,cat){
+  var roles=selaDepthRolesForCategory(cat);
   if(!roles.length)return (list||[]).slice();
   var out=(list||[]).slice();
-  uabDepthItems(roles).forEach(function(d){
+  selaDepthItems(roles).forEach(function(d){
     var dn=nameKey(d.p&&d.p.name);
     var exists=out.some(function(x){
       var xn=nameKey(x&&x.p&&x.p.name);
@@ -206,13 +206,13 @@ function uabMergeDepth(list,cat){
   });
   return out;
 }
-function uabDepthCard(x){
+function selaDepthCard(x){
   var p=x.p||{};
   var roles=(x.depthRoles||[]).join(' / ')||'ST';
   var stats=[['Depth Role',roles],['PFF Reps','—'],['Status','DEPTH']];
-  return '<div class="playerSelect" data-playernum="'+esc(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'UAB player',null)+'</div>';
+  return '<div class="playerSelect" data-playernum="'+esc(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'Southeastern Louisiana player',null)+'</div>';
 }
-function uabSelectedProfile(a,cat,list){
+function selaSelectedProfile(a,cat,list){
   if(!list.length)return '<div class="empty">No UAB players are listed in this Player Intelligence category.</div>';
   if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
   var x=list.find(function(z){return String(z.num)===String(selectedSpecialist);})||list[0];
@@ -223,8 +223,8 @@ function uabSelectedProfile(a,cat,list){
   var photo=playerPhoto(p);
   var link=p.profile?'<a class="profileLink" href="'+esc(p.profile)+'" target="_blank" rel="noopener">Official biography ↗</a>':'';
   var bio=esc(p.bio||'Official roster biography has not been loaded yet.');
-  return '<div class="pageBreak">'+reportBanner((p.name||'UAB Player')+' Player Report')+
-    '<div class="card playerHero"><div class="playerPhoto">'+photo+'<div class="playerNo">#'+esc(p.number||x.num||'—')+'</div></div><div class="playerBioCard"><div class="eyebrow">UAB SPECIAL TEAMS DEPTH CHART</div><h2>'+esc(p.name||'UAB player')+'</h2><div class="playerMeta">'+esc(meta||'Current UAB roster')+'</div><div class="bioSnippet">'+bio+'</div>'+link+
+  return '<div class="pageBreak">'+reportBanner((p.name||'Southeastern Louisiana Player')+' Player Report')+
+    '<div class="card playerHero"><div class="playerPhoto">'+photo+'<div class="playerNo">#'+esc(p.number||x.num||'—')+'</div></div><div class="playerBioCard"><div class="eyebrow">SOUTHEASTERN LOUISIANA SPECIAL TEAMS DEPTH CHART</div><h2>'+esc(p.name||'Southeastern Louisiana player')+'</h2><div class="playerMeta">'+esc(meta||'Current Southeastern Louisiana roster')+'</div><div class="bioSnippet">'+bio+'</div>'+link+
     '<div class="metrics" style="margin-top:14px"><div class="mini"><b>'+esc(roles)+'</b><span>Depth role</span></div><div class="mini"><b>#'+esc(p.number||x.num||'—')+'</b><span>Jersey</span></div><div class="mini"><b>CURRENT</b><span>2026 depth chart</span></div><div class="mini"><b>—</b><span>PFF stats if untagged</span></div></div></div></div></div>';
 }
 function categoryTabs(){
@@ -240,26 +240,26 @@ function playerPage(a){
     koCoverageTacklers:kickoffTacklerStats(a,'coverage'),
     puntTeamTacklers:puntTacklerStats(a)
   };
-  var list=(playerCategory==='depthChart'?uabDepthItems(uabDepthRolesForCategory('depthChart')):uabMergeDepth(lists[playerCategory]||[],playerCategory)).filter(function(x){var p=(x&&x.p)||rosterByNumber(x&&x.num);return nameKey(p&&p.name)!=='ryder burton';});
-  var labels={depthChart:'UAB Special Teams Depth Chart',kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers / Kickoff',punters:'Punters',koCoverageTacklers:'Kickoff Team Tacklers',puntTeamTacklers:'Punt Team Tacklers'};
-  var rosterNote=rosterData.length?'UAB roster loaded: <b>'+rosterData.length+'</b> players.':'UAB depth-chart players remain visible even when a roster profile has not yet been matched.';
-  var cards=list.length?list.map(function(x){return x.depthOnly?uabDepthCard(x):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>';
+  var list=(playerCategory==='depthChart'?selaDepthItems(selaDepthRolesForCategory('depthChart')):selaMergeDepth(lists[playerCategory]||[],playerCategory));
+  var labels={depthChart:'Southeastern Louisiana Special Teams Depth Chart',kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers / Kickoff',punters:'Punters',koCoverageTacklers:'Kickoff Team Tacklers',puntTeamTacklers:'Punt Team Tacklers'};
+  var rosterNote=rosterData.length?'Southeastern Louisiana roster loaded: <b>'+rosterData.length+'</b> players.':'Southeastern Louisiana depth-chart players remain visible even when a roster profile has not yet been matched.';
+  var cards=list.length?list.map(function(x){return x.depthOnly?selaDepthCard(x):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>';
   return reportBanner('Player Intelligence')+
-    title('Player Intelligence','Week 2 UAB player intelligence. Every player on the current UAB special-teams depth chart remains visible here, whether or not he has a tagged PFF statistic in the loaded historical data.')+
-    '<div class="card"><div class="context">Active team: <b>UAB</b>. '+rosterNote+'</div></div>'+
+    title('Player Intelligence','Week 3 Southeastern Louisiana player intelligence. Every player on the current Southeastern Louisiana special-teams depth chart remains visible here, whether or not he has a tagged PFF statistic in the loaded historical data.')+
+    '<div class="card"><div class="context">Active team: <b>Southeastern Louisiana</b>. '+rosterNote+'</div></div>'+
     categoryTabs()+
-    '<div class="card"><div class="eyebrow">'+(labels[playerCategory]||'UAB Players')+'</div><div class="playerCardGrid" style="margin-top:10px">'+cards+'</div></div><div style="margin-top:14px">'+uabSelectedProfile(a,playerCategory,list)+'</div>';
+    '<div class="card"><div class="eyebrow">'+(labels[playerCategory]||'Southeastern Louisiana Players')+'</div><div class="playerCardGrid" style="margin-top:10px">'+cards+'</div></div><div style="margin-top:14px">'+selaSelectedProfile(a,playerCategory,list)+'</div>';
 }
 `;
       html = html.replace(
         'function truthyResult(r,needle){',
-        uabPlayerIntelPatch + '\nfunction truthyResult(r,needle){'
+        selaPlayerIntelPatch + '\nfunction truthyResult(r,needle){'
       );
 
       // Replace only the Week 1 hard-coded depth-chart renderer. Chart Looks,
       // Look Library, field geometry, player positioning and unit logic are untouched.
-      const depthCode = 'const UAB_WEEK2_DEPTH=' + JSON.stringify(uabDepth) + ';\n' +
-        uabDepthPage.toString().replace(/^function uabDepthPage/, 'function week1DepthChartPage') +
+      const depthCode = 'const SELA_WEEK3_DEPTH=' + JSON.stringify(uabDepth) + ';\n' +
+        uabDepthPage.toString().replace(/^function selaDepthPage/, 'function week1DepthChartPage') +
         '\n\nfunction depthRosterPlayer';
       html = html.replace(
         /function week1DepthChartPage\(\)\{[\s\S]*?\n\}\n\nfunction depthRosterPlayer/,
@@ -269,11 +269,11 @@ function playerPage(a){
       // Keep the existing roster-card behavior, changing only Week 1/MSST copy in that card.
       html = html.replace(
         /function depthBioMarkup\(name,num\)\{[\s\S]*?\n\}\nfunction openDepthBio/,
-        (block) => block.replace(/MISSISSIPPI STATE/g,'UAB').replace(/Week 1/g,'Week 2')
+        (block) => block.replace(/MISSISSIPPI STATE/g,'SOUTHEASTERN LOUISIANA').replace(/Week 1/g,'Week 3')
       );
 
       html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
-      html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 2 • UAB</title>');
+      html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 3 • Southeastern Louisiana</title>');
 
       const navStyle = `<style id="weekJumpStyle">
         .weekJumpBtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #d1a53a;border-radius:9px;background:#6f1d2b;color:#fff;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.04em;white-space:nowrap}
@@ -281,7 +281,7 @@ function playerPage(a){
         @media(max-width:760px){.weekJumpBtn{width:100%;min-height:42px}}
       </style>`;
       html = html.replace('</head>', navStyle + '</head>');
-      const weekButton = '<a class="weekJumpBtn" href="/">← WEEK 1 • MISSISSIPPI STATE</a><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA →</a>';
+      const weekButton = '<a class="weekJumpBtn" href="/uab/">← WEEK 2 • UAB</a>';
       if (html.includes('<div class="ulmHeaderActions">')) {
         html = html.replace('<div class="ulmHeaderActions">', '<div class="ulmHeaderActions">' + weekButton);
       } else {
@@ -292,7 +292,7 @@ function playerPage(a){
       document.write(html);
       document.close();
     } catch (error) {
-      document.getElementById('boot').textContent = 'Week 2 UAB could not load: ' + (error?.message || error);
+      document.getElementById('boot').textContent = 'Week 3 Southeastern Louisiana could not load: ' + (error?.message || error);
     }
   })();
   </script>
