@@ -13,17 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect root prep opponent logic
+      - name: Inspect Southeastern UI and roster photos
         shell: bash
         run: |
           set -euo pipefail
-          echo '--- selector ---'
-          grep -n -C 3 'prepOpponentF' index.html | head -80 || true
-          echo '--- configs ---'
-          grep -n -A80 -B5 'const PREP_OPPONENTS' index.html | head -150 || true
-          echo '--- load function ---'
-          grep -n -A110 -B5 'async function loadPrepOpponentData' index.html | head -180 || true
-          echo '--- active PFF files ---'
-          grep -n -A55 -B5 'function activePffFiles' index.html | head -120 || true
-          echo '--- prep opponent conditionals ---'
-          grep -n -E "prepOpponent===|prepOpponent!==" index.html | head -160 || true
+          echo '--- header around top controls ---'
+          grep -n -A35 -B10 '<header' index.html | head -100 || true
+          echo '--- prep selector ---'
+          grep -n -C 3 'prepOpponentF' index.html | head -40 || true
+          echo '--- player photo renderer ---'
+          grep -n -A25 -B5 'function playerPhoto' index.html | head -80 || true
+          echo '--- week/nav text ---'
+          grep -n -E 'WEEK [123]|MISSISSIPPI STATE|UAB|SOUTHEASTERN' index.html | head -120 || true
+          echo '--- Southeastern roster summary ---'
+          python3 - <<'PY'
+          import json, urllib.request
+          url='https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/SoutheasternLA/roster.json'
+          data=json.load(urllib.request.urlopen(url, timeout=20))
+          players=data if isinstance(data,list) else data.get('players',[])
+          print('players',len(players))
+          for p in players[:30]:
+              print(p.get('number'), p.get('name'), 'image=',p.get('image'), 'profile=',p.get('profile'))
+          PY
