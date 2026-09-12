@@ -126,6 +126,10 @@
         const pattern = new RegExp('(^|[^A-Za-z0-9_-])(/?api/' + from + ')(?![A-Za-z0-9_-])', 'g');
         html = html.replace(pattern, (match, before, path) => before + path.replace(from, to));
       });
+      html = html.replace(/\/api\/storage-project-sela/g, '/api/sela?route=storage');
+      html = html.replace(/\/api\/sync-roster-sela/g, '/api/sela?route=sync');
+      html = html.replace(/\/api\/enrich-roster-sela/g, '/api/sela?route=enrich');
+      html = html.replace(/\/api\/roster-sela/g, '/api/sela?route=roster');
 
       // Point the restored Week 1 analytics engine at UAB's existing PFF package.
       html = html.replace(
