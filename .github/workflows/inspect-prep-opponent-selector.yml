@@ -1,0 +1,27 @@
+name: Inspect prep opponent selector
+
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-prep-opponent-selector.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect opponent selector source
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '--- PREP OPPONENT ---'
+          grep -n -C 5 -i 'prep opponent' index.html | head -120 || true
+          echo '--- UAB roster ---'
+          grep -n -C 5 -i 'UAB roster' index.html | head -120 || true
+          echo '--- opponent select references ---'
+          grep -n -C 3 -E 'prepOpponent|opponentSelect|opponent.*select|select.*opponent' index.html | head -180 || true
+          echo '--- href UAB ---'
+          grep -n -C 3 -E '/uab/|UAB' index.html | head -220 || true
