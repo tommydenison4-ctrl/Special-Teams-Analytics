@@ -25,5 +25,6 @@ jobs:
           git config user.name 'tommydenison4-ctrl'
           git config user.email 'tommydenison4@gmail.com'
           git add southeastern api/storage-project-sela.js api/roster-sela.js api/sync-roster-sela.js api/enrich-roster-sela.js api/sync-sela-now.js uab/index.html
-          git commit -m 'Add isolated Week 3 Southeastern Louisiana special teams app'
+          git commit -m 'Fix Week 3 Southeastern Louisiana renderer and copy'
           git push origin main
+# rebuild-marker: 2026-09-12-renderer-fix
