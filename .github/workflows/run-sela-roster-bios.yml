@@ -1,0 +1,56 @@
+name: Run Southeastern roster and bio import
+
+on:
+  push:
+    paths:
+      - '.github/workflows/run-sela-roster-bios.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load official 2026 and 2025 rosters
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'Roster sync:'
+          curl -fsS --retry 2 --retry-delay 3 'https://special-teams-analytics.vercel.app/api/sela?route=bootstrap'
+          echo
+
+      - name: Enrich official player photos and bios
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 24); do
+            echo "Enrichment batch $i"
+            RESP=$(curl -fsS --retry 2 --retry-delay 2 "https://special-teams-analytics.vercel.app/api/sela?route=enrich-step&batch=$i")
+            echo "$RESP"
+            DONE=$(python3 -c 'import json,sys; print(str(bool(json.load(sys.stdin).get("done"))).lower())' <<< "$RESP")
+            if [ "$DONE" = "true" ]; then
+              break
+            fi
+          done
+
+      - name: Verify roster, photos and bios
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS 'https://special-teams-analytics.vercel.app/api/sela?route=roster' > /tmp/sela-roster.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/sela-roster.json'))
+          players=d if isinstance(d,list) else d.get('players',[])
+          photos=sum(bool(p.get('image')) for p in players)
+          bios=sum(bool(p.get('bio')) for p in players)
+          current=sum(2026 in (p.get('rosterSeasons') or ([p.get('rosterSeason')] if p.get('rosterSeason') else [])) for p in players)
+          historical=sum(2025 in (p.get('rosterSeasons') or ([p.get('rosterSeason')] if p.get('rosterSeason') else [])) for p in players)
+          print('players',len(players),'photos',photos,'bios',bios,'2026',current,'2025',historical)
+          print('sample',[(p.get('number'),p.get('name'),p.get('position'),bool(p.get('image')),bool(p.get('bio'))) for p in players[:12]])
+          if len(players) < 60:
+              raise SystemExit('Merged Southeastern roster unexpectedly small')
+          if bios < 20:
+              raise SystemExit('Too few bios were enriched')
+          PY
