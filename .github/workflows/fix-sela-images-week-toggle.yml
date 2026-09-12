@@ -18,23 +18,13 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          import re
 
-          # 1) Southeastern roster sync: keep profile links locked to lionsports.net,
-          # but allow official Sidearm/CDN player-photo hosts.
+          # 1) Southeastern roster sync: profile links stay locked to lionsports.net,
+          # but official Sidearm/CDN player photos are allowed.
           p = Path('lib/sela-sync.js')
           s = p.read_text()
-          old = """function highResImage(value, pageUrl) {
-            const absolute = absoluteOfficial(value, pageUrl);
-            if (!absolute) return '';
-            try {
-              const url = new URL(absolute);
-              url.searchParams.delete('width');
-              return url.href;
-            } catch {
-              return absolute;
-            }
-          }"""
-          new = """function highResImage(value, pageUrl) {
+          new_sync = """function highResImage(value, pageUrl) {
             if (!value) return '';
             try {
               const url = new URL(value, pageUrl);
@@ -47,28 +37,16 @@ jobs:
               return '';
             }
           }"""
-          if old not in s:
+          s2, n = re.subn(r"function highResImage\(value, pageUrl\) \{[\s\S]*?\n\}", new_sync, s, count=1)
+          if n != 1:
             raise SystemExit('sync highResImage block not found')
-          s = s.replace(old, new, 1)
-          p.write_text(s)
+          p.write_text(s2)
 
-          # 2) Southeastern enrichment: re-run every profile and accept the official
-          # Sidearm/CDN image hosts instead of rejecting everything not on lionsports.net.
+          # 2) Southeastern enrichment: force every profile through a fresh image pass.
           p = Path('lib/sela-enrich.js')
           s = p.read_text()
-          s = s.replace("const BIO_REFRESH_VERSION = 'sela-bios-2026-09-12-v2';", "const BIO_REFRESH_VERSION = 'sela-bios-2026-09-12-v3-photo-fix';", 1)
-          old = """function highResImage(raw, pageUrl) {
-            if (!raw) return '';
-            try {
-              const url = new URL(raw, pageUrl);
-              if (url.hostname.toLowerCase() !== OFFICIAL_HOST) return '';
-              url.searchParams.delete('width');
-              return url.href;
-            } catch {
-              return '';
-            }
-          }"""
-          new = """function highResImage(raw, pageUrl) {
+          s = re.sub(r"const BIO_REFRESH_VERSION = '[^']+';", "const BIO_REFRESH_VERSION = 'sela-bios-2026-09-12-v3-photo-fix';", s, count=1)
+          new_enrich = """function highResImage(raw, pageUrl) {
             if (!raw) return '';
             try {
               const url = new URL(raw, pageUrl);
@@ -81,38 +59,34 @@ jobs:
               return '';
             }
           }"""
-          if old not in s:
+          s, n = re.subn(r"function highResImage\(raw, pageUrl\) \{[\s\S]*?\n\}", new_enrich, s, count=1)
+          if n != 1:
             raise SystemExit('enrich highResImage block not found')
-          s = s.replace(old, new, 1)
           s = s.replace("const tags = html.match(/<img\\b[^>]*>/gi) || [];", "const tags = html.match(/<(?:img|source)\\b[^>]*>/gi) || [];", 1)
-          old_raw = "const raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src');\n    const candidate = highResImage(raw, profile.href);"
-          new_raw = "let raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src') || attr(tag, 'srcset');\n    if (raw && raw.includes(',')) { const parts = raw.split(',').map(x => x.trim().split(/\\s+/)[0]).filter(Boolean); raw = parts[parts.length - 1] || raw; }\n    const candidate = highResImage(raw, profile.href);"
-          if old_raw not in s:
-            raise SystemExit('enrich image-source block not found')
-          s = s.replace(old_raw, new_raw, 1)
+          s = s.replace(
+            "const raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src');\n    const candidate = highResImage(raw, profile.href);",
+            "let raw = attr(tag, 'data-src') || attr(tag, 'data-original') || attr(tag, 'data-lazy-src') || attr(tag, 'src') || attr(tag, 'srcset');\n    if (raw && raw.includes(',')) { const parts = raw.split(',').map(x => x.trim().split(/\\s+/)[0]).filter(Boolean); raw = parts[parts.length - 1] || raw; }\n    const candidate = highResImage(raw, profile.href);",
+            1
+          )
           p.write_text(s)
 
-          # 3) The wrappers were looking only for an exact ulmHeaderActions class.
-          # The live template can carry additional classes, so the buttons silently vanished.
-          # Use a regex that matches ulmHeaderActions with or without extra classes.
+          # 3) Restore the week buttons. The live header has extra classes on
+          # ulmHeaderActions, so exact-string matching misses it.
           for filename in ['uab/index.html', 'southeastern/index.html']:
             p = Path(filename)
             s = p.read_text()
-            old = """      if (html.includes('<div class=\"ulmHeaderActions\">')) {
-                html = html.replace('<div class=\"ulmHeaderActions\">', '<div class=\"ulmHeaderActions\">' + weekButton);
-              } else {
-                html = html.replace('</body>', '<div style=\"position:fixed;right:14px;top:14px;z-index:20000\">' + weekButton + '</div></body>');
-              }"""
-            new = """      const weekActionsRe = /<div class=\"ulmHeaderActions([^\"]*)\">/i;
+            pattern = re.compile(r"\s*if \(html\.includes\('<div class=\\\"ulmHeaderActions\\\">'\)\) \{[\s\S]*?html = html\.replace\('</body>', '<div style=\\\"position:fixed;right:14px;top:14px;z-index:20000\\\">' \+ weekButton \+ '</div></body>'\);\n\s*\}")
+            replacement = """
+              const weekActionsRe = /<div class=\"ulmHeaderActions([^\"]*)\">/i;
               if (weekActionsRe.test(html)) {
                 html = html.replace(weekActionsRe, (match) => match + weekButton);
               } else {
                 html = html.replace('</body>', '<div style=\"position:fixed;right:14px;top:14px;z-index:20000;display:flex;gap:8px\">' + weekButton + '</div></body>');
               }"""
-            if old not in s:
+            s2, n = pattern.subn(replacement, s, count=1)
+            if n != 1:
               raise SystemExit(f'week nav block not found in {filename}')
-            s = s.replace(old, new, 1)
-            p.write_text(s)
+            p.write_text(s2)
 
       - name: Commit fixes
         shell: bash
@@ -131,9 +105,7 @@ jobs:
           for i in $(seq 1 30); do
             RESP=$(curl -fsS --retry 1 'https://special-teams-analytics.vercel.app/api/sela?route=enrich' || true)
             echo "$RESP"
-            if echo "$RESP" | grep -q 'v3-photo-fix'; then
-              exit 0
-            fi
+            if echo "$RESP" | grep -q 'v3-photo-fix'; then exit 0; fi
             sleep 10
           done
           echo 'Timed out waiting for Vercel deployment' >&2
