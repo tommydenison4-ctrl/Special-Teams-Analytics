@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
 
+# rerun 2026-09-13 after Sidearm image-host fix
 jobs:
   import:
     runs-on: ubuntu-latest
