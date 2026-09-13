@@ -1,0 +1,84 @@
+name: Fix Southeastern nav and photos
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-sela-nav-and-photos.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Southeastern photo sources and week navigation
+        shell: python
+        run: |
+          from pathlib import Path
+
+          # 1) Allow official Sidearm/CDN image hosts in SELA roster sync.
+          p=Path('lib/sela-sync.js')
+          s=p.read_text()
+          if 'function trustedImageHost' not in s:
+              anchor="function highResImage(value, pageUrl) {\n  const absolute = absoluteOfficial(value, pageUrl);\n  if (!absolute) return '';\n  try {\n    const url = new URL(absolute);\n    url.searchParams.delete('width');\n    return url.href;\n  } catch {\n    return absolute;\n  }\n}"
+              repl="function trustedImageHost(host='') {\n  const h=String(host).toLowerCase();\n  return h===OFFICIAL_HOST || h.endsWith('.lionsports.net') || h==='images.sidearmsports.com' || h.endsWith('.sidearmsports.com') || h.endsWith('.cloudfront.net');\n}\n\nfunction highResImage(value, pageUrl) {\n  if (!value) return '';\n  try {\n    const url = new URL(value, pageUrl);\n    if (!trustedImageHost(url.hostname)) return '';\n    url.searchParams.delete('width');\n    return url.href;\n  } catch {\n    return '';\n  }\n}"
+              if anchor not in s: raise SystemExit('sela-sync highResImage anchor missing')
+              s=s.replace(anchor,repl,1)
+          p.write_text(s)
+
+          # 2) Same trusted image-host behavior in enrichment and force a fresh pass.
+          p=Path('lib/sela-enrich.js')
+          s=p.read_text()
+          s=s.replace("const BIO_REFRESH_VERSION = 'sela-bios-2026-09-12-v2';","const BIO_REFRESH_VERSION = 'sela-bios-2026-09-13-v3';",1)
+          old="function highResImage(raw, pageUrl) {\n  if (!raw) return '';\n  try {\n    const url = new URL(raw, pageUrl);\n    if (url.hostname.toLowerCase() !== OFFICIAL_HOST) return '';\n    url.searchParams.delete('width');\n    return url.href;\n  } catch {\n    return '';\n  }\n}"
+          new="function trustedImageHost(host='') {\n  const h=String(host).toLowerCase();\n  return h===OFFICIAL_HOST || h.endsWith('.lionsports.net') || h==='images.sidearmsports.com' || h.endsWith('.sidearmsports.com') || h.endsWith('.cloudfront.net');\n}\n\nfunction highResImage(raw, pageUrl) {\n  if (!raw) return '';\n  try {\n    const url = new URL(raw, pageUrl);\n    if (!trustedImageHost(url.hostname)) return '';\n    url.searchParams.delete('width');\n    return url.href;\n  } catch {\n    return '';\n  }\n}"
+          if old in s: s=s.replace(old,new,1)
+          elif 'function trustedImageHost' not in s: raise SystemExit('sela-enrich highResImage anchor missing')
+          p.write_text(s)
+
+          # 3) Add a consistent Week 1 / Week 2 / Week 3 toggle to the root app.
+          p=Path('index.html')
+          s=p.read_text()
+          marker='id="weekToggleDockV3"'
+          if marker not in s:
+              nav='''<div id="weekToggleDockV3" class="noPrint" style="position:fixed;right:16px;top:188px;z-index:2147483000;display:flex;gap:6px;padding:6px;background:rgba(6,19,27,.94);border:1px solid #294553;border-radius:11px;box-shadow:0 8px 24px rgba(0,0,0,.35)"><a href="/week1/" style="padding:8px 10px;border:1px solid #d1a53a;border-radius:7px;color:#fff;text-decoration:none;font:900 10px Arial;background:#6f1d2b">WEEK 1</a><a href="/uab/" style="padding:8px 10px;border:1px solid #d1a53a;border-radius:7px;color:#fff;text-decoration:none;font:900 10px Arial;background:#6f1d2b">WEEK 2</a><a href="/southeastern/" style="padding:8px 10px;border:1px solid #f0c85b;border-radius:7px;color:#fff;text-decoration:none;font:900 10px Arial;background:#8a2432">WEEK 3</a></div>'''
+              if '</body>' not in s: raise SystemExit('index body close missing')
+              s=s.replace('</body>',nav+'</body>',1)
+          p.write_text(s)
+
+          # 4) Make Week 3 wrapper use the same three-way toggle instead of only a back button.
+          p=Path('southeastern/index.html')
+          s=p.read_text()
+          old="const weekButton = '<a class=\"weekJumpBtn\" href=\"/uab/\">← WEEK 2 • UAB</a>';\n      html = html.replace('</body>', '<div id=\"weekJumpDockFixed\" style=\"position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center\">' + weekButton + '</div></body>');"
+          new="const weekButtons = '<a class=\"weekJumpBtn\" href=\"/week1/\">WEEK 1 • MISSISSIPPI STATE</a><a class=\"weekJumpBtn\" href=\"/uab/\">WEEK 2 • UAB</a><span class=\"weekJumpBtn\" style=\"border-color:#f0c85b;background:#8a2432\">WEEK 3 • SOUTHEASTERN LA</span>';\n      html = html.replace('</body>', '<div id=\"weekJumpDockFixed\" style=\"position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center\">' + weekButtons + '</div></body>');"
+          if old in s: s=s.replace(old,new,1)
+          p.write_text(s)
+
+          # 5) Add Week 3 to weekly-books screen if it is still missing.
+          p=Path('weeks/index.html')
+          s=p.read_text()
+          if 'href="/southeastern/"' not in s:
+              card='''\n      <a class="week" href="/southeastern/">\n        <div class="stripe"></div>\n        <div class="content">\n          <div class="weeknum">Week 3</div>\n          <h2>Southeastern Louisiana</h2>\n          <div class="nickname">Lions</div>\n          <div class="meta">\n            <div>September 19, 2026</div>\n            <div>Southeastern Louisiana Special Teams Book</div>\n            <div>Independent Week 3 Chart Looks and Look Library</div>\n          </div>\n          <div class="open"><span>Open Week 3</span><span class="arrow">→</span></div>\n        </div>\n      </a>\n'''
+              s=s.replace('    </section>',card+'    </section>',1)
+          p.write_text(s)
+
+      - name: Validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "sela-bios-2026-09-13-v3" lib/sela-enrich.js
+          grep -q "sidearmsports.com" lib/sela-enrich.js
+          grep -q "sidearmsports.com" lib/sela-sync.js
+          grep -q 'weekToggleDockV3' index.html
+          grep -q 'WEEK 3 • SOUTHEASTERN LA' southeastern/index.html
+          grep -q 'href="/southeastern/"' weeks/index.html
+          git diff --check
+      - name: Commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'tommydenison4-ctrl'
+          git config user.email 'tommydenison4@gmail.com'
+          git add lib/sela-sync.js lib/sela-enrich.js index.html southeastern/index.html weeks/index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Fix Southeastern photos and restore week toggle'
+          git push origin main
