@@ -1,0 +1,44 @@
+name: Fix SELA photo hosts v2
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-sela-photo-hosts-v2.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch trusted image hosts and Week 3 nav
+        shell: python
+        run: |
+          from pathlib import Path
+          for fn in ['lib/sela-sync.js','lib/sela-enrich.js']:
+              p=Path(fn); s=p.read_text()
+              s=s.replace("host === 'images.sidearmdev.com' || host.endsWith('.sidearmdev.com') || host.endsWith('.cloudfront.net')",
+                          "host === 'images.sidearmdev.com' || host.endsWith('.sidearmdev.com') || host === 'images.sidearmsports.com' || host.endsWith('.sidearmsports.com') || host.endsWith('.cloudfront.net')")
+              if fn.endswith('sela-enrich.js'):
+                  s=s.replace("const BIO_REFRESH_VERSION = 'sela-assets-2026-09-12-v4';","const BIO_REFRESH_VERSION = 'sela-assets-2026-09-13-v5';")
+              p.write_text(s)
+
+          p=Path('southeastern/index.html'); s=p.read_text()
+          old="const weekButton = '<a class=\"weekJumpBtn\" href=\"/uab/\">← WEEK 2 • UAB</a>';\n      html = html.replace('</body>', '<div id=\"weekJumpDockFixed\" style=\"position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center\">' + weekButton + '</div></body>');"
+          new="const weekButtons = '<a class=\"weekJumpBtn\" href=\"/week1/\">WEEK 1 • MISSISSIPPI STATE</a><a class=\"weekJumpBtn\" href=\"/uab/\">WEEK 2 • UAB</a><span class=\"weekJumpBtn\" style=\"border-color:#f0c85b;background:#8a2432\">WEEK 3 • SOUTHEASTERN LA</span>';\n      html = html.replace('</body>', '<div id=\"weekJumpDockFixed\" style=\"position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center\">' + weekButtons + '</div></body>');"
+          if old in s: s=s.replace(old,new,1)
+          p.write_text(s)
+      - name: Validate and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "sidearmsports.com" lib/sela-sync.js
+          grep -q "sidearmsports.com" lib/sela-enrich.js
+          grep -q "sela-assets-2026-09-13-v5" lib/sela-enrich.js
+          grep -q "WEEK 3 • SOUTHEASTERN LA" southeastern/index.html
+          git diff --check
+          git config user.name 'tommydenison4-ctrl'
+          git config user.email 'tommydenison4@gmail.com'
+          git add lib/sela-sync.js lib/sela-enrich.js southeastern/index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Fix Southeastern player photos and week navigation'
+          git push origin main
