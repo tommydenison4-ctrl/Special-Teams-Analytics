@@ -13,25 +13,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect Southeastern UI and roster photos
+      - name: Audit Southeastern Player Intelligence identity filtering
         shell: bash
         run: |
           set -euo pipefail
-          echo '--- header around top controls ---'
-          grep -n -A35 -B10 '<header' index.html | head -100 || true
-          echo '--- prep selector ---'
-          grep -n -C 3 'prepOpponentF' index.html | head -40 || true
-          echo '--- player photo renderer ---'
-          grep -n -A25 -B5 'function playerPhoto' index.html | head -80 || true
-          echo '--- week/nav text ---'
-          grep -n -E 'WEEK [123]|MISSISSIPPI STATE|UAB|SOUTHEASTERN' index.html | head -120 || true
-          echo '--- Southeastern roster summary ---'
           python3 - <<'PY'
-          import json, urllib.request
-          url='https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/SoutheasternLA/roster.json'
-          data=json.load(urllib.request.urlopen(url, timeout=20))
-          players=data if isinstance(data,list) else data.get('players',[])
-          print('players',len(players))
-          for p in players[:30]:
-              print(p.get('number'), p.get('name'), 'image=',p.get('image'), 'profile=',p.get('profile'))
+          from pathlib import Path
+          import re, csv, io, urllib.request
+
+          s=Path('index.html').read_text(errors='ignore')
+          names=[
+            'function loadPrepOpponentData',
+            'function returnerFullStats',
+            'function specialistFullStats',
+            'function kickoffTacklerStats',
+            'function puntTacklerStats',
+            'function rosterByNumber',
+            'function strictIdentityCheck',
+            'function cardForCategory',
+            'function playerPage'
+          ]
+          for name in names:
+              i=s.find(name)
+              print('\n===== ',name,' @ ',i,' =====')
+              if i>=0: print(s[i:i+7000])
+
+          for needle in ['Opponents/SoutheasternLA','LASE','prepOpponent','historicalRoster']:
+              print('\n===== OCCURRENCES',needle,'=====')
+              for m in list(re.finditer(re.escape(needle),s,re.I))[:35]:
+                  a=max(0,m.start()-350); b=min(len(s),m.end()+900)
+                  print(s[a:b].replace('\n',' '))
+
+          base='https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/SoutheasternLA/'
+          targets=['Tylin Jackson','Bradley Wainwright','EJ Reid','AJ Johnson']
+          for fn in ['offensive-side.csv','defensive-side.csv']:
+              print('\n===== CSV',fn,'=====')
+              raw=urllib.request.urlopen(base+fn,timeout=30).read().decode('utf-8-sig','replace')
+              rows=list(csv.DictReader(io.StringIO(raw)))
+              print('rows',len(rows),'columns',list(rows[0].keys()) if rows else [])
+              for target in targets:
+                  hits=[]
+                  for idx,row in enumerate(rows):
+                      joined=' | '.join(str(v or '') for v in row.values())
+                      if target.lower() in joined.lower():
+                          hits.append((idx,row))
+                  print('TARGET',target,'hits',len(hits))
+                  for idx,row in hits[:8]:
+                      interesting={k:v for k,v in row.items() if v and any(x in k.upper() for x in ['TEAM','PLAYER','GAME','WEEK','SEASON','PLAYID','KICK','PUNT','RETURN'])}
+                      print(idx,interesting)
           PY
