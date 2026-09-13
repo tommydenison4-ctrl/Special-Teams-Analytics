@@ -10,31 +10,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Extract relevant functions
+      - name: Audit SELA roster and returner identities
         shell: python
         run: |
           from pathlib import Path
-          s=Path('index.html').read_text(errors='ignore')
-          names=['function loadPrepOpponentData','function returnerFullStats','function specialistFullStats','function kickoffTacklerStats','function puntTacklerStats','function rosterByNumber','function strictIdentityCheck','function cardForCategory','function playerPage','function playerPhoto','function currentTeamCode','function activeTeamCode']
+          import json,csv,io,urllib.request
+          from urllib.parse import urlparse
+          base='https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/SoutheasternLA/'
           out=[]
-          for name in names:
-              i=s.find(name)
-              out.append('\n===== '+name+' @ '+str(i)+' =====\n')
-              if i>=0: out.append(s[i:i+14000])
-          for needle in ['prepOpponent','prepAnalyticsRows','teamSettings.teamCode','rawTeam','historicalRosters']:
-              out.append('\n===== OCCURRENCES '+needle+' =====\n')
-              pos=0
-              for _ in range(30):
-                  i=s.find(needle,pos)
-                  if i<0: break
-                  out.append(s[max(0,i-500):min(len(s),i+1800)])
-                  pos=i+len(needle)
-          Path('debug-root-player-intel.txt').write_text('\n'.join(out))
-      - name: Commit dump
+          data=json.load(urllib.request.urlopen(base+'roster.json',timeout=30))
+          players=data if isinstance(data,list) else data.get('players',[])
+          out.append(f'ROSTER COUNT {len(players)}')
+          suspects=['Tylin Jackson','Bradley Wainwright','EJ Reid','AJ Johnson']
+          for name in suspects:
+              hits=[p for p in players if str(p.get('name','')).lower()==name.lower()]
+              out.append('ROSTER SUSPECT '+name+' '+json.dumps(hits,ensure_ascii=False))
+          out.append('IMAGE HOSTS')
+          hosts={}
+          for p in players:
+              u=p.get('image') or ''
+              h=urlparse(u).hostname or '(blank)'
+              hosts[h]=hosts.get(h,0)+1
+          out.extend(f'{k}: {v}' for k,v in sorted(hosts.items(), key=lambda x:-x[1]))
+          for fn in ['offensive-side.csv','defensive-side.csv']:
+              raw=urllib.request.urlopen(base+fn,timeout=30).read().decode('utf-8-sig','replace')
+              rows=list(csv.DictReader(io.StringIO(raw)))
+              out.append(f'\nFILE {fn} ROWS {len(rows)}')
+              for r in rows:
+                  st=str(r.get('pff_SPECIALTEAMSTYPE','')).upper()
+                  if st not in ('KICKOFF','PUNT'): continue
+                  returnfield='pff_OFFTEAM' if st=='KICKOFF' else 'pff_DEFTEAM'
+                  if str(r.get(returnfield,'')).upper()!='LASE': continue
+                  joined=' | '.join(str(r.get(k,'') or '') for k in ['pff_RETURNER','pff_OFFPLAYERS','pff_DEFPLAYERS'])
+                  if any(n.lower() in joined.lower() for n in suspects):
+                      out.append('SUSPECT RETURN ROW '+json.dumps({k:r.get(k,'') for k in ['pff_GAMEID','pff_PLAYID','pff_SPECIALTEAMSTYPE','pff_OFFTEAM','pff_DEFTEAM','pff_RETURNER','pff_OFFPLAYERS','pff_DEFPLAYERS']},ensure_ascii=False))
+          Path('debug-sela-identity-audit.txt').write_text('\n'.join(out))
+      - name: Commit audit
         shell: bash
         run: |
           git config user.name 'tommydenison4-ctrl'
           git config user.email 'tommydenison4@gmail.com'
-          git add debug-root-player-intel.txt
-          git commit -m 'Add root Player Intelligence debug dump'
+          git add debug-sela-identity-audit.txt
+          git commit -m 'Audit Southeastern roster identities'
           git push origin main
