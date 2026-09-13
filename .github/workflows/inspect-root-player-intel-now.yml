@@ -1,0 +1,30 @@
+name: Inspect root player intel now
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-root-player-intel-now.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print relevant functions
+        shell: python
+        run: |
+          from pathlib import Path
+          s=Path('index.html').read_text(errors='ignore')
+          names=['function loadPrepOpponentData','function returnerFullStats','function specialistFullStats','function kickoffTacklerStats','function puntTacklerStats','function rosterByNumber','function strictIdentityCheck','function cardForCategory','function playerPage','function playerPhoto']
+          for name in names:
+              i=s.find(name)
+              print('\n===== '+name+' @ '+str(i)+' =====')
+              if i>=0: print(s[i:i+10000])
+          for needle in ['ulmHeaderActions','prepOpponentF','activePffFiles','prepAnalyticsRows','historicalRosters']:
+              print('\n===== '+needle+' =====')
+              pos=0
+              for _ in range(12):
+                  i=s.find(needle,pos)
+                  if i<0: break
+                  print(s[max(0,i-700):min(len(s),i+1800)])
+                  pos=i+len(needle)
