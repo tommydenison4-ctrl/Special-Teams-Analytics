@@ -15,172 +15,56 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-
-      - name: Patch Jack Hunter current stats and high-resolution portraits
+      - name: Patch punter totals and portrait resolution
         run: |
           python3 <<'PY'
           from pathlib import Path
-          import re
-
-          # ---------------- Player Intelligence: PFF first, official current stats fallback ----------------
-          p = Path('player-intel-live-fix.js')
-          s = p.read_text()
-
+          import base64, re
+          def dec(x): return base64.b64decode(x).decode('utf-8')
+          punter_const=dec('ICAvLyBPZmZpY2lhbCAyMDI2IGN1bXVsYXRpdmUgcHVudGluZyBpcyBhIGZhbGxiYWNrIG9ubHkgd2hlbiB0aGUgbG9hZGVkIFBGRgogIC8vIHBhY2thZ2UgaGFzIG5vIHVzYWJsZSBQVU5UIHJvd3MgZm9yIHRoZSBjdXJyZW50IHB1Ymxpc2hlZCBwdW50ZXIuCiAgLy8gU291cmNlIHNuYXBzaG90OiBsaW9uc3BvcnRzLm5ldCAyMDI2IGN1bXVsYXRpdmUgc3RhdHMgdGhyb3VnaCBTb3V0aCBBbGFiYW1hICgyIGdhbWVzKS4KICBjb25zdCBTRUxBX1BVTlRFUl9PRkZJQ0lBTD17CiAgICAnamFjayBodW50ZXInOnsKICAgICAgcHVudHM6NSx5YXJkczoyMDYsZ3Jvc3M6NDEuMixsb25nOjcwLHRvdWNoYmFja3M6MCxmYWlyQ2F0Y2hlczoxLGluc2lkZTIwOjIsZmlmdHlQbHVzOjEsYmxvY2tlZDowLAogICAgICBvcHBvbmVudFJldHVybnM6MSxvcHBvbmVudFJldHVybllhcmRzOjUsbmV0OjQwLjIsCiAgICAgIHNvdXJjZTonT2ZmaWNpYWwgU291dGhlYXN0ZXJuIExvdWlzaWFuYSAyMDI2IGN1bXVsYXRpdmUgc3RhdHMgdGhyb3VnaCBTb3V0aCBBbGFiYW1hICgyIGdhbWVzKScKICAgIH0KICB9OwoK')
+          old_tail=dec('ICAgICAgaWYobWF0Y2gpewogICAgICAgIHJldHVybiBPYmplY3QuYXNzaWduKHt9LG1hdGNoLHtudW06U3RyaW5nKHAubnVtYmVyfHxtYXRjaC5udW18fCcnKSxwOk9iamVjdC5hc3NpZ24oe30scCksX2N1cnJlbnREZXB0aDp0cnVlfSk7CiAgICAgIH0KICAgICAgcmV0dXJuIHtudW06U3RyaW5nKHAubnVtYmVyfHwnJykscDpPYmplY3QuYXNzaWduKHt9LHApLHJvd3M6W10sdmVyaWZpY2F0aW9uOntzdGF0dXM6J3ZlcmlmaWVkJyxhbGxvd2VkOnRydWV9LF9jdXJyZW50RGVwdGg6dHJ1ZSxfZGVwdGhPbmx5OnRydWV9Owo=')
+          new_tail=dec('ICAgICAgaWYobWF0Y2gmJkFycmF5LmlzQXJyYXkobWF0Y2gucm93cykmJm1hdGNoLnJvd3MubGVuZ3RoKXsKICAgICAgICByZXR1cm4gT2JqZWN0LmFzc2lnbih7fSxtYXRjaCx7bnVtOlN0cmluZyhwLm51bWJlcnx8bWF0Y2gubnVtfHwnJykscDpPYmplY3QuYXNzaWduKHt9LHApLF9jdXJyZW50RGVwdGg6dHJ1ZX0pOwogICAgICB9CiAgICAgIGlmKGlzU2VsYSgpJiZjYXQ9PT0ncHVudGVycycpewogICAgICAgIGNvbnN0IG9mZmljaWFsPVNFTEFfUFVOVEVSX09GRklDSUFMW2xvY2FsTmFtZUtleShwLm5hbWUpXTsKICAgICAgICBpZihvZmZpY2lhbCl7CiAgICAgICAgICByZXR1cm4ge251bTpTdHJpbmcocC5udW1iZXJ8fCcnKSxwOk9iamVjdC5hc3NpZ24oe30scCkscm93czpbXSx2ZXJpZmljYXRpb246e3N0YXR1czondmVyaWZpZWQnLGFsbG93ZWQ6dHJ1ZX0sX2N1cnJlbnREZXB0aDp0cnVlLF9vZmZpY2lhbFB1bnRlcjpvZmZpY2lhbH07CiAgICAgICAgfQogICAgICB9CiAgICAgIHJldHVybiB7bnVtOlN0cmluZyhwLm51bWJlcnx8JycpLHA6T2JqZWN0LmFzc2lnbih7fSxwKSxyb3dzOltdLHZlcmlmaWNhdGlvbjp7c3RhdHVzOid2ZXJpZmllZCcsYWxsb3dlZDp0cnVlfSxfY3VycmVudERlcHRoOnRydWUsX2RlcHRoT25seTp0cnVlfTsK')
+          funcs=dec('ICBmdW5jdGlvbiBvZmZpY2lhbFB1bnRlckNhcmQoeCl7CiAgICBjb25zdCBwPWVucmljaFNlbGFQbGF5ZXIoeC5wfHx7fSksc3Q9eC5fb2ZmaWNpYWxQdW50ZXJ8fHt9OwogICAgY29uc3Qgc3RhdHM9W1snUHVudHMnLHN0LnB1bnRzPz8n4oCUJ10sWydHcm9zcycsc3QuZ3Jvc3MhPW51bGw/TnVtYmVyKHN0Lmdyb3NzKS50b0ZpeGVkKDEpOifigJQnXSxbJ0xvbmcnLHN0Lmxvbmc/PyfigJQnXV07CiAgICByZXR1cm4gJzxkaXYgY2xhc3M9InBsYXllclNlbGVjdCIgZGF0YS1wbGF5ZXJudW09IicraCh4Lm51bXx8cC5udW1iZXJ8fCcnKSsnIj4nK3BsYXllckNhcmQocCxzdGF0cyxwLm5hbWV8fCdDdXJyZW50IG9wcG9uZW50IHB1bnRlcicseC52ZXJpZmljYXRpb258fG51bGwpKyc8L2Rpdj4nOwogIH0KCiAgZnVuY3Rpb24gb2ZmaWNpYWxQdW50ZXJQcm9maWxlKHgpewogICAgY29uc3QgcD1lbnJpY2hTZWxhUGxheWVyKHgucHx8e30pLHN0PXguX29mZmljaWFsUHVudGVyfHx7fTsKICAgIGNvbnN0IGZjUGN0PXN0LnB1bnRzPygoMTAwKk51bWJlcihzdC5mYWlyQ2F0Y2hlc3x8MCkvc3QucHVudHMpLnRvRml4ZWQoMSkrJyUnKTon4oCUJzsKICAgIGNvbnN0IHRiUGN0PXN0LnB1bnRzPygoMTAwKk51bWJlcihzdC50b3VjaGJhY2tzfHwwKS9zdC5wdW50cykudG9GaXhlZCgxKSsnJScpOifigJQnOwogICAgY29uc3QgaTIwUGN0PXN0LnB1bnRzPygoMTAwKk51bWJlcihzdC5pbnNpZGUyMHx8MCkvc3QucHVudHMpLnRvRml4ZWQoMSkrJyUnKTon4oCUJzsKICAgIGNvbnN0IG1ldHJpY3M9WwogICAgICBbJ1B1bnRzJyxzdC5wdW50cz8/J+KAlCddLFsnR3Jvc3MnLHN0Lmdyb3NzIT1udWxsP051bWJlcihzdC5ncm9zcykudG9GaXhlZCgxKTon4oCUJ10sWydOZXQqJyxzdC5uZXQhPW51bGw/TnVtYmVyKHN0Lm5ldCkudG9GaXhlZCgxKTon4oCUJ10sWydMb25nJyxzdC5sb25nPz8n4oCUJ10sCiAgICAgIFsnSGFuZycsJ+KAlCddLFsnT3BlcmF0aW9uJywn4oCUJ10sWydGYWlyIGNhdGNoICUnLGZjUGN0XSxbJ1RvdWNoYmFjayAlJyx0YlBjdF0sWydJbnNpZGUgMjAgJScsaTIwUGN0XSxbJzUwKycsc3QuZmlmdHlQbHVzPz8n4oCUJ10sWydCbG9ja2VkJyxzdC5ibG9ja2VkPz8n4oCUJ10sWydSZXR1cm4geWRzIGFsbG93ZWQnLHN0Lm9wcG9uZW50UmV0dXJuWWFyZHM/PyfigJQnXQogICAgXTsKICAgIGNvbnN0IG1ldGE9W3AucG9zaXRpb24sW3AuaGVpZ2h0LHAud2VpZ2h0JiZwLndlaWdodCsnIGxicyddLmZpbHRlcihCb29sZWFuKS5qb2luKCcgwrcgJykscC5jbGFzcyxwLmhvbWV0b3duXS5maWx0ZXIoQm9vbGVhbikuam9pbignIOKAoiAnKTsKICAgIGNvbnN0IGJpbz1wLmJpbz8nPGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxMHB4O2NvbG9yOiNjNmQ0ZGM7Zm9udC1zaXplOjEycHg7bGluZS1oZWlnaHQ6MS40NSI+JytoKHAuYmlvKSsnPC9kaXY+JzonJzsKICAgIGNvbnN0IHByb2ZpbGU9cC5wcm9maWxlPyc8YSBjbGFzcz0icHJvZmlsZUxpbmsiIGhyZWY9IicraChwLnByb2ZpbGUpKyciIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIj5PZmZpY2lhbCBiaW9ncmFwaHkg4oaXPC9hPic6Jyc7CiAgICByZXR1cm4gJzxkaXYgY2xhc3M9ImNhcmQiPjxkaXYgc3R5bGU9ImRpc3BsYXk6Z3JpZDtncmlkLXRlbXBsYXRlLWNvbHVtbnM6bWlubWF4KDE3MHB4LDIyMHB4KSAxZnI7Z2FwOjE4cHg7YWxpZ24taXRlbXM6c3RhcnQiPicrCiAgICAgICc8ZGl2IGNsYXNzPSJwbGF5ZXJQaG90byIgc3R5bGU9ImhlaWdodDoyNjBweCI+JytwbGF5ZXJQaG90byhwKSsnPGRpdiBjbGFzcz0icGxheWVyTm8iPiMnK2gocC5udW1iZXJ8fHgubnVtfHwn4oCUJykrJzwvZGl2PjwvZGl2PicrCiAgICAgICc8ZGl2PjxkaXYgY2xhc3M9ImV5ZWJyb3ciPlBMQVlFUiBQUk9GSUxFPC9kaXY+PGgyIHN0eWxlPSJtYXJnaW46NHB4IDAgNXB4Ij4nK2gocC5uYW1lfHwnSmFjayBIdW50ZXInKSsnPC9oMj48ZGl2IGNsYXNzPSJwbGF5ZXJNZXRhIj4nK2gobWV0YSkrJzwvZGl2PicrYmlvK3Byb2ZpbGUrCiAgICAgICc8ZGl2IGNsYXNzPSJtZXRyaWNzIiBzdHlsZT0ibWFyZ2luLXRvcDoxNHB4Ij4nK21ldHJpY3MubWFwKGZ1bmN0aW9uKHope3JldHVybiAnPGRpdiBjbGFzcz0ibWluaSI+PGI+JytoKHpbMV0pKyc8L2I+PHNwYW4+JytoKHpbMF0pKyc8L3NwYW4+PC9kaXY+Jzt9KS5qb2luKCcnKSsnPC9kaXY+JysKICAgICAgJzxkaXYgY2xhc3M9Im5vdGUiIHN0eWxlPSJtYXJnaW4tdG9wOjEycHgiPicraChzdC5zb3VyY2V8fCdPZmZpY2lhbCBTb3V0aGVhc3Rlcm4gTG91aXNpYW5hIGN1bXVsYXRpdmUgc3RhdHMnKSsnLiBQRkYgcHVudCByb3dzIGFyZSBub3QgdXNhYmxlIGluIHRoZSBjdXJyZW50IHBhY2thZ2UsIHNvIG9mZmljaWFsIGN1cnJlbnQgdG90YWxzIGFyZSBzaG93bi4gKk5ldCBpcyBkZXJpdmVkIGZyb20gMjA2IHB1bnQgeWFyZHMsIDUgb3Bwb25lbnQgcmV0dXJuIHlhcmRzIGFuZCAwIHRvdWNoYmFja3MuIEhhbmcgYW5kIG9wZXJhdGlvbiByZW1haW4gYmxhbmsgcmF0aGVyIHRoYW4gYmVpbmcgZXN0aW1hdGVkLjwvZGl2PjwvZGl2PjwvZGl2PjwvZGl2Pic7CiAgfQoK')
+          old_detail=dec('ICAgICAgaWYobGlzdC5sZW5ndGgpewogICAgICAgIGlmKCFzZWxlY3RlZFNwZWNpYWxpc3R8fCFsaXN0LnNvbWUoZnVuY3Rpb24oeCl7cmV0dXJuIFN0cmluZyh4Lm51bSk9PT1TdHJpbmcoc2VsZWN0ZWRTcGVjaWFsaXN0KTt9KSl7c2VsZWN0ZWRTcGVjaWFsaXN0PVN0cmluZyhsaXN0WzBdLm51bXx8JycpO30KICAgICAgICB0cnl7ZGV0YWlsPXNlbGVjdGVkUHJvZmlsZShhLHBsYXllckNhdGVnb3J5LGxpc3QpO31jYXRjaChfKXsKICAgICAgICAgIGNvbnN0IGN1cnJlbnQ9bGlzdC5tYXAoZnVuY3Rpb24oeCl7cmV0dXJuIGVucmljaFNlbGFQbGF5ZXIoeC5wKTt9KTsKICAgICAgICAgIGRldGFpbD1wcmVwU2VsZWN0ZWRQcm9maWxlKGN1cnJlbnQpOwogICAgICAgIH0KICAgICAgfQo=')
+          new_detail=dec('ICAgICAgaWYobGlzdC5sZW5ndGgpewogICAgICAgIGlmKCFzZWxlY3RlZFNwZWNpYWxpc3R8fCFsaXN0LnNvbWUoZnVuY3Rpb24oeCl7cmV0dXJuIFN0cmluZyh4Lm51bSk9PT1TdHJpbmcoc2VsZWN0ZWRTcGVjaWFsaXN0KTt9KSl7c2VsZWN0ZWRTcGVjaWFsaXN0PVN0cmluZyhsaXN0WzBdLm51bXx8JycpO30KICAgICAgICBjb25zdCBjdXJyZW50SXRlbT1saXN0LmZpbmQoZnVuY3Rpb24oeCl7cmV0dXJuIFN0cmluZyh4Lm51bSk9PT1TdHJpbmcoc2VsZWN0ZWRTcGVjaWFsaXN0KTt9KXx8bGlzdFswXTsKICAgICAgICBpZihjdXJyZW50SXRlbSYmY3VycmVudEl0ZW0uX29mZmljaWFsUHVudGVyKXsKICAgICAgICAgIGRldGFpbD1vZmZpY2lhbFB1bnRlclByb2ZpbGUoY3VycmVudEl0ZW0pOwogICAgICAgIH1lbHNlewogICAgICAgICAgdHJ5e2RldGFpbD1zZWxlY3RlZFByb2ZpbGUoYSxwbGF5ZXJDYXRlZ29yeSxsaXN0KTt9Y2F0Y2goXyl7CiAgICAgICAgICAgIGNvbnN0IGN1cnJlbnQ9bGlzdC5tYXAoZnVuY3Rpb24oeCl7cmV0dXJuIGVucmljaFNlbGFQbGF5ZXIoeC5wKTt9KTsKICAgICAgICAgICAgZGV0YWlsPXByZXBTZWxlY3RlZFByb2ZpbGUoY3VycmVudCk7CiAgICAgICAgICB9CiAgICAgICAgfQogICAgICB9Cg==')
+          upgrade=dec('ZnVuY3Rpb24gdXBncmFkZUltYWdlVXJsKHJhdykgewogIHRyeSB7CiAgICBjb25zdCB1ID0gbmV3IFVSTChTdHJpbmcocmF3IHx8ICcnKSk7CiAgICBjb25zdCB3aWR0aEtleSA9IHUuc2VhcmNoUGFyYW1zLmhhcygnd2lkdGgnKSA/ICd3aWR0aCcgOiAodS5zZWFyY2hQYXJhbXMuaGFzKCd3JykgPyAndycgOiBudWxsKTsKICAgIGNvbnN0IGhlaWdodEtleSA9IHUuc2VhcmNoUGFyYW1zLmhhcygnaGVpZ2h0JykgPyAnaGVpZ2h0JyA6ICh1LnNlYXJjaFBhcmFtcy5oYXMoJ2gnKSA/ICdoJyA6IG51bGwpOwogICAgY29uc3Qgd2lkdGggPSB3aWR0aEtleSA/IE51bWJlcih1LnNlYXJjaFBhcmFtcy5nZXQod2lkdGhLZXkpKSA6IDA7CiAgICBjb25zdCBoZWlnaHQgPSBoZWlnaHRLZXkgPyBOdW1iZXIodS5zZWFyY2hQYXJhbXMuZ2V0KGhlaWdodEtleSkpIDogMDsKICAgIGlmICh3aWR0aEtleSAmJiB3aWR0aCA+IDAgJiYgaGVpZ2h0S2V5ICYmIGhlaWdodCA+IDApIHsKICAgICAgY29uc3Qgc2NhbGUgPSBNYXRoLm1heCgxLCAxMjAwIC8gTWF0aC5tYXgod2lkdGgsIGhlaWdodCkpOwogICAgICB1LnNlYXJjaFBhcmFtcy5zZXQod2lkdGhLZXksIFN0cmluZyhNYXRoLnJvdW5kKHdpZHRoICogc2NhbGUpKSk7CiAgICAgIHUuc2VhcmNoUGFyYW1zLnNldChoZWlnaHRLZXksIFN0cmluZyhNYXRoLnJvdW5kKGhlaWdodCAqIHNjYWxlKSkpOwogICAgfSBlbHNlIGlmICh3aWR0aEtleSAmJiB3aWR0aCA+IDAgJiYgd2lkdGggPCAxMjAwKSB7CiAgICAgIHUuc2VhcmNoUGFyYW1zLnNldCh3aWR0aEtleSwgJzEyMDAnKTsKICAgIH0gZWxzZSBpZiAoaGVpZ2h0S2V5ICYmIGhlaWdodCA+IDAgJiYgaGVpZ2h0IDwgMTIwMCkgewogICAgICB1LnNlYXJjaFBhcmFtcy5zZXQoaGVpZ2h0S2V5LCAnMTIwMCcpOwogICAgfQogICAgcmV0dXJuIHUuaHJlZjsKICB9IGNhdGNoIHsKICAgIHJldHVybiByYXc7CiAgfQp9Cgo=')
+          p=Path('player-intel-live-fix.js')
+          s=p.read_text()
           if 'const SELA_PUNTER_OFFICIAL=' not in s:
-              marker = "  function isSela(){"
-              block = r'''  // Official 2026 cumulative punting is a fallback only when the loaded PFF
-  // package has no usable PUNT rows for the current published punter.
-  // Source snapshot: lionsports.net 2026 cumulative stats through South Alabama (2 games).
-  const SELA_PUNTER_OFFICIAL={
-    'jack hunter':{
-      punts:5,yards:206,gross:41.2,long:70,touchbacks:0,fairCatches:1,inside20:2,fiftyPlus:1,blocked:0,
-      opponentReturns:1,opponentReturnYards:5,net:40.2,
-      source:'Official Southeastern Louisiana 2026 cumulative stats through South Alabama (2 games)'
-    }
-  };
-
-'''
-              if marker not in s:
-                  raise SystemExit('Could not find isSela insertion point')
-              s = s.replace(marker, block + marker, 1)
-
-          old_tail = r'''      if(match){
-        return Object.assign({},match,{num:String(p.number||match.num||''),p:Object.assign({},p),_currentDepth:true});
-      }
-      return {num:String(p.number||''),p:Object.assign({},p),rows:[],verification:{status:'verified',allowed:true},_currentDepth:true,_depthOnly:true};
-'''
-          new_tail = r'''      if(match&&Array.isArray(match.rows)&&match.rows.length){
-        return Object.assign({},match,{num:String(p.number||match.num||''),p:Object.assign({},p),_currentDepth:true});
-      }
-      if(isSela()&&cat==='punters'){
-        const official=SELA_PUNTER_OFFICIAL[localNameKey(p.name)];
-        if(official){
-          return {num:String(p.number||''),p:Object.assign({},p),rows:[],verification:{status:'verified',allowed:true},_currentDepth:true,_officialPunter:official};
-        }
-      }
-      return {num:String(p.number||''),p:Object.assign({},p),rows:[],verification:{status:'verified',allowed:true},_currentDepth:true,_depthOnly:true};
-'''
-          if old_tail in s:
-              s = s.replace(old_tail, new_tail, 1)
-          elif '_officialPunter:official' not in s:
-              raise SystemExit('Could not find combinedCurrentPlayers fallback block')
-
+              marker='  function isSela(){'
+              if marker not in s: raise SystemExit('isSela marker missing')
+              s=s.replace(marker,punter_const+marker,1)
+          if old_tail in s: s=s.replace(old_tail,new_tail,1)
+          elif '_officialPunter:official' not in s: raise SystemExit('punter fallback marker missing')
           if 'function officialPunterCard(' not in s:
-              marker = "  function depthOnlyCard(x,cat){"
-              block = r'''  function officialPunterCard(x){
-    const p=enrichSelaPlayer(x.p||{}),st=x._officialPunter||{};
-    const stats=[['Punts',st.punts??'—'],['Gross',st.gross!=null?Number(st.gross).toFixed(1):'—'],['Long',st.long??'—']];
-    return '<div class="playerSelect" data-playernum="'+h(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'Current opponent punter',x.verification||null)+'</div>';
-  }
-
-  function officialPunterProfile(x){
-    const p=enrichSelaPlayer(x.p||{}),st=x._officialPunter||{};
-    const fcPct=st.punts?((100*Number(st.fairCatches||0)/st.punts).toFixed(1)+'%'):'—';
-    const tbPct=st.punts?((100*Number(st.touchbacks||0)/st.punts).toFixed(1)+'%'):'—';
-    const i20Pct=st.punts?((100*Number(st.inside20||0)/st.punts).toFixed(1)+'%'):'—';
-    const metrics=[
-      ['Punts',st.punts??'—'],['Gross',st.gross!=null?Number(st.gross).toFixed(1):'—'],['Net*',st.net!=null?Number(st.net).toFixed(1):'—'],['Long',st.long??'—'],
-      ['Hang','—'],['Operation','—'],['Fair catch %',fcPct],['Touchback %',tbPct],['Inside 20 %',i20Pct],['50+',st.fiftyPlus??'—'],['Blocked',st.blocked??'—'],['Return yds allowed',st.opponentReturnYards??'—']
-    ];
-    const meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');
-    const bio=p.bio?'<div style="margin-top:10px;color:#c6d4dc;font-size:12px;line-height:1.45">'+h(p.bio)+'</div>':'';
-    const profile=p.profile?'<a class="profileLink" href="'+h(p.profile)+'" target="_blank" rel="noopener">Official biography ↗</a>':'';
-    return '<div class="card"><div style="display:grid;grid-template-columns:minmax(170px,220px) 1fr;gap:18px;align-items:start">'+
-      '<div class="playerPhoto" style="height:260px">'+playerPhoto(p)+'<div class="playerNo">#'+h(p.number||x.num||'—')+'</div></div>'+
-      '<div><div class="eyebrow">PLAYER PROFILE</div><h2 style="margin:4px 0 5px">'+h(p.name||'Jack Hunter')+'</h2><div class="playerMeta">'+h(meta)+'</div>'+bio+profile+
-      '<div class="metrics" style="margin-top:14px">'+metrics.map(function(z){return '<div class="mini"><b>'+h(z[1])+'</b><span>'+h(z[0])+'</span></div>';}).join('')+'</div>'+
-      '<div class="note" style="margin-top:12px">'+h(st.source||'Official Southeastern Louisiana cumulative stats')+'. PFF punt rows are not usable in the current package, so official current totals are shown. *Net is derived from 206 punt yards, 5 opponent return yards and 0 touchbacks. Hang and operation remain blank rather than being estimated.</div></div></div></div>';
-  }
-
-'''
-              if marker not in s:
-                  raise SystemExit('Could not find depthOnlyCard insertion point')
-              s = s.replace(marker, block + marker, 1)
-
-          old_cards = "const cards=list.length?list.map(function(x){return x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join('')"
-          new_cards = "const cards=list.length?list.map(function(x){return x._officialPunter?officialPunterCard(x):x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join('')"
-          if old_cards in s:
-              s = s.replace(old_cards, new_cards, 1)
-          elif '_officialPunter?officialPunterCard' not in s:
-              raise SystemExit('Could not find player-card mapping')
-
-          old_detail = r'''      if(list.length){
-        if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
-        try{detail=selectedProfile(a,playerCategory,list);}catch(_){
-          const current=list.map(function(x){return enrichSelaPlayer(x.p);});
-          detail=prepSelectedProfile(current);
-        }
-      }
-'''
-          new_detail = r'''      if(list.length){
-        if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
-        const currentItem=list.find(function(x){return String(x.num)===String(selectedSpecialist);})||list[0];
-        if(currentItem&&currentItem._officialPunter){
-          detail=officialPunterProfile(currentItem);
-        }else{
-          try{detail=selectedProfile(a,playerCategory,list);}catch(_){
-            const current=list.map(function(x){return enrichSelaPlayer(x.p);});
-            detail=prepSelectedProfile(current);
-          }
-        }
-      }
-'''
-          if old_detail in s:
-              s = s.replace(old_detail, new_detail, 1)
-          elif 'officialPunterProfile(currentItem)' not in s:
-              raise SystemExit('Could not find selected-profile block')
-
-          # Force a fresh high-resolution proxy response instead of the cached thumbnail.
-          s = s.replace("const primary='/api/player-image?name='+encodeURIComponent(name);", "const primary='/api/player-image?name='+encodeURIComponent(name)+'&hq=20260914c';")
+              marker='  function depthOnlyCard(x,cat){'
+              if marker not in s: raise SystemExit('depthOnlyCard marker missing')
+              s=s.replace(marker,funcs+marker,1)
+          old_cards="const cards=list.length?list.map(function(x){return x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join('')"
+          new_cards="const cards=list.length?list.map(function(x){return x._officialPunter?officialPunterCard(x):x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join('')"
+          if old_cards in s: s=s.replace(old_cards,new_cards,1)
+          elif '_officialPunter?officialPunterCard' not in s: raise SystemExit('card map marker missing')
+          if old_detail in s: s=s.replace(old_detail,new_detail,1)
+          elif 'officialPunterProfile(currentItem)' not in s: raise SystemExit('detail marker missing')
+          s=s.replace("const primary='/api/player-image?name='+encodeURIComponent(name);","const primary='/api/player-image?name='+encodeURIComponent(name)+'&hq=20260914c';")
           p.write_text(s)
-
-          # ---------------- Image proxy: upgrade Sidearm/Lions thumbnail URLs ----------------
-          p = Path('api/player-image.js')
-          s = p.read_text()
+          p=Path('api/player-image.js')
+          s=p.read_text()
           if 'function upgradeImageUrl(' not in s:
-              marker = 'function officialImageAttrs(tag, pageUrl) {'
-              block = r'''function upgradeImageUrl(raw) {
-  try {
-    const u = new URL(String(raw || ''));
-    const widthKey = u.searchParams.has('width') ? 'width' : (u.searchParams.has('w') ? 'w' : null);
-    const heightKey = u.searchParams.has('height') ? 'height' : (u.searchParams.has('h') ? 'h' : null);
-    const width = widthKey ? Number(u.searchParams.get(widthKey)) : 0;
-    const height = heightKey ? Number(u.searchParams.get(heightKey)) : 0;
-    if (widthKey && width > 0 && heightKey && height > 0) {
-      const scale = Math.max(1, 1200 / Math.max(width, height));
-      u.searchParams.set(widthKey, String(Math.round(width * scale)));
-      u.searchParams.set(heightKey, String(Math.round(height * scale)));
-    } else if (widthKey && width > 0 && width < 1200) {
-      u.searchParams.set(widthKey, '1200');
-    } else if (heightKey && height > 0 && height < 1200) {
-      u.searchParams.set(heightKey, '1200');
-    }
-    return u.href;
-  } catch {
-    return raw;
-  }
-}
-
-'''
-              if marker not in s:
-                  raise SystemExit('Could not find image attribute helper')
-              s = s.replace(marker, block + marker, 1)
-
-          s = s.replace('const response=await fetchImage(image);', 'const response=await fetchImage(upgradeImageUrl(image));')
-          s = s.replace('const response = await fetchImage(candidate);', 'const response = await fetchImage(upgradeImageUrl(candidate));')
+              marker='function officialImageAttrs(tag, pageUrl) {'
+              if marker not in s: raise SystemExit('image marker missing')
+              s=s.replace(marker,upgrade+marker,1)
+          s=s.replace('const response=await fetchImage(image);','const response=await fetchImage(upgradeImageUrl(image));')
+          s=s.replace('const response = await fetchImage(candidate);','const response = await fetchImage(upgradeImageUrl(candidate));')
           p.write_text(s)
-
-          # ---------------- Bust static script cache in every live Week 3 source ----------------
           for file_name in ['index.html','southeastern/week3-template.html','southeastern/index.html','week1/index.html']:
               q=Path(file_name)
-              if not q.exists():
-                  continue
+              if not q.exists(): continue
               t=q.read_text()
-              t=re.sub(r'/player-intel-live-fix\.js\?v=[^"\']+', '/player-intel-live-fix.js?v=20260914-1905', t)
+              t=re.sub(r'/player-intel-live-fix\.js\?v=[^"\']+','/player-intel-live-fix.js?v=20260914-1905',t)
               q.write_text(t)
           PY
-
-      - name: Commit punter and photo repairs
+      - name: Commit repairs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
