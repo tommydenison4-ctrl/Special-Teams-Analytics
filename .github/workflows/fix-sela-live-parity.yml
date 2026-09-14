@@ -15,43 +15,62 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Patch dedicated Southeastern workspace and depth renderer
+      - name: Put the SELA fix in the actual live documents
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
-          live = Path('player-intel-live-fix.js')
-          text = live.read_text()
-          if 'originalWeek1DepthChartPage' not in text:
-              anchor = "  if(typeof prepDepthPlayerNamesForCategory==='function'){"
-              block = """  // The dedicated /southeastern/ workspace still calls the original Week 1\n  // depth renderer name. Override that renderer too so its sidebar depth page uses\n  // the exact Command Center Southeastern Louisiana two-deep.\n  if(typeof week1DepthChartPage==='function'){\n    const originalWeek1DepthChartPage=week1DepthChartPage;\n    week1DepthChartPage=function(){\n      if(!isSela())return originalWeek1DepthChartPage();\n      applySelaDepth();\n      return selaDepthChartPage();\n    };\n  }\n\n"""
-              if anchor not in text:
-                  raise SystemExit('Could not find depth-player hook in player-intel-live-fix.js')
-              text = text.replace(anchor, block + anchor, 1)
-              live.write_text(text)
+          VERSION='20260914-1829'
+          SCRIPT=f'<script src="/player-intel-live-fix.js?v={VERSION}"></script>'
 
-          sela = Path('southeastern/index.html')
-          text = sela.read_text()
-          if '/player-intel-live-fix.js?v=20260914-1830' not in text:
-              anchor = "      const weekButtons = "
-              inject = "      html = html.replace('</body>', '<script src=\"/player-intel-live-fix.js?v=20260914-1830\"><\\\\/script></body>');\n"
-              if anchor not in text:
-                  raise SystemExit('Could not find Southeastern week-button anchor')
-              text = text.replace(anchor, inject + anchor, 1)
-              sela.write_text(text)
+          def inject_last_body(path):
+              p=Path(path)
+              text=p.read_text()
+              # Remove older copies so the patch can only execute once.
+              text=re.sub(r'\s*<script\s+src=["\']/player-intel-live-fix\.js\?v=[^"\']+["\']></script>\s*','\n',text,flags=re.I)
+              idx=text.lower().rfind('</body>')
+              if idx < 0:
+                  raise SystemExit(f'{path}: no closing body tag')
+              text=text[:idx]+'  '+SCRIPT+'\n'+text[idx:]
+              p.write_text(text)
 
-          week1 = Path('week1/index.html')
-          text = week1.read_text().replace('player-intel-live-fix.js?v=20260914-1803','player-intel-live-fix.js?v=20260914-1830')
-          week1.write_text(text)
+          # Critical fix: the previous wrapper used str.replace('</body>', ...), which
+          # hit an earlier literal </body> inside the app's JavaScript instead of the
+          # document's real closing body. Put the patch directly in the real documents.
+          inject_last_body('index.html')
+          inject_last_body('southeastern/week3-template.html')
+
+          # Week 1/root loader: stop trying to inject the repair script into a fetched
+          # HTML string. The root document now owns the repair script. Keep week nav,
+          # but insert it at the final body close instead of the first literal </body>.
+          p=Path('week1/index.html')
+          text=p.read_text()
+          text=re.sub(r"\n\s*const liveFix='<script src=\\?\"/player-intel-live-fix\.js\?v=[^']+';",'',text)
+          text=text.replace("      html = html.replace('</body>', liveFix + weekNav + '</body>');",
+                            "      const bodyClose=html.toLowerCase().lastIndexOf('</body>');\n      if(bodyClose<0)throw new Error('Week 1 app is missing its closing body tag.');\n      html=html.slice(0,bodyClose)+weekNav+html.slice(bodyClose);")
+          p.write_text(text)
+
+          # Dedicated Week 3 wrapper: remove the earlier script-string injection. The
+          # template now includes the live fix itself. Also insert week navigation at
+          # the actual final body close.
+          p=Path('southeastern/index.html')
+          text=p.read_text()
+          text=re.sub(r"\n\s*html = html\.replace\('</body>', '<script src=\\?\"/player-intel-live-fix\.js\?v=[^\n]+\n",'\n',text)
+          old="      html = html.replace('</body>', '<div id=\"weekJumpDockFixed\" style=\"position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center\">' + weekButtons + '</div></body>');"
+          new="      const weekDock='<div id=\"weekJumpDockFixed\" style=\"position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center\">' + weekButtons + '</div>';\n      const bodyClose=html.toLowerCase().lastIndexOf('</body>');\n      if(bodyClose<0)throw new Error('Week 3 app is missing its closing body tag.');\n      html=html.slice(0,bodyClose)+weekDock+html.slice(bodyClose);"
+          if old in text:
+              text=text.replace(old,new,1)
+          p.write_text(text)
           PY
       - name: Commit patched files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add player-intel-live-fix.js southeastern/index.html week1/index.html
+          git add index.html player-intel-live-fix.js southeastern/week3-template.html southeastern/index.html week1/index.html
           if git diff --cached --quiet; then
             echo "No changes needed"
             exit 0
           fi
-          git commit -m "Apply Southeastern depth and player photo fix to live workspace"
+          git commit -m "Load Southeastern repair in the actual live HTML"
           git push origin main
