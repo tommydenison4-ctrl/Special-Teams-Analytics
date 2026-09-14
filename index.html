@@ -36,8 +36,7 @@ table.log{width:100%;border-collapse:collapse;font-size:12px}table.log th,table.
 
 .chartShell{display:grid;grid-template-columns:minmax(560px,1fr) 360px;gap:14px}.chartField{height:680px;position:relative;border:2px solid #fff;border-radius:10px;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden;touch-action:none}.chartField:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0,transparent calc(10% - 1px),rgba(255,255,255,.18) calc(10% - 1px),rgba(255,255,255,.18) 10%)}.chartOutcomeBar{position:relative;left:auto;right:auto;top:auto;z-index:9;background:rgba(6,16,24,.96);border:1px solid rgba(255,255,255,.28);border-radius:10px;padding:9px 12px 8px;backdrop-filter:blur(2px);pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.25);margin-bottom:10px}.chartField.coverageSpace{height:760px}.chartField.coverageSpace .los{top:62%}.chartField.coverageSpace .losLabel{top:59.5%}.chartField.coverageSpace:before{background:repeating-linear-gradient(0deg,transparent 0,transparent calc(8.333% - 1px),rgba(255,255,255,.18) calc(8.333% - 1px),rgba(255,255,255,.18) 8.333%)}.chartOutcomeLine{display:flex;gap:12px;flex-wrap:wrap;align-items:center;line-height:1.35}.chartOutcomeLine + .chartOutcomeLine{margin-top:4px}.chartOutcomePiece{font-size:12px;color:#f3f7f9}.chartOutcomePiece b{color:var(--gold);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}.chartOutcomeEmpty{color:#b8c8d2}.repSummary{margin:0 0 12px 0;padding:10px 12px;border:1px solid #d7d7d7;border-radius:10px;background:#fff;font-size:12px;line-height:1.45}.repSummary b{color:#61142d;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}
 .dragPlayer{position:absolute;transform:translate(-50%,-50%);width:43px;height:43px;border-radius:50%;background:#fff;color:#071018;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;z-index:8;cursor:grab;user-select:none;box-shadow:0 3px 9px rgba(0,0,0,.35)}.dragPlayer:active{cursor:grabbing}.dragPlayer.return{border-color:#4a9cff}.dragPlayer.kicker{border-color:#2aa84a}.dragPlayer.snapper{border-color:#a56be3}.dragPlayer.returnerTarget{background:#ffef00!important;border-color:#ffc400!important;box-shadow:0 0 0 5px rgba(255,225,0,.45),0 0 18px rgba(255,225,0,.35),0 3px 9px rgba(0,0,0,.35)!important}.dragPlayer.tackler{border-color:#ff4d4f!important;background:#fff1f1!important;box-shadow:0 0 0 3px rgba(255,77,79,.18),0 3px 9px rgba(0,0,0,.35)}.dragPlayer.assistTackler{border-style:dashed}.dragPlayer.selected{outline:3px solid #fff;outline-offset:2px}
-.chartPanel{display:flex;flex-direction:column;gap:10px}.fieldActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.primary{background:var(--maroon);border-color:#A83A48}.success{background:#255f43;border-color:#3e8c67}.danger{background:#6f2228;border-color:#a6434b}.wide{grid-column:1/-1}.input{width:100%;background:#0a1821;color:#fff;border:1px solid var(--line);border-radius:8px;padding:9px}.matchBox{padding:11px;border:1px solid var(--line);border-radius:10px;background:#0a1922}.matchGood{border-color:#3e8c67}.matchNear{border-color:#b58b35}.lookList{display:flex;flex-direction:column;gap:9px}.lookItem{border:1px solid var(--line);border-radius:11px;padding:11px;background:#0b1922;cursor:pointer}.lookItem:hover{border-color:#6f8795}.lookItem.active{border-color:var(--gold)}.lookHead{display:flex;justify-content:space-between;gap:10px}.lookName{font-size:17px;font-weight:800}.lookMeta{font-size:11px;color:var(--muted)}.repRows{margin-top:10px;display:none}.lookItem.open .repRows{display:block}.repRow{display:grid;grid-template-columns:75px 1fr 65px 70px;gap:7px;padding:7px 0;border-top:1px solid #203743;font-size:11px}.repRow button{padding:5px 7px;font-size:10px}.coordTable{max-height:240px;overflow:auto}.coordLine{display:grid;grid-template-columns:54px 1fr 42px 42px;gap:6px;padding:5px 0;border-bottom:1px solid #1f3440;font-size:11px}.status{font-size:12px;color:var(--muted);min-height:18px}.badgeExact{color:#81d4a5}.badgeNear{color:#e6c36f}.badgeNew{color:#f08e94}.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.sourceData{font-size:11px;color:var(--muted);line-height:1.6}.sourceData b{color:#fff}.libraryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.libField{height:320px;position:relative;border:2px solid #fff;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden}.libField:before{content:"";position:absolute;left:0;right:0;top:48%;height:2px;background:#fff}.libDot{position:absolute;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;color:#071018;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center}.libDotInner{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}.libDotNum{font-size:12px;font-weight:900;letter-spacing:-.2px}.libDotRole{font-size:6px;font-weight:800;opacity:.9;margin-top:1px;letter-spacing:.15px}.lookControls{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.lookControls button{padding:6px 8px;font-size:11px}
-.playerNotesInput{min-height:92px;resize:vertical;margin-top:8px;font:inherit;line-height:1.4}.fieldPlayerNote{position:absolute;z-index:8;left:12px;top:12px;max-width:48%;padding:9px 11px;border:2px solid var(--gold);border-radius:9px;background:rgba(6,16,24,.88);color:#fff;font-size:13px;font-weight:800;line-height:1.28;white-space:pre-wrap;box-shadow:0 5px 15px rgba(0,0,0,.3);pointer-events:none}.fieldPlayerNote:before{content:"PLAYER NOTES";display:block;color:var(--gold);font-size:8px;letter-spacing:.12em;margin-bottom:4px}
+.chartPanel{display:flex;flex-direction:column;gap:10px}.fieldActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.primary{background:var(--maroon);border-color:#A83A48}.success{background:#255f43;border-color:#3e8c67}.danger{background:#6f2228;border-color:#a6434b}.wide{grid-column:1/-1}.input{width:100%;background:#0a1821;color:#fff;border:1px solid var(--line);border-radius:8px;padding:9px}.playerNotesInput{min-height:92px;resize:vertical;margin-top:8px;font:inherit;line-height:1.4}.fieldPlayerNote{position:absolute;z-index:8;left:12px;top:12px;max-width:48%;padding:9px 11px;border:2px solid var(--gold);border-radius:9px;background:rgba(6,16,24,.88);color:#fff;font-size:13px;font-weight:800;line-height:1.28;white-space:pre-wrap;box-shadow:0 5px 15px rgba(0,0,0,.3);pointer-events:none}.fieldPlayerNote:before{content:"PLAYER NOTES";display:block;color:var(--gold);font-size:8px;letter-spacing:.12em;margin-bottom:4px}.matchBox{padding:11px;border:1px solid var(--line);border-radius:10px;background:#0a1922}.matchGood{border-color:#3e8c67}.matchNear{border-color:#b58b35}.lookList{display:flex;flex-direction:column;gap:9px}.lookItem{border:1px solid var(--line);border-radius:11px;padding:11px;background:#0b1922;cursor:pointer}.lookItem:hover{border-color:#6f8795}.lookItem.active{border-color:var(--gold)}.lookHead{display:flex;justify-content:space-between;gap:10px}.lookName{font-size:17px;font-weight:800}.lookMeta{font-size:11px;color:var(--muted)}.repRows{margin-top:10px;display:none}.lookItem.open .repRows{display:block}.repRow{display:grid;grid-template-columns:75px 1fr 65px 70px;gap:7px;padding:7px 0;border-top:1px solid #203743;font-size:11px}.repRow button{padding:5px 7px;font-size:10px}.coordTable{max-height:240px;overflow:auto}.coordLine{display:grid;grid-template-columns:54px 1fr 42px 42px;gap:6px;padding:5px 0;border-bottom:1px solid #1f3440;font-size:11px}.status{font-size:12px;color:var(--muted);min-height:18px}.badgeExact{color:#81d4a5}.badgeNear{color:#e6c36f}.badgeNew{color:#f08e94}.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.sourceData{font-size:11px;color:var(--muted);line-height:1.6}.sourceData b{color:#fff}.libraryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.libField{height:320px;position:relative;border:2px solid #fff;background:linear-gradient(90deg,#194a31,#215d3b 50%,#194a31);overflow:hidden}.libField:before{content:"";position:absolute;left:0;right:0;top:48%;height:2px;background:#fff}.libDot{position:absolute;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;color:#071018;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center}.libDotInner{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}.libDotNum{font-size:12px;font-weight:900;letter-spacing:-.2px}.libDotRole{font-size:6px;font-weight:800;opacity:.9;margin-top:1px;letter-spacing:.15px}.lookControls{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.lookControls button{padding:6px 8px;font-size:11px}
 .fieldTextBox{position:absolute;z-index:12;transform:translate(-50%,-50%);max-width:42%;min-width:72px;padding:7px 9px;border:2px solid var(--gold);border-radius:7px;background:rgba(255,255,255,.96);color:#111827;font-size:12px;font-weight:900;line-height:1.2;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 4px 12px rgba(0,0,0,.32);cursor:grab;user-select:none}.fieldTextBox:active{cursor:grabbing}.libField .fieldTextBox{font-size:9px;padding:4px 6px;min-width:48px;pointer-events:none}
 @media(max-width:1150px){.chartShell{grid-template-columns:1fr}.libraryGrid{grid-template-columns:1fr}}
 
@@ -931,6 +930,9 @@ button:hover{border-color:#EBA800!important}
 .depthBioMissing{font-size:11px;color:#aab8c1;line-height:1.5}
 @media(max-width:700px){.depthBioBody{grid-template-columns:1fr}.depthBioPhoto{height:230px}}
 
+
+/* V15.3 — multi-opponent prep */
+.prepOpponentWrap{display:flex;align-items:center;gap:7px;border:1px solid #314c5b;border-radius:10px;background:#081923;padding:5px 7px;min-height:36px}.prepOpponentWrap>span{font-size:8px;font-weight:950;letter-spacing:.08em;color:var(--gold);white-space:nowrap}.prepOpponentWrap select{min-width:150px}.prepOpponentWrap small{font-size:8px;color:#8fa7b5;white-space:nowrap}.prepOpponentAlert{border:1px solid #7a6324;background:rgba(235,168,0,.08);border-radius:10px;padding:9px 11px;font-size:10px;color:#d9c780;line-height:1.45}.depthLoading{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.depthChartTable td button{max-width:100%}@media(max-width:980px){.prepOpponentWrap{width:100%;flex-wrap:wrap}.prepOpponentWrap small{white-space:normal}.prepOpponentWrap select{flex:1;min-width:160px}}
 </style>
 </head>
 <body><div class="readOnlyBadge">SHARED DATABASE • AUTO SAVE</div>
@@ -938,7 +940,7 @@ button:hover{border-color:#EBA800!important}
 <div class="shell">
 <aside>
 <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
-<button class="nav" data-page="depthchart">▤ <span>Week 1 ST Depth Chart</span></button>
+<button class="nav" data-page="depthchart">▤ <span>Opponent ST Depth Chart</span></button>
 <button class="nav" data-page="players">♟ <span>Player Intelligence</span></button>
 <button class="nav" data-page="hash"># <span>Hash Intelligence</span></button>
 <button class="nav" data-page="spray">↗ <span>Spray Reports</span></button>
@@ -951,7 +953,7 @@ button:hover{border-color:#EBA800!important}
 <button class="nav" data-page="plays">≡ <span>Play Log</span></button>
 <button class="nav" data-page="settings">⚙ <span>Team Settings</span></button>
 </aside>
-<main><div class="toolbar"><select id="seasonF"></select><select id="weekF"></select><select id="teamF"></select><select id="unitF"></select><button id="resetF">Reset</button></div><div id="app"></div></main>
+<main><div class="toolbar"><div class="prepOpponentWrap"><span>PREP OPPONENT</span><select id="prepOpponentF"><option value="MSST">Mississippi State</option><option value="UAB">UAB</option><option value="SELA">Southeastern Louisiana</option></select><small id="prepOpponentStatus">Mississippi State prep • PFF analytics active</small></div><select id="seasonF"></select><select id="weekF"></select><select id="teamF"></select><select id="unitF"></select><button id="resetF">Reset</button></div><div id="app"></div></main>
 </div>
 
 <div id="printCenterOverlay" class="print-center-overlay" onclick="if(event.target===this)closePrintCenter()">
@@ -1132,6 +1134,7 @@ function teamSettingsPage(){
 
 const DEFAULT_ROSTER=[];
 let rosterData=(()=>{try{let x=JSON.parse(localStorage.getItem('stRosterV65')||'null');return Array.isArray(x)?x:[]}catch(e){return []}})();
+let msstRosterCache=rosterData.slice();
 function saveRoster(auto=true){localStorage.setItem('stRosterV65',JSON.stringify(rosterData));}
 function normNum(x){return String(x||'').replace(/[^0-9]/g,'').replace(/^0+(?=\d)/,'')}
 function codeNumber(x){let m=String(x||'').match(/(?:^|\s)[SD]?(\d{1,2})(?:\s|$)/);return m?normNum(m[1]):''}
@@ -1139,13 +1142,26 @@ function rosterByNumber(num){num=normNum(num);return rosterData.find(p=>normNum(
 
 const historicalRosters={};
 function activeSeason(){return String($('seasonF')?.value||'').trim()}
+function historicalRosterKey(season,opponent=prepOpponent){return `${opponent}:${String(season)}`}
 function nameKey(s){return String(s||'').toLowerCase().replace(/[“”"'’.,()]/g,'').replace(/\s+/g,' ').trim()}
 function historicalPlayersByNumber(num,season){
-  return (historicalRosters[String(season)]||[]).filter(p=>normNum(p.number)===normNum(num));
+  return (historicalRosters[historicalRosterKey(season)]||[]).filter(p=>normNum(p.number)===normNum(num));
 }
 function strictIdentityCheck(num){
   const season=activeSeason();
   const currentByNum=rosterByNumber(num);
+
+  if(prepOpponent==='UAB' && season && season!=='2026'){
+    return {
+      status:'unverified',
+      label:currentByNum?'UAB NUMBER MATCH • VERIFY 2025 ID':'2025 IDENTITY UNVERIFIED',
+      allowed:true,
+      player:currentByNum,
+      current:currentByNum,
+      historical:null,
+      changedNumber:false
+    };
+  }
 
   if(!season || season==='2026'){
     return {
@@ -1212,13 +1228,25 @@ function verifiedIdentity(num){return strictIdentityCheck(num)}
 function verifyPill(v){return `<span class="verifyPill ${v.status}">${v.label}</span>`}
 function seasonStatsTag(){let s=activeSeason();return `<div class="seasonStatsTag">${s&&s!=='2026'?'CONFIRMED '+s:(s||'CURRENT')} SPECIAL TEAMS STATS</div>`}
 async function loadHistoricalRoster(season='2025'){
-  if(historicalRosters[String(season)]?.length)return;
+  const key=historicalRosterKey(season);
+  if(historicalRosters[key]?.length)return;
+  if(prepOpponent==='SELA'){
+    const yr=Number(season);
+    historicalRosters[key]=(prepRosterData||[]).filter(p=>Array.isArray(p.rosterSeasons)?p.rosterSeasons.map(Number).includes(yr):Number(p.rosterSeason)===yr).map(p=>({...p,number:String((p.historicalNumbers||{})[season]||(p.historicalNumbers||{})[yr]||p.number||'')}));
+    return;
+  }
   try{
-    const r=await fetch(`/api/historical-roster?season=${encodeURIComponent(season)}&v=${Date.now()}`,{cache:'no-store'});
+    let r;
+    if(prepOpponent==='UAB'){
+      const url=prepPublicUrl(`Opponents/UAB/historical-roster-${season}.json`);
+      r=await fetch(url,{cache:'no-store'});
+    }else{
+      r=await fetch(`/api/historical-roster?season=${encodeURIComponent(season)}&v=${Date.now()}`,{cache:'no-store'});
+    }
     if(!r.ok)return;
     const d=await r.json(),ps=Array.isArray(d)?d:d.players;
-    if(Array.isArray(ps)&&ps.length)historicalRosters[String(season)]=ps;
-  }catch(e){console.warn('Historical roster unavailable',e)}
+    if(Array.isArray(ps)&&ps.length)historicalRosters[key]=ps;
+  }catch(e){console.warn(`${prepConfig().label} historical roster unavailable`,e)}
 }
 function toggleBio(btn){
   const bio=btn.previousElementSibling;
@@ -1253,18 +1281,15 @@ const CLOUD={
   loading:false,
   saveTimer:null,
   lastLoadedAt:'',
-  pollTimer:null,
-  needsLookLibraryReset:false
+  pollTimer:null
 };
 
-const LOOK_LIBRARY_SCOPE='UAB_2026_V1';
-
 function cloudPayload(){
+  snapshotActiveLookLibrary();
   return {
     teamSettings,
-    savedLooks,
-    repAssignments,
-    lookLibraryScope:LOOK_LIBRARY_SCOPE,
+    lookLibraries,
+    activeLookOpponent,
     updatedAt:new Date().toISOString()
   };
 }
@@ -1280,7 +1305,7 @@ function ensureWritableAction(action='save shared changes'){
 async function pollForCloudUpdates(){
   if(location.protocol==='file:'||CLOUD.loading)return false;
   try{
-    const r=await fetch('/api/storage-project-uab?action=load&v='+Date.now(),{cache:'no-store'});
+    const r=await fetch('/api/storage-project?action=load&v='+Date.now(),{cache:'no-store'});
     if(!r.ok)return false;
     const j=await r.json(),d=j.data||{};
     if(d.updatedAt&&d.updatedAt!==CLOUD.lastLoadedAt){
@@ -1316,10 +1341,23 @@ function mergeLooksById(remoteLooks=[],localLooks=[]){
   return [...map.values()].sort((a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||'')));
 }
 
+function mergeLookLibraries(remoteLibraries={},localLibraries={}){
+  const merged={};
+  new Set([...Object.keys(remoteLibraries||{}),...Object.keys(localLibraries||{})]).forEach(key=>{
+    const remote=remoteLibraries?.[key]||{},local=localLibraries?.[key]||{};
+    const looks=mergeLooksById(remote.savedLooks||[],local.savedLooks||[]).map(migrateLookPerspective);
+    const validIds=new Set(looks.map(l=>String(l.id)));
+    const assignments={...(remote.repAssignments||{}),...(local.repAssignments||{})};
+    Object.keys(assignments).forEach(playKey=>{if(!validIds.has(String(assignments[playKey]?.lookId)))delete assignments[playKey]});
+    merged[key]={savedLooks:looks,repAssignments:assignments};
+  });
+  return merged;
+}
+
 async function latestCloudProject(){
   if(location.protocol==='file:')return null;
   try{
-    const r=await fetch('/api/storage-project-uab?action=load&v='+Date.now(),{cache:'no-store'});
+    const r=await fetch('/api/storage-project?action=load&v='+Date.now(),{cache:'no-store'});
     if(!r.ok)return null;
     const j=await r.json();
     return j.data||null;
@@ -1333,8 +1371,13 @@ async function saveSharedProject(options={}){
   if(location.protocol==='file:')return false;
   const remote=await latestCloudProject();
   if(remote){
-    savedLooks=mergeLooksById(remote.savedLooks||[],savedLooks||[]).map(migrateLookPerspective);
-    repAssignments={...(remote.repAssignments||{}),...(repAssignments||{})};
+    snapshotActiveLookLibrary();
+    let remoteLibraries=remote.lookLibraries;
+    if(!remoteLibraries||typeof remoteLibraries!=='object'){
+      remoteLibraries={MSST:{savedLooks:remote.savedLooks||[],repAssignments:remote.repAssignments||{}}};
+    }
+    lookLibraries=mergeLookLibraries(remoteLibraries,lookLibraries);
+    loadLookLibraryForOpponent(activeLookOpponent);
     persistLooks(false);
   }
   return saveProjectCloud(options);
@@ -1351,7 +1394,7 @@ async function saveProjectCloud(options={}){
 
   try{
     const payload=cloudPayload();
-    const r=await fetch('/api/storage-project-uab',{
+    const r=await fetch('/api/storage-project',{
       method:'POST',
       headers:{'content-type':'application/json'},
       body:JSON.stringify({action:'save',data:payload})
@@ -1385,7 +1428,7 @@ async function loadProjectCloud(options={}){
   CLOUD.loading=true;
 
   try{
-    const r=await fetch('/api/storage-project-uab?action=load&v='+Date.now(),{cache:'no-store'});
+    const r=await fetch('/api/storage-project?action=load&v='+Date.now(),{cache:'no-store'});
     if(r.status===404){
       CLOUD.status='Shared database row not found yet';
       return false;
@@ -1396,16 +1439,16 @@ async function loadProjectCloud(options={}){
 
     const d=j.data||{};
     if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings};
-    if(d.lookLibraryScope!==LOOK_LIBRARY_SCOPE){
-      // One-time cleanup: the old UAB cloud row was initially cloned from the
-      // Mississippi State project.  Do not import those legacy looks into UAB.
-      savedLooks=[];
-      repAssignments={};
-      CLOUD.needsLookLibraryReset=true;
+    if(d.lookLibraries&&typeof d.lookLibraries==='object'){
+      lookLibraries=d.lookLibraries;
     }else{
-      if(Array.isArray(d.savedLooks))savedLooks=d.savedLooks.map(migrateLookPerspective);
-      if(d.repAssignments&&typeof d.repAssignments==='object')repAssignments=d.repAssignments;
+      // Migrate the former single cloud library to Mississippi State only.
+      lookLibraries={MSST:{
+        savedLooks:Array.isArray(d.savedLooks)?d.savedLooks.map(migrateLookPerspective):[],
+        repAssignments:d.repAssignments&&typeof d.repAssignments==='object'?d.repAssignments:{}
+      }};
     }
+    loadLookLibraryForOpponent(prepOpponent);
     CLOUD.lastLoadedAt=d.updatedAt||CLOUD.lastLoadedAt||'';
 
     saveTeamSettings(false);
@@ -1432,14 +1475,195 @@ function copyShareLink(){
     .catch(()=>prompt('Copy this staff link:',u.toString()));
 }
 
+
+const PREP_STORAGE_BASE='https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams';
+const PREP_OPPONENTS={
+  MSST:{id:'MSST',label:'Mississippi State',short:'MISSISSIPPI STATE',week:'WEEK 1',game:'September 5, 2026 • 6:30 PM CT • Davis Wade Stadium • ESPNU',analytics:true,rawTeam:'MSST'},
+  UAB:{id:'UAB',label:'UAB',short:'UAB',week:'WEEK 2',game:'ULM opponent prep • UAB Blazers',folder:'Opponents/UAB',analytics:true,rawTeam:'ALBI'},
+  SELA:{id:'SELA',label:'Southeastern Louisiana',short:'SOUTHEASTERN LOUISIANA',week:'WEEK 3',game:'September 19, 2026 • 3:30 PM CT • Malone Stadium • ESPN+',folder:'Opponents/SoutheasternLA',analytics:true,rawTeam:'LASE'}
+};
+const PREP_WEEK_DEFAULT_KEY='stPrepWeekDefault_2026_SELA';
+let prepOpponent=localStorage.getItem('stPrepOpponentV1')||'SELA';
+if(!localStorage.getItem(PREP_WEEK_DEFAULT_KEY)){
+  prepOpponent='SELA';
+  localStorage.setItem('stPrepOpponentV1','SELA');
+  localStorage.setItem(PREP_WEEK_DEFAULT_KEY,'1');
+}
+let prepRosterData=[];
+let prepDepthChart=null;
+let prepLoadStatus='';
+let prepCache={};
+
+const MSST_ST_DEPTH={
+  team:'Mississippi State',nickname:'Bulldogs',season:2026,updated:'2026-06-17',source:'Ourlads',
+  specialTeams:{
+    PT:[['88','Ethan Pulliam','RS JR'],['','Oisin Flynn','FR']],
+    PK:[['80','Kyle Ferrie','SR'],['47','William Wilkinson','RS SO'],['48','Hayden Chambers','FR']],
+    KO:[['80','Kyle Ferrie','SR'],['47','William Wilkinson','RS SO'],['48','Hayden Chambers','FR']],
+    LS:[['39','Kallen Cosper','RS FR'],['46','Kyle Rushing','FR']],
+    H:[['88','Ethan Pulliam','RS JR'],['','Oisin Flynn','FR']],
+    PR:[['3','Anthony Evans III','SR/TR'],['6','Kolin Wilson','RS FR']],
+    KR:[['2','Marquis Johnson','SR/TR'],['3','Anthony Evans III','SR/TR']]
+  }
+};
+
+function prepConfig(){return PREP_OPPONENTS[prepOpponent]||PREP_OPPONENTS.MSST}
+
+const UAB_PREP_PROFILE_OVERRIDES={
+  'badger hargett':{
+    profile:'https://uabsports.com/sports/football/roster/badger-hargett/12184',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2026/5/7/Badger_Hargett_ogfq4.jpg',
+    bio:'2024 (LSU): Did not see game action and was named to the SEC Academic Honor Roll. 2023: Redshirted as a true freshman. High school: ranked the nation’s No. 5 prep punter by Kohl’s Kicking Camp; 2A First-Team All-State in 2022; three-time First-Team All-District; Academic All-State.'
+  },
+  'oliver straw':{
+    profile:'https://uabsports.com/sports/football/roster/oliver-straw/12389',
+    bio:'Played in 49 career games at West Virginia. Finished with 192 career punts for 8,222 yards, a 42.8-yard average, 35 punts of 50+ yards, 69 fair catches and 67 punts placed inside the 20 with nine touchbacks.'
+  },
+  'jonah delange':{
+    profile:'https://uabsports.com/sports/football/roster/jonah-delange/11997',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A6846_large.jpg',
+    bio:'2025 (UAB): 10-of-14 on field goals and 29-of-29 on PATs with a season long of 46 yards. 2024: AAC Special Teams Player of the Year, First-Team All-AAC and Lou Groza Award semifinalist; 21-of-24 on field goals and 31-of-31 on PATs.'
+  },
+  'owen simpson':{
+    profile:'https://uabsports.com/sports/football/roster/owen-simpson/12075',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A5648_large.jpg',
+    bio:'2025 (UAB): appeared in all 12 games as the kickoff specialist, averaging 58.8 yards per kickoff with 26 touchbacks in 59 attempts. High school: three-star recruit from Vestavia Hills who also punted and handled place-kicking duties.'
+  },
+  'evan bishop':{
+    profile:'https://uabsports.com/sports/football/roster/evan-bishop/11975',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2024/8/16/Bishop_Evan.jpg',
+    bio:'UAB long snapper. Previous school: Jacksonville State. The current UAB roster lists him as a redshirt junior from Hoover, Alabama.'
+  },
+  'nate rogers':{
+    profile:'https://uabsports.com/sports/football/roster/nate-rogers/12071',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/10/2/060A4621.jpg',
+    bio:'2025 (UAB): appeared in 10 games, completed one pass, rushed for 84 yards and two touchdowns. 2024: appeared in two games and redshirted.'
+  },
+  'ty mims':{
+    profile:'https://uabsports.com/sports/football/roster/ty-mims/12152',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2026/7/7/Mims_Ty_vJ9JO.jpg',
+    bio:'2024 (Southern Miss): started 11 of 12 games, led the team with 33 catches for 383 yards and added 90 kick-return yards. 2023: led Southern Miss with 39 receptions and 445 yards and totaled 167 punt-return yards with a touchdown. Also has experience as both a punt and kick returner.'
+  },
+  'jayson moll':{
+    profile:'https://uabsports.com/sports/football/roster/jayson-moll/12262',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2026/7/7/Moll_Jayson_WK06r.jpg',
+    bio:'Freshman running back from Bixby, Oklahoma. The official UAB roster currently lists no additional biography information.'
+  },
+  'bam mcreynolds':{
+    profile:'https://uabsports.com/sports/football/roster/bam-mcreynolds/12159',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2026/8/31/IMG_3131.jpg',
+    bio:'2025 (ULM): played in all 12 games with nine starts. Veteran running back with previous stops at South Alabama and ULM who is also listed on the UAB return depth chart.'
+  },
+  "ja'vin simpkins":{
+    profile:'https://uabsports.com/sports/football/roster/ja-vin-simpkins/12165',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2026/5/7/Ja_Vin_Simpkins_mC9sI.jpg',
+    bio:'2025 (Coastal Carolina): played all 13 games, led the team with 591 rushing yards and two touchdowns, and caught 17 passes for 74 yards. In 2023 he returned 21 kickoffs for 395 yards and also contributed at running back.'
+  },
+  'hudson higgins':{
+    profile:'https://uabsports.com/sports/football/roster/hudson-higgins/12177',
+    image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2026/5/7/Hudson_Higgins_iceSa.jpg',
+    bio:'Freshman running back from Florence, Alabama. The official UAB roster currently lists no additional biography information.'
+  },
+  'cd gill':{
+    profile:'https://uabsports.com/sports/football/roster/cd-gill/12009',
+    bio:'Redshirt freshman wide receiver from Saraland, Alabama. Listed first at punt returner on the current UAB special-teams depth chart.'
+  },
+  'carson tinsley':{
+    profile:'https://uabsports.com/sports/football/roster/carson-tinsley/12265',
+    bio:'Freshman punter from Huntsville, Alabama and Westminster Christian Academy. Listed behind Badger Hargett on the current UAB punt depth chart.'
+  },
+  'noah medlen':{
+    bio:'Freshman long snapper from Harvest, Alabama and Sparkman High School. Listed behind Evan Bishop on the current UAB long-snapper depth chart.'
+  }
+};
+function enrichPrepPlayer(p){
+  if(!p)return p;
+  if(prepOpponent!=='UAB')return p;
+  const o=UAB_PREP_PROFILE_OVERRIDES[nameKey(p.name)]||{};
+  return {...p,...o,number:p.number||o.number||''};
+}
+function prepPublicUrl(path){return `${PREP_STORAGE_BASE}/${path.split('/').map(encodeURIComponent).join('/')}?v=${Date.now()}`}
+function prepRoster(){return prepOpponent==='MSST'?(rosterData||[]):(prepRosterData||[]).map(enrichPrepPlayer)}
+function prepStatusText(){
+  const c=prepConfig();
+  if(prepOpponent==='MSST')return 'Mississippi State prep • PFF analytics active';
+  return `${c.label} roster + depth + PFF analytics active`;
+}
+function updatePrepStatus(){let e=$('prepOpponentStatus');if(e)e.textContent=prepStatusText()}
+async function loadPrepOpponentData(options={}){
+  localStorage.setItem('stPrepOpponentV1',prepOpponent);
+  if(prepOpponent==='MSST'){
+    rosterData=msstRosterCache.slice();
+    prepRosterData=rosterData||[];
+    prepDepthChart=MSST_ST_DEPTH;
+    prepLoadStatus=`Mississippi State prep loaded • ${prepRosterData.length||0} roster players`;
+    updatePrepStatus();
+    if(options.render)render();
+    return true;
+  }
+  const c=prepConfig();
+  if(prepCache[prepOpponent]){
+    prepRosterData=prepCache[prepOpponent].roster||[];
+    prepDepthChart=prepCache[prepOpponent].depth||null;
+    rosterData=prepRosterData.map(enrichPrepPlayer);
+    prepLoadStatus=`${c.label} prep loaded • ${prepRosterData.length} roster players`;
+    updatePrepStatus();
+    if(options.render)render();
+    return true;
+  }
+  prepLoadStatus=`Loading ${c.label} roster + depth chart…`;
+  updatePrepStatus();
+  if(options.render)render();
+  try{
+    const [rr,dr]=await Promise.all([
+      fetch(prepPublicUrl(`${c.folder}/roster.json`),{cache:'no-store'}),
+      fetch(prepPublicUrl(`${c.folder}/depth-chart.json`),{cache:'no-store'})
+    ]);
+    if(!rr.ok)throw new Error(`roster.json returned ${rr.status}`);
+    if(!dr.ok)throw new Error(`depth-chart.json returned ${dr.status}`);
+    const rj=await rr.json(),dj=await dr.json();
+    prepRosterData=Array.isArray(rj)?rj:(Array.isArray(rj.players)?rj.players:[]);
+    prepDepthChart=dj||null;
+    prepCache[prepOpponent]={roster:prepRosterData,depth:prepDepthChart};
+    rosterData=prepRosterData.map(enrichPrepPlayer);
+    prepLoadStatus=`${c.label} prep loaded • ${prepRosterData.length} roster players`;
+    updatePrepStatus();
+    if(options.render)render();
+    return true;
+  }catch(err){
+    console.error('Opponent prep load failed:',err);
+    prepRosterData=[];prepDepthChart=null;
+    prepLoadStatus=`${c.label} prep could not load: ${err.message}`;
+    updatePrepStatus();
+    if(options.render)render();
+    return false;
+  }
+}
+
 const PFF_STORAGE={
   base:'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Current',
   files:['offense-side.csv','defense-side.csv'],
   roster:'roster.json'
 };
+function activePffFiles(){
+  if(prepOpponent!=='MSST'){
+    return [
+      ['offensive-side.csv','offense-side.csv'],
+      ['defensive-side.csv','defense-side.csv']
+    ];
+  }
+  return [
+    ['offense-side.csv'],
+    ['defense-side.csv']
+  ];
+}
 
+function activePffStorageBase(){
+  const c=prepConfig();
+  return c.folder?`${PREP_STORAGE_BASE}/${c.folder}`:PFF_STORAGE.base;
+}
 function pffStorageUrl(name){
-  return `${PFF_STORAGE.base}/${encodeURIComponent(name)}?v=${Date.now()}`;
+  return `${activePffStorageBase()}/${encodeURIComponent(name)}?v=${Date.now()}`;
 }
 function sourceRowKey(r){
   let game=String(v(r,'pff_GAMEID')||'').trim();
@@ -1463,7 +1687,7 @@ function mergePffSources(groups){
   return [...map.values()];
 }
 function classifyCounts(rs){
-  let team=teamSettings.teamCode||'';
+  let team=prepConfig().rawTeam||teamSettings.teamCode||'';
   let c={};
   const add=k=>c[k]=(c[k]||0)+1;
   rs.forEach(r=>{
@@ -1498,9 +1722,12 @@ async function loadRosterFromSupabase(options={}){
     if(!response.ok)throw new Error(data.error||`roster.json returned ${response.status}`);
     const parsed=Array.isArray(data)?data:(Array.isArray(data.players)?data.players:[]);
     if(!parsed.length)throw new Error('roster.json contains no players');
-    rosterData=parsed;
-    saveRoster();
-    rosterStatus=`Supabase roster loaded: ${parsed.length} players.`;
+    msstRosterCache=parsed.slice();
+    if(prepOpponent==='MSST'){
+      rosterData=parsed;
+      saveRoster();
+    }
+    rosterStatus=`Supabase Mississippi State roster loaded: ${parsed.length} players.`;
     saveTeamSettings();
     return true;
   }catch(err){
@@ -1512,21 +1739,27 @@ async function loadRosterFromSupabase(options={}){
 }
 
 async function loadPffFromSupabase(options={}){
-  setDataSourceStatus('Loading offense-side.csv + defense-side.csv from Supabase…');
+  setDataSourceStatus(`Loading ${prepConfig().label} PFF special-teams files from Supabase…`);
   try{
-    const results=await Promise.all(PFF_STORAGE.files.map(async name=>{
-      const response=await fetch(pffStorageUrl(name),{cache:'no-store'});
-      if(!response.ok)throw new Error(`${name} returned ${response.status}`);
-      const body=await response.text();
-      const parsed=parseCSV(body);
-      if(!parsed.length)throw new Error(`${name} contained no play rows`);
-      return {name,rows:parsed};
+    const results=await Promise.all(activePffFiles().map(async candidates=>{
+      let lastStatus='';
+      for(const name of candidates){
+        const response=await fetch(pffStorageUrl(name),{cache:'no-store'});
+        if(response.ok){
+          const body=await response.text();
+          const parsed=parseCSV(body);
+          if(!parsed.length)throw new Error(`${name} contained no play rows`);
+          return {name,rows:parsed};
+        }
+        lastStatus=`${name} returned ${response.status}`;
+      }
+      throw new Error(lastStatus||'PFF file not found');
     }));
     const rawCount=results.reduce((n,x)=>n+x.rows.length,0);
     rows=mergePffSources(results.map(x=>x.rows));
     const counts=classifyCounts(rows);
     const countText=Object.entries(counts).map(([k,n])=>`${k}: ${n}`).join(' • ');
-    setDataSourceStatus(`Supabase live • 2 files • ${rawCount} raw rows • ${rows.length} unique plays${countText?' • '+countText:''}`);
+    setDataSourceStatus(`${prepConfig().label} • Supabase live • 2 files • ${rawCount} raw rows • ${rows.length} unique plays${countText?' • '+countText:''}`);
     setup();
     playIndex=0;chartIndex=0;chartPositions={};
     if(options.render!==false)render();
@@ -1598,13 +1831,34 @@ let hashKorHash='',hashKorKickDir='',hashKorReturnDir='';
 let chartIndex=0,chartPositions={},selectedPlayer=null;
 let chartPaths=[],chartTextBoxes=[],chartNote='',drawMode='move',drawUndo=[],drawRedo=[],activeDraw=null;
 let drawWidth=5,drawDash='solid';
-// UAB owns a completely separate Look Library.  These keys intentionally do
-// not match the Mississippi State workspace, even when this template is opened
-// directly without the /uab wrapper that scopes the rest of localStorage.
-const LOOK_LIBRARY_STORAGE_KEY='st_saved_looks_v4_uab_2026';
-const LOOK_ASSIGNMENTS_STORAGE_KEY='st_rep_assignments_v4_uab_2026';
-let savedLooks=(JSON.parse(localStorage.getItem(LOOK_LIBRARY_STORAGE_KEY)||'[]')||[]).map(migrateLookPerspective);
-let repAssignments=JSON.parse(localStorage.getItem(LOOK_ASSIGNMENTS_STORAGE_KEY)||'{}');
+const LOOK_LIBRARIES_STORAGE_KEY='st_look_libraries_by_opponent_v1';
+let lookLibraries=(()=>{try{return JSON.parse(localStorage.getItem(LOOK_LIBRARIES_STORAGE_KEY)||'{}')||{}}catch(e){return {}}})();
+let activeLookOpponent=prepOpponent;
+const legacySavedLooks=(JSON.parse(localStorage.getItem('st_saved_looks_v4')||'[]')||[]).map(migrateLookPerspective);
+const legacyRepAssignments=JSON.parse(localStorage.getItem('st_rep_assignments_v4')||'{}');
+// The original single library belongs to Mississippi State. Migrate it once;
+// never copy it into the newly selected opponent.
+if(!lookLibraries.MSST&&legacySavedLooks.length){
+  lookLibraries.MSST={savedLooks:legacySavedLooks,repAssignments:legacyRepAssignments};
+  localStorage.setItem(LOOK_LIBRARIES_STORAGE_KEY,JSON.stringify(lookLibraries));
+}
+let savedLooks=((lookLibraries[activeLookOpponent]?.savedLooks)||[]).map(migrateLookPerspective);
+let repAssignments={...(lookLibraries[activeLookOpponent]?.repAssignments||{})};
+
+function snapshotActiveLookLibrary(){
+  lookLibraries[activeLookOpponent]={savedLooks,repAssignments};
+  localStorage.setItem(LOOK_LIBRARIES_STORAGE_KEY,JSON.stringify(lookLibraries));
+}
+function loadLookLibraryForOpponent(opponent){
+  activeLookOpponent=opponent||'UAB';
+  const library=lookLibraries[activeLookOpponent]||{};
+  savedLooks=(library.savedLooks||[]).map(migrateLookPerspective);
+  repAssignments={...(library.repAssignments||{})};
+}
+function switchLookLibrary(opponent){
+  snapshotActiveLookLibrary();
+  loadLookLibraryForOpponent(opponent);
+}
 const $=id=>document.getElementById(id),v=(r,k)=>r?.[k]??'',n=x=>{let z=parseFloat(x);return Number.isFinite(z)?z:null},fmt=(x,d=1)=>x==null||Number.isNaN(x)?'—':Number(x).toFixed(d);
 const avg=a=>{let z=a.map(n).filter(x=>x!=null);return z.length?z.reduce((s,x)=>s+x,0)/z.length:null},med=a=>{let z=a.map(n).filter(x=>x!=null).sort((a,b)=>a-b);if(!z.length)return null;let m=Math.floor(z.length/2);return z.length%2?z[m]:(z[m-1]+z[m])/2},uniq=a=>[...new Set(a.filter(x=>x!==''&&x!=null))].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));
 function parseCSV(t){let rs=[],r=[],c='',q=false;for(let i=0;i<t.length;i++){let x=t[i],y=t[i+1];if(x=='"'&&q&&y=='"'){c+='"';i++}else if(x=='"')q=!q;else if(x==','&&!q){r.push(c);c=''}else if((x=='\n'||x=='\r')&&!q){if(x=='\r'&&y=='\n')i++;r.push(c);if(r.some(z=>z!==''))rs.push(r);r=[];c=''}else c+=x}if(c||r.length){r.push(c);rs.push(r)}let h=rs.shift()||[];return rs.map(a=>Object.fromEntries(h.map((x,i)=>[x,a[i]??''])))}
@@ -1627,8 +1881,9 @@ function setup(){
   });
   let te=$('teamF'),
       inferred=inferredHomeTeam(),
-      tc=te.value||teamSettings.teamCode||inferred||'';
-  te.innerHTML='<option value="">All teams</option>'+uniq(rows.flatMap(r=>[v(r,'pff_OFFTEAM'),v(r,'pff_DEFTEAM')])).map(x=>`<option>${x}</option>`).join('');
+      prepRaw=prepConfig().rawTeam||'',
+      tc=prepRaw||te.value||teamSettings.teamCode||inferred||'';
+  te.innerHTML='<option value="">All teams</option>'+uniq(rows.flatMap(r=>[v(r,'pff_OFFTEAM'),v(r,'pff_DEFTEAM')])).map(x=>`<option value="${esc(x)}">${esc(teamDisplayName(x))}</option>`).join('');
   if([...te.options].some(o=>o.value==tc))te.value=tc;
   else te.value='';
   if(!teamSettings.teamCode&&inferred){
@@ -1985,7 +2240,7 @@ const TEAM_NAME_MAP={
   NIU:'Northern Illinois',TOL:'Toledo',BGSU:'Bowling Green','M-OH':'Miami (OH)',MIAOH:'Miami (OH)',OHIO:'Ohio',AKR:'Akron',
   KENT:'Kent State',BUFF:'Buffalo',CMU:'Central Michigan',EMU:'Eastern Michigan',WMU:'Western Michigan',BALL:'Ball State',
   LIB:'Liberty',JAXST:'Jacksonville State',SHSU:'Sam Houston',UTSA:'UTSA',NTX:'North Texas',UNT:'North Texas',
-  RICE:'Rice',TULN:'Tulane',TLSA:'Tulsa',ECU:'East Carolina',NAVY:'Navy',ARMY:'Army',TEM:'Temple',UAB:'UAB',FAU:'FAU',USF:'USF',MEM:'Memphis',CHAR:'Charlotte',
+  RICE:'Rice',TULN:'Tulane',TLSA:'Tulsa',ECU:'East Carolina',NAVY:'Navy',ARMY:'Army',TEM:'Temple',UAB:'UAB',ALBI:'UAB',LASE:'Southeastern Louisiana',FAU:'FAU',USF:'USF',MEM:'Memphis',CHAR:'Charlotte',
   WKU:'Western Kentucky',MTSU:'Middle Tennessee',FIU:'FIU',NMSU:'New Mexico State',UTEP1:'UTEP',KSUU:'Kennesaw State',
   ORU:'Oregon',SALA1:'South Alabama'
 };
@@ -2074,42 +2329,10 @@ function repSummaryMarkup(r){
   return `<div class="repSummary"><div><span><b>Result</b>${esc(s.result)}</span> &nbsp; <span><b>Return</b>${esc(s.returnText)}</span></div><div style="margin-top:4px"><span><b>Tacklers</b>${esc(s.tacklers)}</span></div><div style="margin-top:4px"><span><b>Opponent</b>${esc(String(s.opponent))}</span> &nbsp; <span><b>Quarter</b>${esc(String(s.quarter))}</span> &nbsp; <span><b>Clock</b>${esc(String(s.clock))}</span> &nbsp; <span><b>Yard line</b>${esc(String(s.yardLine))}</span></div><div style="margin-top:4px"><span><b>Score</b>${esc(String(s.score))}</span> &nbsp; <span><b>PFF Play ID</b>${esc(String(s.playId))}</span></div></div>`;
 }
 
-const UAB_2025_TACKLER_PROFILES={
- 'ALBI D00':{number:'0',name:'Devin Hightower',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/20/1O2A9979.jpg',profile:'https://uabsports.com/sports/football/roster/devin-hightower/11252'},
- 'ALBI D01':{number:'1',name:'Sirad Bryant',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/4/1O2A0680.jpg',profile:'https://uabsports.com/sports/football/roster/sirad-bryant/11153'},
- 'ALBI D03':{number:'3',name:'Jaylyn Ferguson',position:'CB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A6339_large.jpg',profile:'https://uabsports.com/sports/football/roster/jaylyn-ferguson/11162'},
- 'ALBI D05':{number:'5',name:'Eddy Toussom',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A6656_large.jpg',profile:'https://uabsports.com/sports/football/roster/eddy-toussom/11209'},
- 'ALBI D06':{number:'6',name:'Calvin Pitcher',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/8/1O2A2239.jpg',profile:'https://uabsports.com/sports/football/roster/calvin-pitcher/11260'},
- 'ALBI D07':{number:'7',name:'Pierre Royster',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/29/1O2A5365_large.jpg',profile:'https://uabsports.com/sports/football/roster/pierre-royster/11262'},
- 'ALBI D10':{number:'10',name:'Jalen Cheek',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/060A8314_large.jpg',profile:'https://uabsports.com/sports/football/roster/jalen-cheek/11247'},
- 'ALBI D12':{number:'12',name:'Tylan McNichols',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/8/1O2A7969_4TETV.jpg',profile:'https://uabsports.com/sports/football/roster/tylan-mcnichols/11189'},
- 'ALBI D17':{number:'17',name:'Roy Williams',position:'CB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/8/1O2A2603.jpg',profile:'https://uabsports.com/sports/football/roster/roy-williams/11216'},
- 'ALBI D20':{number:'20',name:'AJ Brown',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A5786.jpg',profile:'https://uabsports.com/sports/football/roster/aj-brown/11150'},
- 'ALBI D21':{number:'21',name:'Josh Baka',position:'S',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/2/20/Baka_Josh.jpg',profile:'https://uabsports.com/sports/football/roster/josh-baka/11244'},
- 'ALBI D23':{number:'23',name:'Donald Lee',position:'CB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2024/10/14/1O2A8645.jpg',profile:'https://uabsports.com/sports/football/roster/donald-lee/11180'},
- 'ALBI D25':{number:'25',name:'James Smyre',position:'DE',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/10/7/1O2A9851.jpg',profile:'https://uabsports.com/sports/football/roster/james-smyre/11207'},
- 'ALBI S27':{number:'27',name:'Patrick Foley',position:'P',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2024/9/18/1O2A7375.jpg',profile:'https://uabsports.com/sports/football/roster/patrick-foley/11164'},
- 'ALBI D28':{number:'28',name:'Brandon Franklin',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/2/20/Franklin_Brandon.jpg',profile:'https://uabsports.com/sports/football/roster/brandon-franklin/11165'},
- 'ALBI D29':{number:'29',name:"T\'sai McDaniel",position:'CB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/4/1O2A5780_large.jpg',profile:'https://uabsports.com/sports/football/roster/tsai-mcdaniel/11187'},
- 'ALBI D34':{number:'34',name:'Jonathan Allen',position:'DT',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/11/8/1O2A7210.jpg',profile:'https://uabsports.com/sports/football/roster/jonathan-allen/11144'},
- 'ALBI S35':{number:'35',name:'Owen Simpson',position:'PK',profile:'https://uabsports.com/sports/football/roster/owen-simpson/12075'},
- 'ALBI D44':{number:'44',name:'Eli Ennis',position:'LB',image:'https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/uabsports.com/images/2025/9/11/1O2A2053.jpg',profile:'https://uabsports.com/sports/football/roster/eli-ennis/11249'}
-};
-function uab2025TacklerProfile(label){
- const key=String(label||'').trim().toUpperCase();
- if(key==='ALBI 05')return null;
- const h=UAB_2025_TACKLER_PROFILES[key];
- if(!h)return null;
- const current=(rosterData||[]).find(p=>String(p.name||'').trim().toLowerCase()===String(h.name||'').trim().toLowerCase());
- return {...(current||{}),...h,image:h.image||current?.image||'',bio:current?.bio||'',profile:h.profile||current?.profile||''};
-}
-
 function unitTacklerStats(a,unitType,mode='coverage'){
   let team=selectedTeam();
   if(!team)return [];
-  const coverageTeamField=unitType==='PUNT'?'pff_OFFTEAM':'pff_DEFTEAM';
-  const againstTeamField=unitType==='PUNT'?'pff_DEFTEAM':'pff_OFFTEAM';
-  let rs=a.filter(r=>v(r,'pff_SPECIALTEAMSTYPE')===unitType && v(r,mode==='coverage'?coverageTeamField:againstTeamField)===team);
+  let rs=a.filter(r=>v(r,'pff_SPECIALTEAMSTYPE')===unitType && (mode==='coverage'?v(r,'pff_DEFTEAM')===team:v(r,'pff_OFFTEAM')===team));
   let by={};
   function add(label,row,kind){
     if(!label)return;
@@ -2122,23 +2345,16 @@ function unitTacklerStats(a,unitType,mode='coverage'){
   return Object.values(by).map(obj=>{
     let num=playerNumberFromLabel(obj.label),vf=null,p=null;
     if(mode==='coverage'){
-      const rawKey=String(obj.label||'').trim().toUpperCase();
-      if(rawKey==='ALBI 05')return null;
-      const historical=normCode(team)==='ALBI'?uab2025TacklerProfile(obj.label):null;
+      vf=verifiedIdentity(num);
       let bioText=unitType==='PUNT'
         ? `${obj.label} recorded punt-team tackles in the loaded PFF special-teams data.`
         : `${obj.label} recorded kickoff-coverage tackles in the loaded PFF special-teams data.`;
-      if(historical){
-        p={...historical,bio:historical.bio||bioText};
-      }else{
-        vf=verifiedIdentity(num);
-        p=vf.player||rosterByNumber(num)||{name:obj.label,number:num,position:'',height:'',weight:'',class:'',hometown:'',previousSchool:'',image:'',profile:'',bio:bioText};
-      }
+      p=vf.player||rosterByNumber(num)||{name:obj.label,number:num,position:'',height:'',weight:'',class:'',hometown:'',previousSchool:'',image:'',profile:'',bio:bioText};
     }else{
-      p={name:obj.label,number:num,position:'Opponent coverage',height:'',weight:'',class:'',hometown:'',previousSchool:'',image:'',profile:'',bio:`${obj.label} made tackles against your ${unitType==='PUNT'?'punt-return':'kickoff-return'} unit in the loaded PFF special-teams data.`};
+      p={name:obj.label,number:num,position:'Opponent coverage',height:'',weight:'',class:'',hometown:'',previousSchool:'',image:'',profile:'',bio:`${obj.label} made tackles against your kickoff-return unit in the loaded PFF special-teams data.`};
     }
     return {num:num||obj.label,rows:obj.rows,p,verification:vf,solo:obj.solo,assist:obj.assist,total:obj.solo+obj.assist};
-  }).filter(Boolean).filter(x=>mode!=='coverage'||x.verification?.allowed!==false).sort((a,b)=>b.total-a.total||b.solo-a.solo||b.rows.length-a.rows.length)
+  }).filter(x=>mode!=='coverage'||x.verification?.allowed!==false).sort((a,b)=>b.total-a.total||b.solo-a.solo||b.rows.length-a.rows.length)
 }
 function kickoffTacklerStats(a,mode){return unitTacklerStats(a,'KICKOFF',mode)}
 function puntTacklerStats(a){return unitTacklerStats(a,'PUNT','coverage')}
@@ -2205,7 +2421,7 @@ function groups(a){let m={};unitRows(a).forEach(r=>{let s=signature(r,viewType,v
 function familyCard(g,i,total){let dots=g.players.map((p,j)=>playerDot(p,j,viewType,viewSide,g.rows[0],true)).join(''),rr=g.rows.filter(r=>n(v(r,'pff_RETURNYARDS'))!=null);return `<div class="family"><h3>Look ${i+1}</h3><div class="meta">${g.players.length} players • ${g.rows.length} plays • ${(100*g.rows.length/(total||1)).toFixed(1)}%</div><div class="smallField">${depthOverlay(viewType,viewSide)}${dots}</div><div class="metrics"><div class="mini"><b>${g.rows.length}</b><span>Plays</span></div><div class="mini"><b>${fmt(avg(g.rows.map(r=>v(r,'pff_HANGTIME'))),2)}</b><span>Hang</span></div><div class="mini"><b>${fmt(avg(rr.map(r=>v(r,'pff_RETURNYARDS'))),1)}</b><span>Return yds</span></div><div class="mini"><b>${fmt(avg(g.rows.map(r=>v(r,'pff_EXPECTED_POINTS_ADDED'))),3)}</b><span>EPA</span></div></div></div>`}
 function families(a){let gs=groups(a),total=gs.reduce((s,g)=>s+g.rows.length,0),label=phaseLabel(viewType,viewSide);return title(`${label} Structure Families`,'Top recurring 11-player role structures')+unitTabs()+`<div class="familyGrid">${gs.slice(0,8).map((g,i)=>familyCard(g,i,total)).join('')}</div><div class="note">Families are grouped by the full set of 11 PFF role labels.</div>`}
 
-function persistLooks(auto=true){localStorage.setItem(LOOK_LIBRARY_STORAGE_KEY,JSON.stringify(savedLooks));localStorage.setItem(LOOK_ASSIGNMENTS_STORAGE_KEY,JSON.stringify(repAssignments));if(auto)queueAutoSave('UAB Look Library updated')}
+function persistLooks(auto=true){snapshotActiveLookLibrary();if(auto)queueAutoSave(`${prepConfig().label} Look Library updated`)}
 function playKey(r){return String(v(r,'pff_PLAYID')||v(r,'pff_TEAMWORKS_PLAY_ID')||[v(r,'pff_GAMEID'),v(r,'pff_SORTORDER')].join('_'))}
 function chartFilterRows(){let team=$('teamF').value;return rows.filter(r=>(!$('seasonF').value||String(v(r,'pff_GAMESEASON'))==$('seasonF').value)&&(!$('weekF').value||String(v(r,'pff_WEEK'))==$('weekF').value)&&(!team||v(r,'pff_OFFTEAM')==team||v(r,'pff_DEFTEAM')==team))}
 function chartPlays(a){return unitRows(chartFilterRows())}
@@ -2558,8 +2774,15 @@ function bindChartTextBoxes(){
   const pos=e=>{let b=field.getBoundingClientRect();return{x:Math.max(2,Math.min(98,100*(e.clientX-b.left)/b.width)),y:Math.max(2,Math.min(98,100*(e.clientY-b.top)/b.height))}};
   field.addEventListener('pointerdown',e=>{
     let el=e.target.closest?.('[data-text-box-id]');
-    if(el){let box=chartTextBoxes.find(b=>b.id===el.dataset.textBoxId);if(!box)return;let start=pos(e),origin={x:Number(box.x)||50,y:Number(box.y)||20},moved=false;const move=ev=>{let p=pos(ev),dx=p.x-start.x,dy=p.y-start.y;if(Math.hypot(dx,dy)>.7)moved=true;box.x=Math.max(2,Math.min(98,origin.x+dx));box.y=Math.max(2,Math.min(98,origin.y+dy));el.style.left=box.x+'%';el.style.top=box.y+'%'};const up=()=>{window.removeEventListener('pointermove',move);if(!moved){let next=prompt('Edit this field note. Leave blank to delete it:',box.text||'');if(next!==null){next=next.trim();if(next)box.text=next;else chartTextBoxes=chartTextBoxes.filter(b=>b.id!==box.id);render()}}};window.addEventListener('pointermove',move);window.addEventListener('pointerup',up,{once:true});e.stopPropagation();e.preventDefault();return}
-    if(drawMode!=='text')return;let p=pos(e),note=prompt('Text for players:');if(note&&note.trim()){chartTextBoxes.push({id:'T'+Date.now(),text:note.trim(),x:p.x,y:p.y});drawMode='move';render()}e.stopPropagation();e.preventDefault();
+    if(el){
+      let box=chartTextBoxes.find(b=>b.id===el.dataset.textBoxId);if(!box)return;
+      let start=pos(e),origin={x:Number(box.x)||50,y:Number(box.y)||20},moved=false;
+      const move=ev=>{let p=pos(ev),dx=p.x-start.x,dy=p.y-start.y;if(Math.hypot(dx,dy)>.7)moved=true;box.x=Math.max(2,Math.min(98,origin.x+dx));box.y=Math.max(2,Math.min(98,origin.y+dy));el.style.left=box.x+'%';el.style.top=box.y+'%'};
+      const up=()=>{window.removeEventListener('pointermove',move);if(!moved){let next=prompt('Edit this field note. Leave blank to delete it:',box.text||'');if(next!==null){next=next.trim();if(next)box.text=next;else chartTextBoxes=chartTextBoxes.filter(b=>b.id!==box.id);render()}}};
+      window.addEventListener('pointermove',move);window.addEventListener('pointerup',up,{once:true});e.stopPropagation();e.preventDefault();return;
+    }
+    if(drawMode!=='text')return;
+    let p=pos(e),note=prompt('Text for players:');if(note&&note.trim()){chartTextBoxes.push({id:'T'+Date.now(),text:note.trim(),x:p.x,y:p.y});drawMode='move';render()}e.stopPropagation();e.preventDefault();
   },true);
 }
 
@@ -3599,6 +3822,44 @@ function selectedProfile(a,cat,list){
   let meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');
   return `<div class="pageBreak">${reportBanner(p.name+' Player Report')}<div class="card playerHero"><div class="playerPhoto">${playerPhoto(p)}<div class="playerNo ${rosterNumberClass({name:p.name||'',number:p.number||x.num})}">#${p.number||x.num}</div></div><div class="playerBioCard"><div class="eyebrow">Player profile</div><h2>${p.name}${rosterStateBadge({name:p.name||'',number:p.number||x.num})}</h2><div class="playerMeta">${meta}${p.previousSchool?'<br>Previous: '+p.previousSchool:''}</div><div class="bioSnippet bioCollapsed">${p.bio||'Biography not yet loaded.'}</div>${p.bio?'<button class="bioToggle" type="button" onclick="toggleBio(this)">View Bio</button>':''}${p.profile?`<a class="profileLink" href="${p.profile}" target="_blank" rel="noopener">Official biography ↗</a>`:''}<div class="metrics" style="margin-top:14px">${metrics}</div></div></div><div class="splitGrid" style="margin-top:14px"><div class="card"><div class="eyebrow">By hash</div>${splits}</div><div class="card"><div class="eyebrow">Results</div>${bars(countBy(rs,'pff_KICKRESULT'))||'<div class="empty">No results.</div>'}</div><div class="card"><div class="eyebrow">Direction</div>${bars(countBy(rs,'pff_KICKDIRACTUAL'))||'<div class="empty">No direction data.</div>'}</div></div>${extraCard}<div class="card scroll" style="margin-top:14px"><div class="eyebrow">Underlying plays</div>${table(rs)}</div></div>`
 }
+
+function prepDepthPlayerNamesForCategory(cat){
+  const st=prepDepthChart?.specialTeams||{};
+  const keys=cat==='kickReturners'?['KR']:
+    cat==='puntReturners'?['PR']:
+    cat==='kickers'?['PK','KO']:
+    cat==='punters'?['PT']:
+    cat==='koCoverageTacklers'?['KO']:['PT'];
+  const seen=new Set(),out=[];
+  keys.forEach(k=>(st[k]||[]).forEach(([num,name])=>{
+    const key=nameKey(name);
+    if(seen.has(key))return;
+    seen.add(key);
+    const p=prepRosterByName(name)||prepRosterByNumber(num)||{name,number:num,position:'',class:'',height:'',weight:'',hometown:'',previousSchool:'',profile:'',image:'',bio:''};
+    out.push({...enrichPrepPlayer(p),depthRole:k});
+  }));
+  return out;
+}
+function prepPlayerCard(p){
+  const stats=[[p.depthRole||'ST','DEPTH'],[p.position||'—','POS'],[p.class||'—','CLASS']];
+  return `<div class="playerSelect" data-playernum="${esc(p.number||'')}">${playerCard(p,stats,p.name,null)}</div>`;
+}
+function prepSelectedProfile(list){
+  if(!list.length)return '<div class="empty">No players are listed in this UAB special-teams depth category.</div>';
+  if(!selectedSpecialist||!list.some(x=>String(x.number)===String(selectedSpecialist)))selectedSpecialist=String(list[0].number||'');
+  const p=list.find(x=>String(x.number)===String(selectedSpecialist))||list[0];
+  const meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');
+  return `<div class="pageBreak"><div class="card playerHero"><div class="playerPhoto">${playerPhoto(p)}<div class="playerNo">#${esc(p.number||'—')}</div></div><div class="playerBioCard"><div class="eyebrow">${esc(prepConfig().label)} player profile</div><h2>${esc(p.name)}</h2><div class="playerMeta">${esc(meta||'Roster profile loaded')}${p.previousSchool?'<br>Previous: '+esc(p.previousSchool):''}</div><div class="bioSnippet">${esc(p.bio||'The official roster currently has no additional biography information for this player.')}</div>${p.profile?`<a class="profileLink" href="${esc(p.profile)}" target="_blank" rel="noopener">Open full official bio ↗</a>`:''}<div class="metrics" style="margin-top:14px"><div class="mini"><b>${esc(p.depthRole||'ST')}</b><span>Depth role</span></div><div class="mini"><b>#${esc(p.number||'—')}</b><span>Jersey</span></div><div class="mini"><b>${esc(p.class||'—')}</b><span>Class</span></div></div></div></div></div>`;
+}
+function prepPlayerIntelligencePage(){
+  const list=prepDepthPlayerNamesForCategory(playerCategory);
+  const labels={kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers / Kickoff',punters:'Punters',koCoverageTacklers:'Kickoff Unit Depth',puntTeamTacklers:'Punt Unit Depth'};
+  return title('Player Intelligence',`${prepConfig().label} roster and special-teams depth-chart intelligence. PFF performance metrics remain on Mississippi State until UAB PFF files are uploaded.`)+
+    `<div class="prepOpponentAlert"><b>${esc(prepConfig().label)} prep is active.</b> Player cards below come from the UAB roster/depth chart, not Mississippi State. Historical PFF metrics are intentionally hidden until UAB PFF data is uploaded.</div>`+
+    categoryTabs()+
+    `<div class="card"><div class="eyebrow">${labels[playerCategory]}</div><div class="playerCardGrid" style="margin-top:10px">${list.length?list.map(prepPlayerCard).join(''):'<div class="empty">No UAB players are listed in this category.</div>'}</div></div>`+
+    `<div style="margin-top:14px">${prepSelectedProfile(list)}</div>`;
+}
 function playerPage(a){
   let lists={
     kickReturners:returnerFullStats(a,'KICKOFF'),
@@ -3610,12 +3871,12 @@ function playerPage(a){
   },list=lists[playerCategory]||[];
   let labels={kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers',punters:'Punters',koCoverageTacklers:'Kickoff Team Tacklers',puntTeamTacklers:'Punt Team Tacklers'};
   let rosterNote=rosterData.length
-    ?`Official roster loaded: <b>${rosterData.length}</b> players.`
+    ?`${prepConfig().label} roster loaded: <b>${rosterData.length}</b> players.`
     :`No roster.json loaded yet. Player statistics still come directly from PFF; roster sync adds names, photos and bios.`;
   return reportBanner('Player Intelligence')+
     title('Player Intelligence','Historical PFF stats stay attached to the actual historical player. If that player is on the 2026 roster under a different jersey number, the app keeps the 2025 stats with him and identifies the number change. Players not on the 2026 roster remain visible for Week 1 prep instead of disappearing. Kickoff Team Tacklers shows your team&#39;s kickoff-coverage tacklers. Punt Team Tacklers shows your team&#39;s punt-coverage tacklers.')+
     `<div class="card"><div class="context">Active team: <b>${selectedTeam()||inferredHomeTeam()||'None selected'}</b>. ${rosterNote}</div></div>`+
-    rosterManager()+
+    (prepOpponent==='MSST'?rosterManager():`<div class="card"><div class="context"><b>${esc(prepConfig().label)} opponent package active.</b> Roster, depth chart and PFF files are loaded from <b>${esc(prepConfig().folder||'opponent package')}</b>.</div></div>`)+
     categoryTabs()+
     `<div class="card"><div class="eyebrow">${labels[playerCategory]}</div><div class="playerCardGrid" style="margin-top:10px">${list.length?list.map(x=>cardForCategory(x,playerCategory)).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>'}</div></div><div style="margin-top:14px">${selectedProfile(a,playerCategory,list)}</div>`
 }
@@ -3719,62 +3980,71 @@ function hashIntelligencePage(a){
 
 
 
-function week1DepthChartPage(){
+function prepDepthEntries(){
+  const st=prepDepthChart?.specialTeams||{};
+  const order=['PT','PK','KO','LS','H','PR','KR'];
+  return order.map(pos=>[pos,Array.isArray(st[pos])?st[pos]:[]]);
+}
+function prepRosterByName(name){const nk=nameKey(name);return prepRoster().find(x=>nameKey(x.name)===nk)||null}
+function prepRosterByNumber(num){num=normNum(num);return prepRoster().find(x=>normNum(x.number)===num)||null}
+function prepPlayerClass(name,num,fallback=''){
+  const p=prepRosterByName(name)||(num?prepRosterByNumber(num):null);
+  return p?.class||fallback||'';
+}
+function depthPlayerCell(entry){
+  if(!entry||!entry[1])return '';
+  const [num,name,fallbackClass='']=entry,klass=prepPlayerClass(name,num,fallbackClass);
+  return `<button class="depthPlayerBtn" type="button" data-depth-player="${esc(name)}" data-depth-num="${esc(num||'')}">${num?`<span class="depthNo">#${esc(num)}</span>`:''}${esc(name)}${klass?` <span style="color:#7f96a4;font-weight:600">(${esc(klass)})</span>`:''}</button>`;
+}
+function depthQuickChips(){
+  const st=prepDepthChart?.specialTeams||{};
+  const first=pos=>Array.isArray(st[pos])&&st[pos][0]?st[pos][0]:null;
+  const picks=[['PR1',first('PR')],['KR1',first('KR')],['PK',first('PK')],['PT',first('PT')]];
+  return picks.filter(x=>x[1]).map(([lab,e])=>`<span><b>${lab}</b> ${e[0]?'#'+esc(e[0])+' ':''}${esc(e[1])}</span>`).join('');
+}
+function opponentDepthChartPage(){
+  const c=prepConfig();
+  if(!prepDepthChart){
+    return `<div class="depthChartPage"><div class="depthChartHero"><div class="depthChartHeroTop"><div><div class="eyebrow">${esc(c.short)} PREP</div><h2>Special Teams Depth Chart</h2><div class="depthChartMeta">${esc(prepLoadStatus||'Loading opponent prep…')}</div></div></div></div><div class="depthLoading">${esc(prepLoadStatus||'Loading roster and depth chart from Supabase…')}</div></div>`;
+  }
+  const rows=prepDepthEntries();
+  const maxDepth=Math.max(3,...rows.map(([,a])=>a.length));
+  const heads=Array.from({length:maxDepth},(_,i)=>`<th>${i+1}${i===0?'ST':i===1?'ND':i===2?'RD':'TH'}</th>`).join('');
+  const body=rows.map(([pos,arr])=>`<tr><td>${pos}</td>${Array.from({length:maxDepth},(_,i)=>`<td>${depthPlayerCell(arr[i])}</td>`).join('')}</tr>`).join('');
+  const source=prepDepthChart.source||'';
+  const updated=prepDepthChart.updated?String(prepDepthChart.updated).slice(0,10):'';
   return `<div class="depthChartPage">
     <div class="depthChartHero">
       <div class="depthChartHeroTop">
-        <div>
-          <div class="eyebrow">WEEK 1 • MISSISSIPPI STATE</div>
-          <h2>Special Teams Depth Chart</h2>
-          <div class="depthChartMeta">September 5, 2026 • 6:30 PM CT • Davis Wade Stadium • ESPNU</div>
-        </div>
-        <div class="depthChartActions">
-          <a class="depthChartPdf" href="ULM_Week_1_Mississippi_State_Depth_Chart_v2.pdf" target="_blank" rel="noopener">OPEN FULL MATCHUP PDF ↗</a>
-        </div>
+        <div><div class="eyebrow">${esc(c.week)} • ${esc(c.short)}</div><h2>Special Teams Depth Chart</h2><div class="depthChartMeta">${esc(c.game)} • ${esc(prepLoadStatus)}</div></div>
       </div>
     </div>
+    ${prepOpponent!=='MSST'?`<div class="prepOpponentAlert"><b>${esc(c.label)} package is active.</b> Roster, depth chart and PFF analytics are loading from <b>${esc(c.folder||'opponent package')}</b>. Other opponents remain available from PREP OPPONENT.</div>`:''}
     <div class="card">
-      <div class="depthChartQuick">
-        <span><b>PR1</b> #3 Anthony Evans III</span>
-        <span><b>KR1</b> #2 Marquis Johnson</span>
-        <span><b>PK / KO</b> #80 Kyle Ferrie</span>
-        <span><b>PT / H</b> #88 Ethan Pulliam</span>
-      </div>
-      <div class="depthChartTableWrap">
-        <table class="depthChartTable">
-          <thead><tr><th>POS</th><th>1ST</th><th>2ND</th><th>3RD</th></tr></thead>
-          <tbody><tr><td>PT</td><td><button class="depthPlayerBtn" type="button" data-depth-player="Ethan Pulliam" data-depth-num="88"><span class="depthNo">#88</span>Ethan Pulliam <span style="color:#7f96a4;font-weight:600">(RS JR)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="Oisin Flynn" data-depth-num="">Oisin Flynn <span style="color:#7f96a4;font-weight:600">(FR)</span></button></td><td></td></tr><tr><td>PK</td><td><button class="depthPlayerBtn" type="button" data-depth-player="Kyle Ferrie" data-depth-num="80"><span class="depthNo">#80</span>Kyle Ferrie <span style="color:#7f96a4;font-weight:600">(SR)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="William Wilkinson" data-depth-num="47"><span class="depthNo">#47</span>William Wilkinson <span style="color:#7f96a4;font-weight:600">(RS SO)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="Hayden Chambers" data-depth-num="48"><span class="depthNo">#48</span>Hayden Chambers <span style="color:#7f96a4;font-weight:600">(FR)</span></button></td></tr><tr><td>KO</td><td><button class="depthPlayerBtn" type="button" data-depth-player="Kyle Ferrie" data-depth-num="80"><span class="depthNo">#80</span>Kyle Ferrie <span style="color:#7f96a4;font-weight:600">(SR)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="William Wilkinson" data-depth-num="47"><span class="depthNo">#47</span>William Wilkinson <span style="color:#7f96a4;font-weight:600">(RS SO)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="Hayden Chambers" data-depth-num="48"><span class="depthNo">#48</span>Hayden Chambers <span style="color:#7f96a4;font-weight:600">(FR)</span></button></td></tr><tr><td>LS</td><td><button class="depthPlayerBtn" type="button" data-depth-player="Kallen Cosper" data-depth-num="39"><span class="depthNo">#39</span>Kallen Cosper <span style="color:#7f96a4;font-weight:600">(RS FR)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="Kyle Rushing" data-depth-num="46"><span class="depthNo">#46</span>Kyle Rushing <span style="color:#7f96a4;font-weight:600">(FR)</span></button></td><td></td></tr><tr><td>H</td><td><button class="depthPlayerBtn" type="button" data-depth-player="Ethan Pulliam" data-depth-num="88"><span class="depthNo">#88</span>Ethan Pulliam <span style="color:#7f96a4;font-weight:600">(RS JR)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="Oisin Flynn" data-depth-num="">Oisin Flynn <span style="color:#7f96a4;font-weight:600">(FR)</span></button></td><td></td></tr><tr><td>PR</td><td><button class="depthPlayerBtn" type="button" data-depth-player="Anthony Evans III" data-depth-num="3"><span class="depthNo">#3</span>Anthony Evans III <span style="color:#7f96a4;font-weight:600">(SR/TR)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="Kolin Wilson" data-depth-num="6"><span class="depthNo">#6</span>Kolin Wilson <span style="color:#7f96a4;font-weight:600">(RS FR)</span></button></td><td></td></tr><tr><td>KR</td><td><button class="depthPlayerBtn" type="button" data-depth-player="Marquis Johnson" data-depth-num="2"><span class="depthNo">#2</span>Marquis Johnson <span style="color:#7f96a4;font-weight:600">(SR/TR)</span></button></td><td><button class="depthPlayerBtn" type="button" data-depth-player="Anthony Evans III" data-depth-num="3"><span class="depthNo">#3</span>Anthony Evans III <span style="color:#7f96a4;font-weight:600">(SR/TR)</span></button></td><td></td></tr></tbody>
-        </table>
-      </div>
-      <div class="depthChartNote">Click any player name to open his in-app roster profile and official bio. Source: Ourlads.com • Updated 06/17/2026.</div>
+      <div class="depthChartQuick">${depthQuickChips()}</div>
+      <div class="depthChartTableWrap"><table class="depthChartTable"><thead><tr><th>POS</th>${heads}</tr></thead><tbody>${body}</tbody></table></div>
+      <div class="depthChartNote">Click any player name to open the loaded ${esc(c.label)} roster profile.${source?` Depth source: ${esc(source)}`:''}${updated?` • Updated ${esc(updated)}`:''}</div>
     </div>
   </div>`;
 }
-
 function depthRosterPlayer(name,num){
   const nk=nameKey(name);
-  let p=(rosterData||[]).find(x=>nameKey(x.name)===nk)||null;
-  if(!p && num)p=rosterByNumber(num)||null;
+  let p=prepRoster().find(x=>nameKey(x.name)===nk)||null;
+  if(!p&&num)p=prepRosterByNumber(num);
   return p;
 }
 function depthBioMarkup(name,num){
-  const p=depthRosterPlayer(name,num);
+  const c=prepConfig(),p=enrichPrepPlayer(depthRosterPlayer(name,num));
   if(!p){
-    return `<div class="depthBioHead"><div><div class="eyebrow">MISSISSIPPI STATE</div><h2>${esc(name)}</h2></div><button class="depthBioClose" type="button">CLOSE</button></div><div class="depthBioBody"><div class="depthBioMissing">This player is listed on the Week 1 special-teams depth chart, but no matching roster profile is currently loaded. Reload the live roster and try again.</div></div>`;
+    return `<div class="depthBioHead"><div><div class="eyebrow">${esc(c.short)}</div><h2>${esc(name)}</h2></div><button class="depthBioClose" type="button">CLOSE</button></div><div class="depthBioBody"><div class="depthBioMissing">This player is on the ${esc(c.label)} special-teams depth chart, but a matching roster profile was not found in the loaded roster.json.</div></div>`;
   }
   const initials=String(p.name||name).split(/\s+/).filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase();
   const photo=p.image?`<img src="${esc(p.image)}" alt="${esc(p.name||name)}">`:`<div class="depthBioInitials">${esc(initials)}</div>`;
   const meta=[p.position,p.number?`#${p.number}`:'',p.class,p.height,p.weight?`${p.weight} lbs`:'',p.hometown].filter(Boolean).map(esc).join(' • ');
-  return `<div class="depthBioHead"><div><div class="eyebrow">MISSISSIPPI STATE PLAYER PROFILE</div><h2>${esc(p.name||name)}</h2></div><button class="depthBioClose" type="button">CLOSE</button></div>
-    <div class="depthBioBody">
-      <div class="depthBioPhoto">${photo}</div>
-      <div>
-        <div class="depthBioMeta">${meta||'Roster profile loaded'}${p.previousSchool?`<br>Previous: ${esc(p.previousSchool)}`:''}</div>
-        <div class="depthBioText">${esc(p.bio||'Official roster biography has not been loaded yet.')}</div>
-        <div class="depthBioActions">${p.profile?`<a href="${esc(p.profile)}" target="_blank" rel="noopener">OPEN FULL OFFICIAL BIO ↗</a>`:''}</div>
-      </div>
-    </div>`;
+  return `<div class="depthBioHead"><div><div class="eyebrow">${esc(c.short)} PLAYER PROFILE</div><h2>${esc(p.name||name)}</h2></div><button class="depthBioClose" type="button">CLOSE</button></div>
+    <div class="depthBioBody"><div class="depthBioPhoto">${photo}</div><div><div class="depthBioMeta">${meta||'Roster profile loaded'}${p.previousSchool?`<br>Previous: ${esc(p.previousSchool)}`:''}</div><div class="depthBioText">${esc(p.bio||'Roster details loaded. Full biography text has not been cached in roster.json yet.')}</div><div class="depthBioActions">${p.profile?`<a href="${esc(p.profile)}" target="_blank" rel="noopener">OPEN FULL OFFICIAL BIO ↗</a>`:''}</div></div></div>`;
 }
+
 function openDepthBio(name,num){
   let ov=document.getElementById('depthBioOverlay');
   if(!ov){
@@ -3803,7 +4073,7 @@ function render(){
   if(!app)return;
   app.innerHTML=
     page==='dashboard'?dashboard(a):
-    page==='depthchart'?week1DepthChartPage():
+    page==='depthchart'?opponentDepthChartPage():
     page==='hash'?hashIntelligencePage(a):
     page==='spray'?spray(a):
     page==='viewer'?viewer(a):
@@ -3934,7 +4204,27 @@ if(unitSelect){
   unitSelect.disabled=pageUsesIndependentUnit();
   unitSelect.title=pageUsesIndependentUnit()?'This page shows its own unit-specific data. Use the page controls instead.':'Filter Play Log by special-teams unit';
 }
-document.querySelectorAll('[data-depth-player]').forEach(b=>b.onclick=()=>openDepthBio(b.dataset.depthPlayer,b.dataset.depthNum));let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadRosterFromSupabase();await loadHistoricalRoster('2025');await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let epd=$('refreshPlayerDetails');if(epd)epd.onclick=()=>enrichRosterBatches().catch(e=>alert('Player detail refresh failed: '+e.message));let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=openPrintCenter;document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filteredWithoutUnit());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filteredWithoutUnit());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filteredWithoutUnit());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};resetChartDrawing();render()};if(cn)cn.onclick=()=>{let x=chartPlays(filteredWithoutUnit());chartIndex=(chartIndex+1)%x.length;chartPositions={};resetChartDrawing();render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filteredWithoutUnit());chartPositions=defaultPositions(r);resetChartDrawing();render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filteredWithoutUnit()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);chartPaths=[];let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look){look=migrateLookPerspective(look);chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));chartPaths=clonePaths(look.paths||[])}drawUndo=[];drawRedo=[];render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);mirrorPaths();render()};if($('saveNewLook')){$('saveNewLook').disabled=(location.protocol==='file:');$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filteredWithoutUnit()));}if($('assignBest')){$('assignBest').disabled=(location.protocol==='file:');$('assignBest').onclick=()=>assignBest(activeChartPlay(filteredWithoutUnit()));}if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('[data-practice-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.practiceId);if(l)openPracticeCards([l])});document.querySelectorAll('[data-fullpage-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.fullpageId);if(l)openFullPageLook(l)});if($('printCurrentLook'))$('printCurrentLook').onclick=printCurrentChartLook;document.querySelectorAll('.approveNear').forEach(b=>b.onclick=()=>approveNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.rejectNear').forEach(b=>b.onclick=()=>rejectNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.approveAllNear').forEach(b=>b.onclick=()=>approveAllNear(b.dataset.lookId));if($('selectAllLooks'))$('selectAllLooks').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=true);if($('clearLookSelection'))$('clearLookSelection').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=false);if($('printSelectedLooks'))$('printSelectedLooks').onclick=()=>{let ids=[...document.querySelectorAll('[data-look-select]:checked')].map(x=>x.dataset.lookSelect),looks=ids.map(id=>savedLooks.find(l=>l.id===id)).filter(Boolean);openPracticeCards(looks)};document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=async()=>{if(!ensureWritableAction('delete this shared look'))return;let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks(false);await saveProjectCloud({silent:true});render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;loadLookIntoChart(l);page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});
+let prepSel=$('prepOpponentF');
+if(prepSel){
+  prepSel.value=prepOpponent;
+  prepSel.onchange=async()=>{
+    const nextOpponent=prepSel.value||'SELA';
+    switchLookLibrary(nextOpponent);
+    prepOpponent=nextOpponent;
+    localStorage.setItem('stPrepOpponentV1',prepOpponent);
+    prepRosterData=[];prepDepthChart=null;prepLoadStatus='';
+    selectedSpecialist='';playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();
+    updatePrepStatus();
+    await loadPrepOpponentData({render:false});
+    await loadHistoricalRoster('2025');
+    await loadPffFromSupabase({notice:true,render:false});
+    setup();
+    await saveProjectCloud({silent:true});
+    render();
+  };
+}
+updatePrepStatus();
+document.querySelectorAll('[data-depth-player]').forEach(b=>b.onclick=()=>openDepthBio(b.dataset.depthPlayer,b.dataset.depthNum));let sc=$('saveCloudBtn');if(sc)sc.onclick=saveProjectCloud;let cs=$('copyShareBtn');if(cs)cs.onclick=copyShareLink;let rl=$('reloadCloudBtn');if(rl)rl.onclick=async()=>{await loadProjectCloud();await loadRosterFromSupabase();prepCache={};await loadPrepOpponentData({render:false});await loadHistoricalRoster('2025');await loadPffFromSupabase({notice:true,render:false});setup();render()};let tsb=$('teamSettingsBtn');if(tsb)tsb.onclick=()=>{page='settings';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='settings'));render()};let saveTS=$('saveTeamSettingsBtn');if(saveTS)saveTS.onclick=()=>{let next={...teamSettings,teamName:$('teamNameSetting').value.trim(),nickname:$('nicknameSetting').value.trim(),teamCode:$('teamCodeSetting').value.trim(),rosterUrl:$('rosterUrlSetting').value.trim()};let changed=[teamSettings.teamName,teamSettings.nickname,teamSettings.teamCode,teamSettings.rosterUrl].join('|')!==[next.teamName,next.nickname,next.teamCode,next.rosterUrl].join('|');teamSettings=next;if(changed&&rosterData.length){rosterData=[];saveRoster();selectedSpecialist='';rosterStatus='Team changed. The prior roster was cleared to prevent players from the previous program carrying over.'}else{rosterStatus='Team and roster source saved.'}saveTeamSettings();setup();if($('teamF')&&[...$('teamF').options].some(o=>o.value===teamSettings.teamCode))$('teamF').value=teamSettings.teamCode;if($('weekF'))$('weekF').value='';if($('unitF'))$('unitF').value='';render()};let refreshURL=$('refreshRosterUrlBtn');if(refreshURL)refreshURL.onclick=()=>{teamSettings.rosterUrl=$('rosterUrlSetting').value.trim();saveTeamSettings();refreshRosterFromUrl()};let epd=$('refreshPlayerDetails');if(epd)epd.onclick=()=>enrichRosterBatches().catch(e=>alert('Player detail refresh failed: '+e.message));let clearTR=$('clearTeamRoster');if(clearTR)clearTR.onclick=()=>{teamSettings={...DEFAULT_TEAM_SETTINGS};rosterData=[];selectedSpecialist='';saveRoster();rosterStatus='Team and roster cleared. Enter the next program and roster URL.';saveTeamSettings();render()};let exportRS=$('exportRosterSettings');if(exportRS)exportRS.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-current.json';a.click();URL.revokeObjectURL(u)};let sri=$('settingsRosterInput');if(sri)sri.onchange=e=>loadRosterFile(e.target.files[0]);let rb=$('reportModeBtn');if(rb)rb.onclick=()=>{document.body.classList.toggle('report-mode');rb.textContent=document.body.classList.contains('report-mode')?'Exit Report Mode':'Report Mode'};let pb=$('printBtn');if(pb)pb.onclick=openPrintCenter;document.querySelectorAll('[data-pcat]').forEach(b=>b.onclick=()=>{playerCategory=b.dataset.pcat;selectedSpecialist='';render()});document.querySelectorAll('.playerSelect').forEach(c=>c.onclick=()=>{selectedSpecialist=c.dataset.playernum;render()});let ri=$('rosterInput');if(ri)ri.onchange=e=>loadRosterFile(e.target.files[0]);let er=$('exportRoster');if(er)er.onclick=()=>{let blob=new Blob([JSON.stringify(rosterData,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(teamSettings.nickname||teamSettings.teamCode||'team').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-roster-player-cards.json';a.click();URL.revokeObjectURL(u)};let rr=$('resetRoster');if(rr)rr.onclick=()=>{rosterData=[];saveRoster();rosterStatus='Roster cleared.';saveTeamSettings();render()};['dashKoHash','dashPuntHash','dashFgHash'].forEach(id=>{let e=$(id);if(e)e.onchange=()=>{if(id==='dashKoHash')dashKoHash=e.value;if(id==='dashPuntHash')dashPuntHash=e.value;if(id==='dashFgHash')dashFgHash=e.value;render()}});document.querySelectorAll('.unitBtn').forEach(b=>b.onclick=()=>{viewType=b.dataset.t;viewSide=b.dataset.s;playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});let p=$('prevPlay'),nxt=$('nextPlay');if(p)p.onclick=()=>{let x=unitRows(filteredWithoutUnit());playIndex=(playIndex-1+x.length)%x.length;render()};if(nxt)nxt.onclick=()=>{let x=unitRows(filteredWithoutUnit());playIndex=(playIndex+1)%x.length;render()};let cp=$('chartPrev'),cn=$('chartNext');if(cp)cp.onclick=()=>{let x=chartPlays(filteredWithoutUnit());chartIndex=(chartIndex-1+x.length)%x.length;chartPositions={};resetChartDrawing();render()};if(cn)cn.onclick=()=>{let x=chartPlays(filteredWithoutUnit());chartIndex=(chartIndex+1)%x.length;chartPositions={};resetChartDrawing();render()};if($('resetChart'))$('resetChart').onclick=()=>{let r=activeChartPlay(filteredWithoutUnit());chartPositions=defaultPositions(r);resetChartDrawing();render()};if($('copyPrev'))$('copyPrev').onclick=()=>{let x=chartPlays(filteredWithoutUnit()),pr=x[(chartIndex-1+x.length)%x.length];chartPositions=defaultPositions(pr);chartPaths=[];let pk=playKey(pr),as=repAssignments[pk],look=as&&savedLooks.find(l=>l.id===as.lookId);if(look){look=migrateLookPerspective(look);chartPositions=Object.fromEntries(look.positions.map(p=>[p.role+'|'+p.name,{...p}]));chartPaths=clonePaths(look.paths||[])}drawUndo=[];drawRedo=[];render()};if($('mirrorChart'))$('mirrorChart').onclick=()=>{Object.values(chartPositions).forEach(p=>p.x=100-p.x);mirrorPaths();render()};if($('saveNewLook')){$('saveNewLook').disabled=(location.protocol==='file:');$('saveNewLook').onclick=()=>saveNewLook(activeChartPlay(filteredWithoutUnit()));}if($('assignBest')){$('assignBest').disabled=(location.protocol==='file:');$('assignBest').onclick=()=>assignBest(activeChartPlay(filteredWithoutUnit()));}if($('exportLooks'))$('exportLooks').onclick=exportLookData;document.querySelectorAll('.showReps').forEach(b=>b.onclick=()=>$('reps_'+b.dataset.id).parentElement.classList.toggle('open'));document.querySelectorAll('[data-practice-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.practiceId);if(l)openPracticeCards([l])});document.querySelectorAll('[data-fullpage-id]').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.fullpageId);if(l)openFullPageLook(l)});if($('printCurrentLook'))$('printCurrentLook').onclick=printCurrentChartLook;document.querySelectorAll('.approveNear').forEach(b=>b.onclick=()=>approveNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.rejectNear').forEach(b=>b.onclick=()=>rejectNearCandidate(b.dataset.lookId,decodeURIComponent(b.dataset.playKey)));document.querySelectorAll('.approveAllNear').forEach(b=>b.onclick=()=>approveAllNear(b.dataset.lookId));if($('selectAllLooks'))$('selectAllLooks').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=true);if($('clearLookSelection'))$('clearLookSelection').onclick=()=>document.querySelectorAll('[data-look-select]').forEach(x=>x.checked=false);if($('printSelectedLooks'))$('printSelectedLooks').onclick=()=>{let ids=[...document.querySelectorAll('[data-look-select]:checked')].map(x=>x.dataset.lookSelect),looks=ids.map(id=>savedLooks.find(l=>l.id===id)).filter(Boolean);openPracticeCards(looks)};document.querySelectorAll('.deleteLook').forEach(b=>b.onclick=async()=>{if(!ensureWritableAction('delete this shared look'))return;let id=b.dataset.id;savedLooks=savedLooks.filter(l=>l.id!==id);Object.keys(repAssignments).forEach(k=>{if(repAssignments[k].lookId===id)delete repAssignments[k]});persistLooks(false);await saveProjectCloud({silent:true});render()});document.querySelectorAll('.loadLook').forEach(b=>b.onclick=()=>{let l=savedLooks.find(x=>x.id===b.dataset.id);if(!l)return;viewType=l.unit;viewSide=l.side;loadLookIntoChart(l);page='chart';document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page==='chart'));render()});document.querySelectorAll('.sprayHit').forEach(el=>el.onclick=()=>{spraySelectedKey=decodeURIComponent(el.dataset.sprayKey);render()});
 ['hashKoHash','hashKoKickDir','hashKorHash','hashKorKickDir','hashKorReturnDir'].forEach(id=>{
   let e=$(id);if(!e)return;
   e.onchange=()=>{
@@ -3958,15 +4248,12 @@ bindChartDrag();bindChartDrawing();bindChartTextBoxes()}
 
 
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});
-document.querySelectorAll('.toolbar select').forEach(e=>e.onchange=()=>{playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});$('resetF').onclick=()=>{['seasonF','weekF','teamF','unitF'].forEach(id=>$(id).value='');dashKoHash='';dashPuntHash='';dashFgHash='';playIndex=0;render()};
+document.querySelectorAll('.toolbar select:not(#prepOpponentF)').forEach(e=>e.onchange=()=>{playIndex=0;chartIndex=0;chartPositions={};resetChartDrawing();render()});$('resetF').onclick=()=>{['seasonF','weekF','teamF','unitF'].forEach(id=>$(id).value='');dashKoHash='';dashPuntHash='';dashFgHash='';playIndex=0;render()};
 (async()=>{
   applyAccessMode();
   await loadProjectCloud();
-  if(CLOUD.needsLookLibraryReset){
-    CLOUD.needsLookLibraryReset=false;
-    await saveProjectCloud({silent:true});
-  }
   await loadRosterFromSupabase();
+  await loadPrepOpponentData({render:false});
   await loadHistoricalRoster('2025');
   await loadPffFromSupabase({render:false});
   setup();
