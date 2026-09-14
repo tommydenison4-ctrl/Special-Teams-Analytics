@@ -57,6 +57,17 @@
     'desmen jefferson':'https://lionsports.net/sports/football/roster/desmen-jefferson/11896'
   };
 
+  // Official 2026 cumulative punting is a fallback only when the loaded PFF
+  // package has no usable PUNT rows for the current published punter.
+  // Source snapshot: lionsports.net 2026 cumulative stats through South Alabama (2 games).
+  const SELA_PUNTER_OFFICIAL={
+    'jack hunter':{
+      punts:5,yards:206,gross:41.2,long:70,touchbacks:0,fairCatches:1,inside20:2,fiftyPlus:1,blocked:0,
+      opponentReturns:1,opponentReturnYards:5,net:40.2,
+      source:'Official Southeastern Louisiana 2026 cumulative stats through South Alabama (2 games)'
+    }
+  };
+
   function isSela(){
     const values=[];
     try{if(typeof prepOpponent!=='undefined')values.push(prepOpponent);}catch(_){}
@@ -264,7 +275,7 @@
       const p=enrichSelaPlayer(rawPlayer||{});
       const name=String(p&&p.name||'').trim();
       if(!name)return originalPlayerPhoto(p);
-      const primary='/api/player-image?name='+encodeURIComponent(name);
+      const primary='/api/player-image?name='+encodeURIComponent(name)+'&hq=20260914c';
       const fallback=imageFallbackForPlayer(p);
       return '<img src="'+h(primary)+'" data-fallback="'+h(fallback)+'" alt="'+h(name)+'" loading="lazy" onerror="if(this.dataset.fallback&&!this.dataset.triedFallback){this.dataset.triedFallback=\'1\';this.src=this.dataset.fallback}else{this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'block\'}"><div class="playerInitials" style="display:none">'+h(localInitials(name))+'</div>';
     };
@@ -311,11 +322,42 @@
           return !xp||!xp.name||sameName(xp.name,p.name);
         });
       }
-      if(match){
+      if(match&&Array.isArray(match.rows)&&match.rows.length){
         return Object.assign({},match,{num:String(p.number||match.num||''),p:Object.assign({},p),_currentDepth:true});
+      }
+      if(isSela()&&cat==='punters'){
+        const official=SELA_PUNTER_OFFICIAL[localNameKey(p.name)];
+        if(official){
+          return {num:String(p.number||''),p:Object.assign({},p),rows:[],verification:{status:'verified',allowed:true},_currentDepth:true,_officialPunter:official};
+        }
       }
       return {num:String(p.number||''),p:Object.assign({},p),rows:[],verification:{status:'verified',allowed:true},_currentDepth:true,_depthOnly:true};
     });
+  }
+
+  function officialPunterCard(x){
+    const p=enrichSelaPlayer(x.p||{}),st=x._officialPunter||{};
+    const stats=[['Punts',st.punts??'—'],['Gross',st.gross!=null?Number(st.gross).toFixed(1):'—'],['Long',st.long??'—']];
+    return '<div class="playerSelect" data-playernum="'+h(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'Current opponent punter',x.verification||null)+'</div>';
+  }
+
+  function officialPunterProfile(x){
+    const p=enrichSelaPlayer(x.p||{}),st=x._officialPunter||{};
+    const fcPct=st.punts?((100*Number(st.fairCatches||0)/st.punts).toFixed(1)+'%'):'—';
+    const tbPct=st.punts?((100*Number(st.touchbacks||0)/st.punts).toFixed(1)+'%'):'—';
+    const i20Pct=st.punts?((100*Number(st.inside20||0)/st.punts).toFixed(1)+'%'):'—';
+    const metrics=[
+      ['Punts',st.punts??'—'],['Gross',st.gross!=null?Number(st.gross).toFixed(1):'—'],['Net*',st.net!=null?Number(st.net).toFixed(1):'—'],['Long',st.long??'—'],
+      ['Hang','—'],['Operation','—'],['Fair catch %',fcPct],['Touchback %',tbPct],['Inside 20 %',i20Pct],['50+',st.fiftyPlus??'—'],['Blocked',st.blocked??'—'],['Return yds allowed',st.opponentReturnYards??'—']
+    ];
+    const meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');
+    const bio=p.bio?'<div style="margin-top:10px;color:#c6d4dc;font-size:12px;line-height:1.45">'+h(p.bio)+'</div>':'';
+    const profile=p.profile?'<a class="profileLink" href="'+h(p.profile)+'" target="_blank" rel="noopener">Official biography ↗</a>':'';
+    return '<div class="card"><div style="display:grid;grid-template-columns:minmax(170px,220px) 1fr;gap:18px;align-items:start">'+
+      '<div class="playerPhoto" style="height:260px">'+playerPhoto(p)+'<div class="playerNo">#'+h(p.number||x.num||'—')+'</div></div>'+
+      '<div><div class="eyebrow">PLAYER PROFILE</div><h2 style="margin:4px 0 5px">'+h(p.name||'Jack Hunter')+'</h2><div class="playerMeta">'+h(meta)+'</div>'+bio+profile+
+      '<div class="metrics" style="margin-top:14px">'+metrics.map(function(z){return '<div class="mini"><b>'+h(z[1])+'</b><span>'+h(z[0])+'</span></div>';}).join('')+'</div>'+
+      '<div class="note" style="margin-top:12px">'+h(st.source||'Official Southeastern Louisiana cumulative stats')+'. PFF punt rows are not usable in the current package, so official current totals are shown. *Net is derived from 206 punt yards, 5 opponent return yards and 0 touchbacks. Hang and operation remain blank rather than being estimated.</div></div></div></div>';
   }
 
   function depthOnlyCard(x,cat){
@@ -344,14 +386,19 @@
       try{opponent=(typeof prepConfig==='function'&&prepConfig().label)||opponent;}catch(_){}
       if(isSela())opponent='Southeastern Louisiana';
       const rosterCount=(typeof rosterData!=='undefined'&&rosterData&&rosterData.length)||0;
-      const cards=list.length?list.map(function(x){return x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No current depth-chart players are listed in this category.</div>';
+      const cards=list.length?list.map(function(x){return x._officialPunter?officialPunterCard(x):x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No current depth-chart players are listed in this category.</div>';
 
       let detail='<div class="empty">No current depth-chart player is selected.</div>';
       if(list.length){
         if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
-        try{detail=selectedProfile(a,playerCategory,list);}catch(_){
-          const current=list.map(function(x){return enrichSelaPlayer(x.p);});
-          detail=prepSelectedProfile(current);
+        const currentItem=list.find(function(x){return String(x.num)===String(selectedSpecialist);})||list[0];
+        if(currentItem&&currentItem._officialPunter){
+          detail=officialPunterProfile(currentItem);
+        }else{
+          try{detail=selectedProfile(a,playerCategory,list);}catch(_){
+            const current=list.map(function(x){return enrichSelaPlayer(x.p);});
+            detail=prepSelectedProfile(current);
+          }
         }
       }
 

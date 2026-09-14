@@ -178,6 +178,28 @@ function scoreImage(url='') {
   return score;
 }
 
+function upgradeImageUrl(raw) {
+  try {
+    const u = new URL(String(raw || ''));
+    const widthKey = u.searchParams.has('width') ? 'width' : (u.searchParams.has('w') ? 'w' : null);
+    const heightKey = u.searchParams.has('height') ? 'height' : (u.searchParams.has('h') ? 'h' : null);
+    const width = widthKey ? Number(u.searchParams.get(widthKey)) : 0;
+    const height = heightKey ? Number(u.searchParams.get(heightKey)) : 0;
+    if (widthKey && width > 0 && heightKey && height > 0) {
+      const scale = Math.max(1, 1200 / Math.max(width, height));
+      u.searchParams.set(widthKey, String(Math.round(width * scale)));
+      u.searchParams.set(heightKey, String(Math.round(height * scale)));
+    } else if (widthKey && width > 0 && width < 1200) {
+      u.searchParams.set(widthKey, '1200');
+    } else if (heightKey && height > 0 && height < 1200) {
+      u.searchParams.set(heightKey, '1200');
+    }
+    return u.href;
+  } catch {
+    return raw;
+  }
+}
+
 function officialImageAttrs(tag, pageUrl) {
   const out=[];
   const add=raw=>{
@@ -276,7 +298,7 @@ async function imageFromSelaName(name) {
     }
   }
   if(!image)throw new Error('No official Southeastern Louisiana roster headshot found');
-  const response=await fetchImage(image);
+  const response=await fetchImage(upgradeImageUrl(image));
   if(!response.ok)throw new Error(`Official roster image returned ${response.status}`);
   return response;
 }
@@ -289,7 +311,7 @@ async function imageFromProfile(profile) {
   let lastError;
   for (const candidate of candidates.slice(0, 8)) {
     try {
-      const response = await fetchImage(candidate);
+      const response = await fetchImage(upgradeImageUrl(candidate));
       if (!response.ok) continue;
       const type = String(response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
       if (!type.startsWith('image/')) continue;
