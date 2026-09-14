@@ -7,6 +7,22 @@
       .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
+  // Southeastern's public Storage depth-chart URL can return HTTP 400 in the browser.
+  // Route the two JSON prep files through the existing /api/sela function instead.
+  if(typeof prepPublicUrl==='function'){
+    const originalPrepPublicUrl=prepPublicUrl;
+    prepPublicUrl=function(path){
+      const value=String(path||'');
+      try{
+        if(typeof prepOpponent!=='undefined'&&prepOpponent==='SELA'){
+          if(/(^|\/)roster\.json$/i.test(value))return '/api/sela?route=roster&v='+Date.now();
+          if(/(^|\/)depth-chart\.json$/i.test(value))return '/api/sela?route=depth&v='+Date.now();
+        }
+      }catch(_){}
+      return originalPrepPublicUrl(path);
+    };
+  }
+
   if(typeof playerPhoto==='function'){
     const originalPlayerPhoto=playerPhoto;
     playerPhoto=function(p){
@@ -107,4 +123,20 @@
       return originalPlayerPage(a);
     }
   };
+
+  // The base app may have already attempted the public depth-chart URL before this
+  // patch loaded. Force one clean Week 3 reload so depth chart + roster are available
+  // immediately and the current-player Player Intelligence renderer takes over.
+  try{
+    if(typeof prepOpponent!=='undefined'&&prepOpponent==='SELA'&&typeof loadPrepOpponentData==='function'){
+      if(typeof prepCache!=='undefined'&&prepCache)delete prepCache.SELA;
+      setTimeout(function(){
+        try{
+          Promise.resolve(loadPrepOpponentData({render:true})).catch(function(error){
+            console.error('SELA prep API reload failed:',error);
+          });
+        }catch(error){console.error('SELA prep API reload failed:',error);}
+      },50);
+    }
+  }catch(error){console.error('SELA prep reload setup failed:',error);}
 })();
