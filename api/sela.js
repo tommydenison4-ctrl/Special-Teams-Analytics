@@ -5,9 +5,45 @@ const HANDLERS = {
   enrich: () => import('../lib/sela-enrich.js')
 };
 
-const SELA_BUCKET = 'Special Teams';
-const SELA_FIXED_OBJECTS = {
-  depth: 'Opponents/SoutheasternLA/depth-chart.json'
+// Published Week 3 special-teams depth from Southeastern Louisiana's 2026 game notes.
+// Keep this in the existing SELA serverless function so the Hobby deployment does not
+// need another API function and the app is not dependent on a Storage depth-chart file.
+const SELA_PUBLISHED_DEPTH = {
+  team: 'Southeastern Louisiana',
+  season: 2026,
+  week: 3,
+  source: '2026 Southeastern Louisiana Football Game Notes',
+  updated: '2026-09-13',
+  specialTeams: {
+    PT: [
+      ['46', 'Jack Hunter', 'Sr.'],
+      ['28', 'Aiden Parker', 'So.']
+    ],
+    PK: [
+      ['29', 'Drew Talley', 'So.'],
+      ['27', 'Owen Wiley', 'Jr.']
+    ],
+    KO: [
+      ['27', 'Owen Wiley', 'Jr.'],
+      ['29', 'Drew Talley', 'So.']
+    ],
+    LS: [
+      ['41', 'Shawn Puissegur', 'So.'],
+      ['13', 'Conner Nelson', 'So.']
+    ],
+    H: [
+      ['46', 'Jack Hunter', 'Sr.']
+    ],
+    KR: [
+      ['2', 'Kyree Paul', 'So.'],
+      ['4', 'Tristan Goodly', 'Sr.']
+    ],
+    PR: [
+      ['9', 'Dkhai Joseph', 'Jr.'],
+      ['82', 'Desmen Jefferson', 'Fr.'],
+      ['19', 'Blake Smith', 'Fr.']
+    ]
+  }
 };
 
 function sendJson(res, status, body) {
@@ -17,47 +53,12 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-async function serveFixedObject(route, res) {
-  const objectPath = SELA_FIXED_OBJECTS[route];
-  if (!objectPath) return false;
-
-  const base = process.env.SUPABASE_URL?.replace(/\/$/, '');
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!base || !key) {
-    sendJson(res, 500, { ok: false, error: 'Missing Supabase server credentials.' });
-    return true;
-  }
-
-  const bucket = encodeURIComponent(SELA_BUCKET);
-  const path = objectPath.split('/').map(encodeURIComponent).join('/');
-  const url = `${base}/storage/v1/object/${bucket}/${path}`;
-
-  try {
-    const response = await fetch(url, {
-      headers: { apikey: key, Authorization: `Bearer ${key}` },
-      cache: 'no-store'
-    });
-    if (!response.ok) {
-      const detail = await response.text();
-      sendJson(res, response.status, {
-        ok: false,
-        error: `Southeastern Louisiana ${route} read failed (${response.status})${detail ? ': ' + detail : ''}`
-      });
-      return true;
-    }
-    const data = await response.json();
-    sendJson(res, 200, data);
-    return true;
-  } catch (error) {
-    sendJson(res, 500, { ok: false, error: error?.message || `Southeastern Louisiana ${route} read failed.` });
-    return true;
-  }
-}
-
 export default async function handler(req, res) {
   const route = String(req.query?.route || '').toLowerCase();
 
-  if (await serveFixedObject(route, res)) return;
+  if (route === 'depth') {
+    return sendJson(res, 200, SELA_PUBLISHED_DEPTH);
+  }
 
   // Fixed Week 3 roster bootstrap. The caller cannot choose a URL, team identity,
   // or Supabase destination; only the official Southeastern Louisiana pages are used.
