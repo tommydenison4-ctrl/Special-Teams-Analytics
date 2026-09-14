@@ -1,0 +1,56 @@
+name: Fix Southeastern punter stats
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-sela-punter-stats.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Attach SELA PFF stats to current depth-chart jersey numbers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('player-intel-live-fix.js')
+          text=p.read_text()
+          pattern=r"if\(!match&&p\.number\)\{\s*match=pff\.find\(function\(x\)\{\s*if\(String\(x&&x\.num\|\|''\)!==String\(p\.number\|\|''\)\)return false;\s*const xp=x&&x\.p;\s*return !xp\|\|!xp\.name\|\|sameName\(xp\.name,p\.name\);\s*\}\);\s*\}"
+          replacement="""if(!match&&p.number){
+        match=pff.find(function(x){
+          if(String(x&&x.num||'')!==String(p.number||''))return false;
+          // For Southeastern Louisiana, the published depth chart is the authority
+          // on current identity. Once team + jersey match, attach the PFF rows even
+          // if the older roster snapshot has a different or stale name for that number.
+          if(isSela())return true;
+          const xp=x&&x.p;
+          return !xp||!xp.name||sameName(xp.name,p.name);
+        });
+      }"""
+          text2,n=re.subn(pattern,replacement,text,count=1,flags=re.S)
+          if n!=1:
+              raise SystemExit(f'Expected one PFF-number match block, found {n}')
+          p.write_text(text2)
+
+          # Cache-bust the live patch in the two documents that actually load it.
+          for path in ['index.html','southeastern/week3-template.html']:
+              q=Path(path)
+              s=q.read_text()
+              s=re.sub(r'/player-intel-live-fix\.js\?v=[^"\']+', '/player-intel-live-fix.js?v=20260914-1837', s)
+              q.write_text(s)
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add player-intel-live-fix.js index.html southeastern/week3-template.html
+          git commit -m "Attach Southeastern PFF stats by current jersey number"
+          git push origin main
