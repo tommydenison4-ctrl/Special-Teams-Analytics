@@ -15,49 +15,35 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Restore PFF stats to current Southeastern depth players
+      - name: Patch current depth players with PFF stats
         run: |
-          python - <<'PY'
+          python3 <<'PY'
           from pathlib import Path
-          import re
 
-          p=Path('player-intel-live-fix.js')
-          text=p.read_text()
-          old="""      if(!match&&p.number){
-        match=pff.find(function(x){
-          if(String(x&&x.num||'')!==String(p.number||''))return false;
-          const xp=x&&x.p;
-          return !xp||!xp.name||sameName(xp.name,p.name);
-        });
-      }
-"""
-          new="""      if(!match&&p.number){
-        match=pff.find(function(x){
-          if(String(x&&x.num||'')!==String(p.number||''))return false;
-          // For Southeastern, the published 2026 depth chart is the identity authority.
-          // Once the LASE PFF row and current depth player share a jersey number,
-          // attach those PFF rows even if the older roster snapshot has a stale name.
-          if(isSela())return true;
-          const xp=x&&x.p;
-          return !xp||!xp.name||sameName(xp.name,p.name);
-        });
-      }
-"""
-          if old not in text:
-              raise SystemExit('Could not find the SELA PFF matching block')
-          p.write_text(text.replace(old,new,1))
+          p = Path('player-intel-live-fix.js')
+          s = p.read_text()
+          needle = "          const xp=x&&x.p;\n          return !xp||!xp.name||sameName(xp.name,p.name);"
+          replacement = "          if(isSela())return true;\n          const xp=x&&x.p;\n          return !xp||!xp.name||sameName(xp.name,p.name);"
+          if 'if(isSela())return true;' not in s:
+              if needle not in s:
+                  raise SystemExit('PFF jersey-number match block not found')
+              s = s.replace(needle, replacement, 1)
+          p.write_text(s)
 
-          # Force browsers to load this repaired version immediately.
-          for path in ['index.html','southeastern/week3-template.html']:
-              q=Path(path)
-              s=q.read_text()
-              s=re.sub(r'/player-intel-live-fix\.js\?v=[^"\']+', '/player-intel-live-fix.js?v=20260914-1842', s)
-              q.write_text(s)
+          for file_name in ['index.html', 'southeastern/week3-template.html']:
+              q = Path(file_name)
+              t = q.read_text()
+              t = t.replace('/player-intel-live-fix.js?v=20260914-1829', '/player-intel-live-fix.js?v=20260914-1848')
+              q.write_text(t)
           PY
       - name: Commit repaired stat matching
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add player-intel-live-fix.js index.html southeastern/week3-template.html
-          git commit -m "Restore Southeastern punter stats to current depth players"
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Restore Southeastern PFF stats to current depth players"
           git push origin main
