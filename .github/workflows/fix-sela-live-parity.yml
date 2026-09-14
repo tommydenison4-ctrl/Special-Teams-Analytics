@@ -1,4 +1,4 @@
-name: Fix Southeastern live parity
+name: Fix Southeastern punter stats and photos
 
 on:
   push:
@@ -15,35 +15,179 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Patch current depth players with PFF stats
+
+      - name: Patch Jack Hunter current stats and high-resolution portraits
         run: |
           python3 <<'PY'
           from pathlib import Path
+          import re
 
+          # ---------------- Player Intelligence: PFF first, official current stats fallback ----------------
           p = Path('player-intel-live-fix.js')
           s = p.read_text()
-          needle = "          const xp=x&&x.p;\n          return !xp||!xp.name||sameName(xp.name,p.name);"
-          replacement = "          if(isSela())return true;\n          const xp=x&&x.p;\n          return !xp||!xp.name||sameName(xp.name,p.name);"
-          if 'if(isSela())return true;' not in s:
-              if needle not in s:
-                  raise SystemExit('PFF jersey-number match block not found')
-              s = s.replace(needle, replacement, 1)
+
+          if 'const SELA_PUNTER_OFFICIAL=' not in s:
+              marker = "  function isSela(){"
+              block = r'''  // Official 2026 cumulative punting is a fallback only when the loaded PFF
+  // package has no usable PUNT rows for the current published punter.
+  // Source snapshot: lionsports.net 2026 cumulative stats through South Alabama (2 games).
+  const SELA_PUNTER_OFFICIAL={
+    'jack hunter':{
+      punts:5,yards:206,gross:41.2,long:70,touchbacks:0,fairCatches:1,inside20:2,fiftyPlus:1,blocked:0,
+      opponentReturns:1,opponentReturnYards:5,net:40.2,
+      source:'Official Southeastern Louisiana 2026 cumulative stats through South Alabama (2 games)'
+    }
+  };
+
+'''
+              if marker not in s:
+                  raise SystemExit('Could not find isSela insertion point')
+              s = s.replace(marker, block + marker, 1)
+
+          old_tail = r'''      if(match){
+        return Object.assign({},match,{num:String(p.number||match.num||''),p:Object.assign({},p),_currentDepth:true});
+      }
+      return {num:String(p.number||''),p:Object.assign({},p),rows:[],verification:{status:'verified',allowed:true},_currentDepth:true,_depthOnly:true};
+'''
+          new_tail = r'''      if(match&&Array.isArray(match.rows)&&match.rows.length){
+        return Object.assign({},match,{num:String(p.number||match.num||''),p:Object.assign({},p),_currentDepth:true});
+      }
+      if(isSela()&&cat==='punters'){
+        const official=SELA_PUNTER_OFFICIAL[localNameKey(p.name)];
+        if(official){
+          return {num:String(p.number||''),p:Object.assign({},p),rows:[],verification:{status:'verified',allowed:true},_currentDepth:true,_officialPunter:official};
+        }
+      }
+      return {num:String(p.number||''),p:Object.assign({},p),rows:[],verification:{status:'verified',allowed:true},_currentDepth:true,_depthOnly:true};
+'''
+          if old_tail in s:
+              s = s.replace(old_tail, new_tail, 1)
+          elif '_officialPunter:official' not in s:
+              raise SystemExit('Could not find combinedCurrentPlayers fallback block')
+
+          if 'function officialPunterCard(' not in s:
+              marker = "  function depthOnlyCard(x,cat){"
+              block = r'''  function officialPunterCard(x){
+    const p=enrichSelaPlayer(x.p||{}),st=x._officialPunter||{};
+    const stats=[['Punts',st.punts??'—'],['Gross',st.gross!=null?Number(st.gross).toFixed(1):'—'],['Long',st.long??'—']];
+    return '<div class="playerSelect" data-playernum="'+h(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'Current opponent punter',x.verification||null)+'</div>';
+  }
+
+  function officialPunterProfile(x){
+    const p=enrichSelaPlayer(x.p||{}),st=x._officialPunter||{};
+    const fcPct=st.punts?((100*Number(st.fairCatches||0)/st.punts).toFixed(1)+'%'):'—';
+    const tbPct=st.punts?((100*Number(st.touchbacks||0)/st.punts).toFixed(1)+'%'):'—';
+    const i20Pct=st.punts?((100*Number(st.inside20||0)/st.punts).toFixed(1)+'%'):'—';
+    const metrics=[
+      ['Punts',st.punts??'—'],['Gross',st.gross!=null?Number(st.gross).toFixed(1):'—'],['Net*',st.net!=null?Number(st.net).toFixed(1):'—'],['Long',st.long??'—'],
+      ['Hang','—'],['Operation','—'],['Fair catch %',fcPct],['Touchback %',tbPct],['Inside 20 %',i20Pct],['50+',st.fiftyPlus??'—'],['Blocked',st.blocked??'—'],['Return yds allowed',st.opponentReturnYards??'—']
+    ];
+    const meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');
+    const bio=p.bio?'<div style="margin-top:10px;color:#c6d4dc;font-size:12px;line-height:1.45">'+h(p.bio)+'</div>':'';
+    const profile=p.profile?'<a class="profileLink" href="'+h(p.profile)+'" target="_blank" rel="noopener">Official biography ↗</a>':'';
+    return '<div class="card"><div style="display:grid;grid-template-columns:minmax(170px,220px) 1fr;gap:18px;align-items:start">'+
+      '<div class="playerPhoto" style="height:260px">'+playerPhoto(p)+'<div class="playerNo">#'+h(p.number||x.num||'—')+'</div></div>'+
+      '<div><div class="eyebrow">PLAYER PROFILE</div><h2 style="margin:4px 0 5px">'+h(p.name||'Jack Hunter')+'</h2><div class="playerMeta">'+h(meta)+'</div>'+bio+profile+
+      '<div class="metrics" style="margin-top:14px">'+metrics.map(function(z){return '<div class="mini"><b>'+h(z[1])+'</b><span>'+h(z[0])+'</span></div>';}).join('')+'</div>'+
+      '<div class="note" style="margin-top:12px">'+h(st.source||'Official Southeastern Louisiana cumulative stats')+'. PFF punt rows are not usable in the current package, so official current totals are shown. *Net is derived from 206 punt yards, 5 opponent return yards and 0 touchbacks. Hang and operation remain blank rather than being estimated.</div></div></div></div>';
+  }
+
+'''
+              if marker not in s:
+                  raise SystemExit('Could not find depthOnlyCard insertion point')
+              s = s.replace(marker, block + marker, 1)
+
+          old_cards = "const cards=list.length?list.map(function(x){return x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join('')"
+          new_cards = "const cards=list.length?list.map(function(x){return x._officialPunter?officialPunterCard(x):x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join('')"
+          if old_cards in s:
+              s = s.replace(old_cards, new_cards, 1)
+          elif '_officialPunter?officialPunterCard' not in s:
+              raise SystemExit('Could not find player-card mapping')
+
+          old_detail = r'''      if(list.length){
+        if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
+        try{detail=selectedProfile(a,playerCategory,list);}catch(_){
+          const current=list.map(function(x){return enrichSelaPlayer(x.p);});
+          detail=prepSelectedProfile(current);
+        }
+      }
+'''
+          new_detail = r'''      if(list.length){
+        if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
+        const currentItem=list.find(function(x){return String(x.num)===String(selectedSpecialist);})||list[0];
+        if(currentItem&&currentItem._officialPunter){
+          detail=officialPunterProfile(currentItem);
+        }else{
+          try{detail=selectedProfile(a,playerCategory,list);}catch(_){
+            const current=list.map(function(x){return enrichSelaPlayer(x.p);});
+            detail=prepSelectedProfile(current);
+          }
+        }
+      }
+'''
+          if old_detail in s:
+              s = s.replace(old_detail, new_detail, 1)
+          elif 'officialPunterProfile(currentItem)' not in s:
+              raise SystemExit('Could not find selected-profile block')
+
+          # Force a fresh high-resolution proxy response instead of the cached thumbnail.
+          s = s.replace("const primary='/api/player-image?name='+encodeURIComponent(name);", "const primary='/api/player-image?name='+encodeURIComponent(name)+'&hq=20260914c';")
           p.write_text(s)
 
-          for file_name in ['index.html', 'southeastern/week3-template.html']:
-              q = Path(file_name)
-              t = q.read_text()
-              t = t.replace('/player-intel-live-fix.js?v=20260914-1829', '/player-intel-live-fix.js?v=20260914-1848')
+          # ---------------- Image proxy: upgrade Sidearm/Lions thumbnail URLs ----------------
+          p = Path('api/player-image.js')
+          s = p.read_text()
+          if 'function upgradeImageUrl(' not in s:
+              marker = 'function officialImageAttrs(tag, pageUrl) {'
+              block = r'''function upgradeImageUrl(raw) {
+  try {
+    const u = new URL(String(raw || ''));
+    const widthKey = u.searchParams.has('width') ? 'width' : (u.searchParams.has('w') ? 'w' : null);
+    const heightKey = u.searchParams.has('height') ? 'height' : (u.searchParams.has('h') ? 'h' : null);
+    const width = widthKey ? Number(u.searchParams.get(widthKey)) : 0;
+    const height = heightKey ? Number(u.searchParams.get(heightKey)) : 0;
+    if (widthKey && width > 0 && heightKey && height > 0) {
+      const scale = Math.max(1, 1200 / Math.max(width, height));
+      u.searchParams.set(widthKey, String(Math.round(width * scale)));
+      u.searchParams.set(heightKey, String(Math.round(height * scale)));
+    } else if (widthKey && width > 0 && width < 1200) {
+      u.searchParams.set(widthKey, '1200');
+    } else if (heightKey && height > 0 && height < 1200) {
+      u.searchParams.set(heightKey, '1200');
+    }
+    return u.href;
+  } catch {
+    return raw;
+  }
+}
+
+'''
+              if marker not in s:
+                  raise SystemExit('Could not find image attribute helper')
+              s = s.replace(marker, block + marker, 1)
+
+          s = s.replace('const response=await fetchImage(image);', 'const response=await fetchImage(upgradeImageUrl(image));')
+          s = s.replace('const response = await fetchImage(candidate);', 'const response = await fetchImage(upgradeImageUrl(candidate));')
+          p.write_text(s)
+
+          # ---------------- Bust static script cache in every live Week 3 source ----------------
+          for file_name in ['index.html','southeastern/week3-template.html','southeastern/index.html','week1/index.html']:
+              q=Path(file_name)
+              if not q.exists():
+                  continue
+              t=q.read_text()
+              t=re.sub(r'/player-intel-live-fix\.js\?v=[^"\']+', '/player-intel-live-fix.js?v=20260914-1905', t)
               q.write_text(t)
           PY
-      - name: Commit repaired stat matching
+
+      - name: Commit punter and photo repairs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add player-intel-live-fix.js index.html southeastern/week3-template.html
+          git add player-intel-live-fix.js api/player-image.js index.html southeastern/week3-template.html southeastern/index.html week1/index.html
           if git diff --cached --quiet; then
             echo "No changes needed"
             exit 0
           fi
-          git commit -m "Restore Southeastern PFF stats to current depth players"
+          git commit -m "Fix Southeastern punter stats and sharpen player photos"
           git push origin main
