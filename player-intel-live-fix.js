@@ -11,12 +11,16 @@
     return String(value||'').toLowerCase().replace(/[“”"'’.,()]/g,'').replace(/\s+/g,' ').trim();
   }
 
+  function opponentKey(value){
+    return String(value==null?'':value).toLowerCase().replace(/[^a-z0-9]/g,'');
+  }
+
   const SELA_DEPTH={
     team:'Southeastern Louisiana',
     season:2026,
     week:3,
     source:'2026 Southeastern Louisiana Football Game Notes',
-    updated:'2026-09-13',
+    updated:'2026-08-31',
     specialTeams:{
       PT:[['46','Jack Hunter','Sr.'],['28','Aiden Parker','So.']],
       PK:[['29','Drew Talley','So.'],['27','Owen Wiley','Jr.']],
@@ -27,6 +31,17 @@
       PR:[['9','Dkhai Joseph','Jr.'],['82','Desmen Jefferson','Fr.'],['19','Blake Smith','Fr.']]
     }
   };
+
+  // Exact special-teams two-deep used by the Command Center Southeastern Louisiana tab.
+  const SELA_DEPTH_ROWS=[
+    ['PK',[['29','Drew Talley','So.'],['27','Owen Wiley','Jr.']]],
+    ['KO',[['27','Owen Wiley','Jr.'],['29','Drew Talley','So.']]],
+    ['P',[['46','Jack Hunter','Sr.'],['28','Aiden Parker','So.']]],
+    ['LS',[['41','Shawn Puissegur','So.'],['13','Conner Nelson','So.']]],
+    ['HOLD',[['46','Jack Hunter','Sr.']]],
+    ['KR',[['2','Kyree Paul','So.'],['4','Tristan Goodly','Sr.']]],
+    ['PR',[['9','Dkhai Joseph','Jr.'],['82','Desmen Jefferson','Fr.'],['19','Blake Smith','Fr.']]]
+  ];
 
   const SELA_PROFILES={
     'kyree paul':'https://lionsports.net/sports/football/roster/kyree-paul/11721',
@@ -43,21 +58,85 @@
   };
 
   function isSela(){
-    try{return typeof prepOpponent!=='undefined'&&prepOpponent==='SELA';}
-    catch(_){return false;}
+    const values=[];
+    try{if(typeof prepOpponent!=='undefined')values.push(prepOpponent);}catch(_){}
+    try{
+      if(typeof prepConfig==='function'){
+        const cfg=prepConfig()||{};
+        values.push(cfg.key,cfg.code,cfg.teamCode,cfg.label,cfg.name,cfg.teamName,cfg.opponent);
+      }
+    }catch(_){}
+    try{
+      const ws=window.__ULM_SPECIAL_TEAMS_WORKSPACE__||{};
+      values.push(ws.opponent,ws.rawTeamCode,ws.sourcePackage);
+    }catch(_){}
+    try{
+      values.push(localStorage.getItem('stPrepOpponentV1'));
+      values.push(sessionStorage.getItem('stPrepOpponentV1'));
+    }catch(_){}
+    return values.some(function(value){
+      const key=opponentKey(value);
+      return key==='sela'||key==='lase'||key==='southeastern'||key==='southeasternla'||key.indexOf('southeasternlouisiana')>=0||key.indexOf('southeasternla')>=0;
+    });
   }
 
   function enrichSelaPlayer(p){
     if(!p||!isSela())return p;
     const profile=SELA_PROFILES[localNameKey(p.name)];
-    return profile&&!p.profile?Object.assign({},p,{profile}):p;
+    return profile&&!p.profile?Object.assign({},p,{profile:profile}):p;
+  }
+
+  function selaRolesForCategory(cat){
+    if(cat==='kickReturners')return ['KR'];
+    if(cat==='puntReturners')return ['PR'];
+    if(cat==='kickers')return ['PK','KO'];
+    if(cat==='punters')return ['PT'];
+    if(cat==='depthChart')return ['PT','PK','KO','LS','H','KR','PR'];
+    return [];
+  }
+
+  function selaDepthPlayersForCategory(cat){
+    const roles=selaRolesForCategory(cat);
+    if(!roles.length)return [];
+    const st=SELA_DEPTH.specialTeams||{};
+    let roster=[];
+    try{roster=(typeof prepRosterData!=='undefined'&&Array.isArray(prepRosterData))?prepRosterData:[];}catch(_){}
+    const seen={};
+    const out=[];
+    roles.forEach(function(role){
+      (Array.isArray(st[role])?st[role]:[]).forEach(function(entry){
+        const num=String(entry&&entry[0]!=null?entry[0]:'');
+        const name=String(entry&&entry[1]!=null?entry[1]:'');
+        const klass=String(entry&&entry[2]!=null?entry[2]:'');
+        if(!name)return;
+        const key=localNameKey(name)||('num:'+num);
+        if(seen[key]){
+          if(seen[key]._depthRoles.indexOf(role)<0)seen[key]._depthRoles.push(role);
+          seen[key].depthRole=seen[key]._depthRoles.join(' / ');
+          return;
+        }
+        let base=roster.find(function(r){return r&&localNameKey(r.name)===localNameKey(name);});
+        if(!base&&num)base=roster.find(function(r){return r&&String(r.number||'')===num&&(!r.name||localNameKey(r.name)===localNameKey(name));});
+        const player=enrichSelaPlayer(Object.assign({},base||{}, {
+          name:(base&&base.name)||name,
+          number:(base&&base.number)||num,
+          class:(base&&base.class)||klass,
+          _depthRoles:[role],
+          depthRole:role,
+          currentRoster:true
+        }));
+        seen[key]=player;
+        out.push(player);
+      });
+    });
+    return out;
   }
 
   function applySelaDepth(){
     if(!isSela())return false;
     try{
       prepDepthChart=SELA_DEPTH;
-      if(typeof prepLoadStatus!=='undefined')prepLoadStatus='Southeastern Louisiana published 2026 special-teams depth loaded';
+      if(typeof prepLoadStatus!=='undefined')prepLoadStatus='Southeastern Louisiana 2026 special-teams depth loaded';
       if(typeof prepCache!=='undefined'&&prepCache){
         const roster=(typeof prepRosterData!=='undefined'&&Array.isArray(prepRosterData))?prepRosterData:[];
         prepCache.SELA={roster:roster,depth:SELA_DEPTH};
@@ -70,13 +149,13 @@
     }
   }
 
-  // Never depend on the Week 3 Storage depth-chart object. The published chart is
-  // embedded above; only the roster needs to be read from the server.
+  // The root app can store Southeastern Louisiana under several different keys.
+  // Once any of those keys are active, bypass the old opponent loader and install
+  // the same depth chart used by Command Center.
   if(typeof loadPrepOpponentData==='function'){
     const originalLoadPrepOpponentData=loadPrepOpponentData;
     loadPrepOpponentData=async function(options={}){
       if(!isSela())return originalLoadPrepOpponentData(options);
-      try{localStorage.setItem('stPrepOpponentV1','SELA');}catch(_){}
       applySelaDepth();
       try{
         const response=await fetch('/api/sela?route=roster&v='+Date.now(),{cache:'no-store'});
@@ -107,41 +186,75 @@
     };
   }
 
-  // Ensure any view that uses prepDepthChart sees the published chart, even if an
-  // earlier in-flight Storage request failed after this patch loaded.
+  function selaDepthChartPage(){
+    const heads=['1ST','2ND','3RD','ADDITIONAL'];
+    const rows=SELA_DEPTH_ROWS.map(function(row){
+      const pos=row[0],players=row[1]||[];
+      const cells=heads.map(function(_,i){
+        const p=players[i];
+        if(!p)return '<td style="padding:12px;border-top:1px solid #29404b;color:#6f8793">—</td>';
+        return '<td style="padding:12px;border-top:1px solid #29404b"><b style="color:#f6c74f">#'+h(p[0])+'</b> '+h(p[1])+(p[2]?' <span style="color:#8298a5">('+h(p[2])+')</span>':'')+'</td>';
+      }).join('');
+      return '<tr><td style="padding:12px;border-top:1px solid #29404b;font-weight:900;color:#fff">'+h(pos)+'</td>'+cells+'</tr>';
+    }).join('');
+    const banner=(typeof reportBanner==='function')?reportBanner('Opponent ST Depth Chart'):'';
+    const heading=(typeof title==='function')?title('Opponent ST Depth Chart','Southeastern Louisiana • 2026 Week 3 • Command Center depth chart'):('<h2>Opponent ST Depth Chart</h2>');
+    return banner+heading+
+      '<div class="card" style="overflow:hidden"><div class="eyebrow">SOUTHEASTERN LOUISIANA SPECIAL TEAMS</div>'+
+      '<div style="margin-top:8px;color:#9bb0bb;font-size:12px">Source: '+h(SELA_DEPTH.source)+' • Updated '+h(SELA_DEPTH.updated)+'</div>'+
+      '<div style="overflow-x:auto;margin-top:14px"><table style="width:100%;border-collapse:collapse;min-width:760px"><thead><tr><th style="text-align:left;padding:12px;color:#f6c74f">POS</th>'+heads.map(function(x){return '<th style="text-align:left;padding:12px;color:#f6c74f">'+x+'</th>';}).join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+  }
+
+  // Do not rely on the base depth page for SELA. Render the exact Command Center
+  // two-deep directly so a stale Supabase depth object cannot leave this page blank.
   if(typeof opponentDepthChartPage==='function'){
     const originalOpponentDepthChartPage=opponentDepthChartPage;
     opponentDepthChartPage=function(){
-      if(isSela())applySelaDepth();
-      return originalOpponentDepthChartPage();
+      if(!isSela())return originalOpponentDepthChartPage();
+      applySelaDepth();
+      return selaDepthChartPage();
     };
   }
 
   if(typeof prepDepthPlayerNamesForCategory==='function'){
     const originalPrepDepthPlayerNamesForCategory=prepDepthPlayerNamesForCategory;
     prepDepthPlayerNamesForCategory=function(cat){
-      if(isSela())applySelaDepth();
-      return (originalPrepDepthPlayerNamesForCategory(cat)||[]).map(enrichSelaPlayer);
+      if(!isSela())return originalPrepDepthPlayerNamesForCategory(cat)||[];
+      applySelaDepth();
+      const fixed=selaDepthPlayersForCategory(cat);
+      return fixed.length?fixed:(originalPrepDepthPlayerNamesForCategory(cat)||[]).map(enrichSelaPlayer);
     };
   }
 
-  // Photos use a direct URL when the roster already has one. For the older 105-player
-  // Week 3 roster, the official profile URL is enough: /api/player-image extracts the
-  // current Lions headshot server-side and serves it from our own origin.
+  function localInitials(name){
+    try{if(typeof initials==='function')return initials(name);}catch(_){}
+    return String(name||'').split(/\s+/).filter(Boolean).slice(0,2).map(function(x){return x[0]||'';}).join('').toUpperCase();
+  }
+
+  function imageFallbackForPlayer(p){
+    const original=String(p&&p.image||'').trim();
+    if(original){
+      if(/^\/api\//i.test(original))return original;
+      if(/^https:\/\//i.test(original))return '/api/player-image?url='+encodeURIComponent(original);
+    }
+    const profile=String(p&&p.profile||'').trim();
+    if(profile)return '/api/player-image?profile='+encodeURIComponent(profile);
+    return '';
+  }
+
+  // Defensive Intelligence already proved that resolving a Southeastern portrait by
+  // player name against the official Lions roster is reliable. Use that same method
+  // here instead of trusting stale image URLs or double-wrapping /api/player-image URLs.
   if(typeof playerPhoto==='function'){
     const originalPlayerPhoto=playerPhoto;
     playerPhoto=function(rawPlayer){
-      const p=enrichSelaPlayer(rawPlayer);
-      if(!p)return originalPlayerPhoto(p);
-      const original=String(p.image||'').trim();
-      const profile=String(p.profile||'').trim();
-      if(!original&&!profile)return originalPlayerPhoto(p);
-      const primary=original?'/api/player-image?url='+encodeURIComponent(original):'/api/player-image?profile='+encodeURIComponent(profile);
-      const fallback=original&&profile?'/api/player-image?profile='+encodeURIComponent(profile):'';
-      const alt=h(p.name||'Player');
-      const originalAttr=h(original);
-      const fallbackAttr=h(fallback);
-      return '<img src="'+primary+'" data-original="'+originalAttr+'" data-profile-fallback="'+fallbackAttr+'" alt="'+alt+'" onerror="if(this.dataset.profileFallback&&!this.dataset.triedProfile){this.dataset.triedProfile=\'1\';this.src=this.dataset.profileFallback}else if(this.dataset.original&&!this.dataset.triedOriginal){this.dataset.triedOriginal=\'1\';this.src=this.dataset.original}else{this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'}"><div class="playerInitials" style="display:none">'+initials(p&&p.name)+'</div>';
+      if(!isSela())return originalPlayerPhoto(rawPlayer);
+      const p=enrichSelaPlayer(rawPlayer||{});
+      const name=String(p&&p.name||'').trim();
+      if(!name)return originalPlayerPhoto(p);
+      const primary='/api/player-image?name='+encodeURIComponent(name);
+      const fallback=imageFallbackForPlayer(p);
+      return '<img src="'+h(primary)+'" data-fallback="'+h(fallback)+'" alt="'+h(name)+'" loading="lazy" onerror="if(this.dataset.fallback&&!this.dataset.triedFallback){this.dataset.triedFallback=\'1\';this.src=this.dataset.fallback}else{this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'block\'}"><div class="playerInitials" style="display:none">'+h(localInitials(name))+'</div>';
     };
   }
 
@@ -153,7 +266,10 @@
 
   function currentOpponentActive(){
     try{
-      if(isSela())applySelaDepth();
+      if(isSela()){
+        applySelaDepth();
+        return true;
+      }
       return typeof prepOpponent!=='undefined'&&prepOpponent&&prepOpponent!=='MSST'&&typeof prepDepthPlayerNamesForCategory==='function'&&prepDepthChart;
     }catch(_){return false;}
   }
@@ -203,7 +319,7 @@
       if(isSela())applySelaDepth();
       if(!currentOpponentActive())return originalPlayerPage(a);
 
-      // Coverage-tackler pages are result-based PFF lists rather than published depth.
+      // Coverage-tackler pages are PFF result lists rather than published two-deep roles.
       if(playerCategory==='koCoverageTacklers'||playerCategory==='puntTeamTacklers'){
         return originalPlayerPage(a);
       }
@@ -211,7 +327,9 @@
       const list=combinedCurrentPlayers(a,playerCategory);
       const labels={kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers / Kickoff',punters:'Punters'};
       const label=labels[playerCategory]||'Current Special Teams Players';
-      const opponent=(typeof prepConfig==='function'&&prepConfig().label)||'Opponent';
+      let opponent='Opponent';
+      try{opponent=(typeof prepConfig==='function'&&prepConfig().label)||opponent;}catch(_){}
+      if(isSela())opponent='Southeastern Louisiana';
       const rosterCount=(typeof rosterData!=='undefined'&&rosterData&&rosterData.length)||0;
       const cards=list.length?list.map(function(x){return x._depthOnly?depthOnlyCard(x,playerCategory):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No current depth-chart players are listed in this category.</div>';
 
@@ -226,7 +344,7 @@
 
       return reportBanner('Player Intelligence')+
         title('Player Intelligence',opponent+' published 2026 special-teams depth with available PFF performance attached to the same current player.')+
-        '<div class="card"><div class="context">Active team: <b>'+h((typeof selectedTeam==='function'&&selectedTeam())||'')+'</b>. '+h(opponent)+' roster loaded: <b>'+rosterCount+'</b> players. Published Week 3 depth controls these player cards.</div></div>'+
+        '<div class="card"><div class="context">Active team: <b>'+h((typeof selectedTeam==='function'&&selectedTeam())||'')+'</b>. '+h(opponent)+' roster loaded: <b>'+rosterCount+'</b> players. Command Center Week 3 depth controls these player cards.</div></div>'+
         categoryTabs()+
         '<div class="card"><div class="eyebrow">'+h(label)+'</div><div class="playerCardGrid" style="margin-top:10px">'+cards+'</div></div>'+
         '<div style="margin-top:14px">'+detail+'</div>';
@@ -236,8 +354,8 @@
     }
   };
 
-  // Install immediately, then reload only the roster. Re-apply once more after the
-  // original startup request has had time to settle so an old 400 cannot null the chart.
+  // Install immediately when SELA is already active. If the user changes opponents
+  // later, the wrapped loader/page functions above take over on the next render.
   try{
     if(isSela()){
       applySelaDepth();
