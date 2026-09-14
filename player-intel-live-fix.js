@@ -306,6 +306,7 @@
       if(!match&&p.number){
         match=pff.find(function(x){
           if(String(x&&x.num||'')!==String(p.number||''))return false;
+          if(isSela())return true;
           const xp=x&&x.p;
           return !xp||!xp.name||sameName(xp.name,p.name);
         });
