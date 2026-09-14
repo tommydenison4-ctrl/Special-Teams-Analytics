@@ -216,6 +216,18 @@
     };
   }
 
+  // The dedicated /southeastern/ workspace still calls the original Week 1
+  // depth renderer name. Override that renderer too so its sidebar depth page uses
+  // the exact Command Center Southeastern Louisiana two-deep.
+  if(typeof week1DepthChartPage==='function'){
+    const originalWeek1DepthChartPage=week1DepthChartPage;
+    week1DepthChartPage=function(){
+      if(!isSela())return originalWeek1DepthChartPage();
+      applySelaDepth();
+      return selaDepthChartPage();
+    };
+  }
+
   if(typeof prepDepthPlayerNamesForCategory==='function'){
     const originalPrepDepthPlayerNamesForCategory=prepDepthPlayerNamesForCategory;
     prepDepthPlayerNamesForCategory=function(cat){

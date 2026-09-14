@@ -22,7 +22,7 @@
       html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 1 • Mississippi State</title>');
       html = html.replace('</head>', '<style>.weekJumpBtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #d1a53a;border-radius:9px;background:#6f1d2b;color:#fff;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.04em;white-space:nowrap}.weekJumpBtn.active{border-color:#f0c85b;background:#8a2432}@media(max-width:760px){#weekJumpDockFixed{left:10px!important;right:10px!important;top:82px!important}.weekJumpBtn{flex:1;min-height:40px;padding:0 8px;font-size:9px}}</style></head>');
       const weekNav='<div id="weekJumpDockFixed" class="noPrint" style="position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="weekJumpBtn active">WEEK 1 • MISSISSIPPI STATE</span><a class="weekJumpBtn" href="/uab/">WEEK 2 • UAB</a><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA</a></div>';
-      const liveFix='<script src="/player-intel-live-fix.js?v=20260914-1803"><\/script>';
+      const liveFix='<script src="/player-intel-live-fix.js?v=20260914-1830"><\/script>';
       html = html.replace('</body>', liveFix + weekNav + '</body>');
       document.open();
       document.write(html);
