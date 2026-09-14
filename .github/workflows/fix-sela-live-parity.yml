@@ -1,0 +1,57 @@
+name: Fix Southeastern live parity
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-sela-live-parity.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch dedicated Southeastern workspace and depth renderer
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          live = Path('player-intel-live-fix.js')
+          text = live.read_text()
+          if 'originalWeek1DepthChartPage' not in text:
+              anchor = "  if(typeof prepDepthPlayerNamesForCategory==='function'){"
+              block = """  // The dedicated /southeastern/ workspace still calls the original Week 1\n  // depth renderer name. Override that renderer too so its sidebar depth page uses\n  // the exact Command Center Southeastern Louisiana two-deep.\n  if(typeof week1DepthChartPage==='function'){\n    const originalWeek1DepthChartPage=week1DepthChartPage;\n    week1DepthChartPage=function(){\n      if(!isSela())return originalWeek1DepthChartPage();\n      applySelaDepth();\n      return selaDepthChartPage();\n    };\n  }\n\n"""
+              if anchor not in text:
+                  raise SystemExit('Could not find depth-player hook in player-intel-live-fix.js')
+              text = text.replace(anchor, block + anchor, 1)
+              live.write_text(text)
+
+          sela = Path('southeastern/index.html')
+          text = sela.read_text()
+          if '/player-intel-live-fix.js?v=20260914-1830' not in text:
+              anchor = "      const weekButtons = "
+              inject = "      html = html.replace('</body>', '<script src=\"/player-intel-live-fix.js?v=20260914-1830\"><\\\\/script></body>');\n"
+              if anchor not in text:
+                  raise SystemExit('Could not find Southeastern week-button anchor')
+              text = text.replace(anchor, inject + anchor, 1)
+              sela.write_text(text)
+
+          week1 = Path('week1/index.html')
+          text = week1.read_text().replace('player-intel-live-fix.js?v=20260914-1803','player-intel-live-fix.js?v=20260914-1830')
+          week1.write_text(text)
+          PY
+      - name: Commit patched files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add player-intel-live-fix.js southeastern/index.html week1/index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Apply Southeastern depth and player photo fix to live workspace"
+          git push origin main
