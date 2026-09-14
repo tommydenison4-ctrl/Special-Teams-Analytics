@@ -5,8 +5,59 @@ const HANDLERS = {
   enrich: () => import('../lib/sela-enrich.js')
 };
 
+const SELA_BUCKET = 'Special Teams';
+const SELA_FIXED_OBJECTS = {
+  depth: 'Opponents/SoutheasternLA/depth-chart.json'
+};
+
+function sendJson(res, status, body) {
+  res.statusCode = status;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify(body));
+}
+
+async function serveFixedObject(route, res) {
+  const objectPath = SELA_FIXED_OBJECTS[route];
+  if (!objectPath) return false;
+
+  const base = process.env.SUPABASE_URL?.replace(/\/$/, '');
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!base || !key) {
+    sendJson(res, 500, { ok: false, error: 'Missing Supabase server credentials.' });
+    return true;
+  }
+
+  const bucket = encodeURIComponent(SELA_BUCKET);
+  const path = objectPath.split('/').map(encodeURIComponent).join('/');
+  const url = `${base}/storage/v1/object/${bucket}/${path}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      cache: 'no-store'
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      sendJson(res, response.status, {
+        ok: false,
+        error: `Southeastern Louisiana ${route} read failed (${response.status})${detail ? ': ' + detail : ''}`
+      });
+      return true;
+    }
+    const data = await response.json();
+    sendJson(res, 200, data);
+    return true;
+  } catch (error) {
+    sendJson(res, 500, { ok: false, error: error?.message || `Southeastern Louisiana ${route} read failed.` });
+    return true;
+  }
+}
+
 export default async function handler(req, res) {
   const route = String(req.query?.route || '').toLowerCase();
+
+  if (await serveFixedObject(route, res)) return;
 
   // Fixed Week 3 roster bootstrap. The caller cannot choose a URL, team identity,
   // or Supabase destination; only the official Southeastern Louisiana pages are used.
