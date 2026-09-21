@@ -1,34 +1,34 @@
-ULM SPECIAL TEAMS — FAU LIVE CORRECTED BUILD
-Build ID: 2026-09-21-FAU-LIVE-CORRECTED-1
+ULM SPECIAL TEAMS — FLORIDA ATLANTIC — ONE UPLOAD FINAL
 
-PURPOSE
-This package fixes the live-site problem where the root URL kept showing the Southeastern Louisiana Week 3 app.
+This package is built for ONE upload into the EXISTING Special-Teams-Analytics repository/project.
+It does NOT contain a second fau/index.html app entry point.
 
-WHAT IS DIFFERENT
-1. index.html is the COMPLETE self-contained Florida Atlantic Week 4 app. It is not a wrapper.
-2. fau/index.html is the same complete app. It does not load southeastern/week3-template.html.
-3. vercel.json NO LONGER rewrites / to /fau/live.html. The normal root URL serves index.html directly.
-4. Florida Atlantic is physically present in PREP OPPONENT and forced as the Week 4 default.
-5. FAU data are embedded in the app, so FAU does not depend on Supabase loading before it can render.
-6. The package also includes the raw FAU data files under fau/data/.
-7. The configured Supabase folder label is aligned with the actual folder name: Opponents/Florida Atlantic.
+REPLACE/UPLOAD THESE FILES AS ONE BATCH:
+- index.html
+- vercel.json
+- package.json
+- api/player-image.js
+- fau/data/offensive-side.csv
+- fau/data/defensive-side.csv
+- fau/data/official-fg-pat.csv
+- fau/data/depth-chart.json
+- fau/data/roster.json
 
-EXPECTED AFTER ONE DEPLOY
-- special-teams-analytics.vercel.app/ opens Florida Atlantic Week 4.
-- PREP OPPONENT includes Mississippi State, UAB, Southeastern Louisiana, Florida Atlantic.
-- Florida Atlantic is selected by default.
-- Header says Week 4 Florida Atlantic.
-- 48 uploaded PFF rows are available.
-- 15 official FG/PAT events are available.
-- Player Intelligence includes current FAU players/depth data.
+DO NOT DELETE the existing api/sela.js, lib/, week1/, uab/, or southeastern/ files already in the repo.
+Uploading these files over the existing repo leaves those files in place.
 
-UPLOAD
-Upload/replace these paths in the EXISTING Special-Teams-Analytics repo:
-- /index.html
-- /vercel.json
-- /fau/index.html
-- /fau/data/*
+PHOTO FIX INCLUDED:
+- FAU roster images now use each player's exact official FAU profile URL instead of depending on a name lookup from the roster-root page.
+- api/player-image.js accepts both the roster root and individual roster profile paths.
+- The FAU name lookup roster URL also includes the required trailing slash.
 
-Do not delete the existing /api or /lib folders. They remain available for cloud save, older opponents, and player-image endpoints.
+APP/DATA INCLUDED:
+- Single root index.html
+- /fau and /fau/ rewrite to the same root app
+- 25 offensive/kicking-side PFF rows
+- 23 defensive/return-side PFF rows
+- official 2026 FG/PAT data
+- FAU depth chart
+- FAU current player profiles
 
-Old files such as /fau/live.html and /fau/live-patch.js can remain in the repo; this vercel.json no longer routes traffic to them.
+No GitHub commit or Vercel deployment was performed while creating this ZIP.
