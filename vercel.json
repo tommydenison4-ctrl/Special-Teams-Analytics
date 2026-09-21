@@ -5,6 +5,6 @@
     { "source": "/api/roster-sela", "destination": "/api/sela?route=roster" },
     { "source": "/api/sync-roster-sela", "destination": "/api/sela?route=sync" },
     { "source": "/api/enrich-roster-sela", "destination": "/api/sela?route=enrich" },
-    { "source": "/", "destination": "/week1/index.html" }
+    { "source": "/", "destination": "/fau/index.html" }
   ]
 }
