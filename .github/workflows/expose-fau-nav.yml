@@ -1,0 +1,36 @@
+name: Expose FAU Week 4 navigation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/expose-fau-nav.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Add Florida Atlantic to UAB navigation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('uab/index.html')
+          s=p.read_text()
+          old='      const weekButton = \'<a class="weekJumpBtn" href="/">← WEEK 1 • MISSISSIPPI STATE</a><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA →</a>\';'
+          new='      const weekButton = \'<a class="weekJumpBtn" href="/week1/">WEEK 1 • MISSISSIPPI STATE</a><span class="weekJumpBtn" style="border-color:#f0c85b;background:#8a2432">WEEK 2 • UAB</span><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA</a><a class="weekJumpBtn" href="/fau/">WEEK 4 • FLORIDA ATLANTIC</a>\';'
+          if old not in s:
+              raise SystemExit('Expected UAB week navigation line not found')
+          p.write_text(s.replace(old,new,1))
+          PY
+      - name: Commit navigation patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uab/index.html
+          git commit -m "Expose Florida Atlantic from UAB navigation"
+          git push origin main
