@@ -281,7 +281,7 @@ function playerPage(a){
         @media(max-width:760px){.weekJumpBtn{width:100%;min-height:42px}}
       </style>`;
       html = html.replace('</head>', navStyle + '</head>');
-      const weekButton = '<a class="weekJumpBtn" href="/">← WEEK 1 • MISSISSIPPI STATE</a><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA →</a>';
+      const weekButton = '<a class="weekJumpBtn" href="/week1/">WEEK 1 • MISSISSIPPI STATE</a><span class="weekJumpBtn" style="border-color:#f0c85b;background:#8a2432">WEEK 2 • UAB</span><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA</a><a class="weekJumpBtn" href="/fau/">WEEK 4 • FLORIDA ATLANTIC</a>';
       html = html.replace('</body>', '<div id="weekJumpDockFixed" style="position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' + weekButton + '</div></body>');
 
       document.open();
