@@ -2,11 +2,13 @@ import dns from 'node:dns/promises';
 import net from 'node:net';
 
 const SELA_ROSTER_URL='https://lionsports.net/sports/football/roster/2026';
+const FAU_ROSTER_URL='https://fausports.com/sports/football/roster';
 
 function allowedHost(host='') {
   host=String(host).toLowerCase();
   return host==='lionsports.net' || host.endsWith('.lionsports.net') ||
     host==='uabsports.com' || host.endsWith('.uabsports.com') ||
+    host==='fausports.com' || host.endsWith('.fausports.com') ||
     host==='images.sidearmdev.com' || host.endsWith('.sidearmdev.com') ||
     host==='images.sidearmsports.com' || host.endsWith('.sidearmsports.com') ||
     host.endsWith('.cloudfront.net');
@@ -47,7 +49,7 @@ async function validateProfileUrl(raw) {
   catch { throw new Error('Invalid roster profile URL'); }
   const host = url.hostname.toLowerCase();
   if (url.protocol !== 'https:' || url.username || url.password ||
-      !(host === 'lionsports.net' || host.endsWith('.lionsports.net')) ||
+      !((host === 'lionsports.net' || host.endsWith('.lionsports.net')) || (host === 'fausports.com' || host.endsWith('.fausports.com'))) ||
       !url.pathname.startsWith('/sports/football/roster/')) {
     throw new Error('Unsupported roster profile URL');
   }
@@ -220,7 +222,7 @@ function officialImageAttrs(tag, pageUrl) {
 
 function officialGood(url='') {
   const s=String(url).toLowerCase();
-  return /images\.sidearmdev\.com|dxbhsrqyrr690\.cloudfront\.net|lionsports\.net\/images\//i.test(s) &&
+  return /images\.sidearmdev\.com|dxbhsrqyrr690\.cloudfront\.net|lionsports\.net\/images\/|fausports\.com\/images\//i.test(s) &&
     !/(logo|wordmark|sponsor|icon|placeholder|default|story|stadium|facility)/i.test(s);
 }
 
@@ -285,10 +287,10 @@ function firstProfilePortrait(html,name,pageUrl) {
   return bestScore>0?best:'';
 }
 
-async function imageFromSelaName(name) {
+async function imageFromRosterName(name, rosterUrl=SELA_ROSTER_URL) {
   const clean=strip(name);
-  if(!clean || clean.length>100)throw new Error('Invalid Southeastern Louisiana player name');
-  const rosterPage=await fetchProfileHtml(SELA_ROSTER_URL);
+  if(!clean || clean.length>100)throw new Error('Invalid roster player name');
+  const rosterPage=await fetchProfileHtml(rosterUrl);
   let image=exactAltPortrait(rosterPage.html,clean,rosterPage.pageUrl) || nearbyPortrait(rosterPage.html,clean,rosterPage.pageUrl);
   if(!image){
     const profile=profileUrlForName(rosterPage.html,clean,rosterPage.pageUrl);
@@ -297,7 +299,7 @@ async function imageFromSelaName(name) {
       image=exactAltPortrait(profilePage.html,clean,profilePage.pageUrl) || firstProfilePortrait(profilePage.html,clean,profilePage.pageUrl);
     }
   }
-  if(!image)throw new Error('No official Southeastern Louisiana roster headshot found');
+  if(!image)throw new Error('No official roster headshot found');
   const response=await fetchImage(upgradeImageUrl(image));
   if(!response.ok)throw new Error(`Official roster image returned ${response.status}`);
   return response;
@@ -333,7 +335,9 @@ export default async function handler(req, res) {
     const raw = Array.isArray(req.query?.url) ? req.query.url[0] : req.query?.url;
     const profile = Array.isArray(req.query?.profile) ? req.query.profile[0] : req.query?.profile;
     const name = Array.isArray(req.query?.name) ? req.query.name[0] : req.query?.name;
-    const upstream = name ? await imageFromSelaName(name) : (profile ? await imageFromProfile(profile) : await fetchImage(raw));
+    const team = Array.isArray(req.query?.team) ? req.query.team[0] : req.query?.team;
+    const rosterUrl = String(team||'').toLowerCase()==='fau' ? FAU_ROSTER_URL : SELA_ROSTER_URL;
+    const upstream = name ? await imageFromRosterName(name, rosterUrl) : (profile ? await imageFromProfile(profile) : await fetchImage(raw));
     if (!upstream.ok) {
       return res.status(upstream.status || 502).json({ error: `Image host returned ${upstream.status}` });
     }

@@ -1,0 +1,95 @@
+{
+  "team": "Florida Atlantic",
+  "nickname": "Owls",
+  "season": 2026,
+  "week": 4,
+  "updated": "2026-09-11",
+  "source": "Ourlads.com",
+  "sourceUrl": "https://www.ourlads.com/ncaa-football-depth-charts/depth-chart/florida-atlantic/90521",
+  "specialTeams": {
+    "PT": [
+      [
+        "91",
+        "Reed Chandley",
+        "JR/TR"
+      ],
+      [
+        "49",
+        "Alex Grace",
+        "RS SO/TR"
+      ]
+    ],
+    "PK": [
+      [
+        "41",
+        "Collin Rogers",
+        "RS SR/TR"
+      ],
+      [
+        "96",
+        "Lliam Peterson",
+        "FR"
+      ]
+    ],
+    "KO": [
+      [
+        "41",
+        "Collin Rogers",
+        "RS SR/TR"
+      ],
+      [
+        "96",
+        "Lliam Peterson",
+        "FR"
+      ]
+    ],
+    "LS": [
+      [
+        "45",
+        "Walker Adkinson",
+        "GR/TR"
+      ],
+      [
+        "46",
+        "Blake Thomas",
+        "FR"
+      ]
+    ],
+    "H": [
+      [
+        "91",
+        "Reed Chandley",
+        "JR/TR"
+      ]
+    ],
+    "PR": [
+      [
+        "8",
+        "Easton Messer",
+        "RS SR/TR"
+      ],
+      [
+        "3",
+        "Tucker Holloway",
+        "RS SR/TR"
+      ]
+    ],
+    "KR": [
+      [
+        "9",
+        "Dominique Henry",
+        "RS SR/TR"
+      ],
+      [
+        "4",
+        "Antojuan Woody",
+        "JR/TR"
+      ],
+      [
+        "3",
+        "Derrick Rogers",
+        "RS JR/TR"
+      ]
+    ]
+  }
+}

@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ULM Special Teams • Week 3 • Southeastern Louisiana</title>
+  <title>ULM Special Teams • Week 4 • Florida Atlantic</title>
   <style>
     html,body{margin:0;min-height:100%;background:#06131b;color:#fff;font-family:Arial,sans-serif}
     #boot{display:flex;align-items:center;justify-content:center;min-height:100vh;font-size:16px;opacity:.8}
   </style>
 </head>
 <body>
-  <div id="boot">Loading Week 3 • Southeastern Louisiana…</div>
+  <div id="boot">Loading Week 4 • Florida Atlantic…</div>
   <script>
   (async function () {
-    const PREFIX = 'ULM_ST_2026_W3_SELA::';
-    const SELA_PACKAGE_BASE = 'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/SoutheasternLA';
+    const PREFIX = 'ULM_ST_2026_W4_FAU::';
+    const FAU_PACKAGE_BASE = window.location.origin + '/fau/data';
     const localRef = window.localStorage;
     const sessionRef = window.sessionStorage;
     const proto = Storage.prototype;
@@ -59,28 +59,17 @@
 
     window.__ULM_SPECIAL_TEAMS_WORKSPACE__ = {
       season: 2026,
-      week: 3,
-      opponent: 'Southeastern Louisiana',
-      rawTeamCode: 'LASE',
-      sourcePackage: 'Special Teams/Opponents/SoutheasternLA',
+      week: 4,
+      opponent: 'Florida Atlantic',
+      rawTeamCode: 'FLAT',
+      sourcePackage: 'Special Teams/Opponents/FloridaAtlantic',
       storagePrefix: PREFIX
     };
 
-    const fallbackDepth = {
-      team:'Southeastern Louisiana', nickname:'Lions', season:2026, updated:'2026-09-12', source:'2026 Southeastern Louisiana Football Game Notes',
-      specialTeams:{
-        PT:[['46','Jack Hunter','Sr.'],['28','Aiden Parker','So.']],
-        PK:[['29','Drew Talley','So.'],['27','Owen Wiley','Jr.']],
-        KO:[['27','Owen Wiley','Jr.'],['29','Drew Talley','So.']],
-        LS:[['41','Shawn Puissegur','So.'],['13','Conner Nelson','So.']],
-        H:[['46','Jack Hunter','Sr.']],
-        PR:[['9','Dkhai Joseph','Jr.'],['82','Desmen Jefferson','Fr.'],['19','Blake Smith','Fr.']],
-        KR:[['2','Kyree Paul','So.'],['4','Tristan Goodly','Sr.']]
-      }
-    };
+    const fallbackDepth = {"team":"Florida Atlantic","nickname":"Owls","season":2026,"week":4,"updated":"2026-09-11","source":"Ourlads.com","sourceUrl":"https://www.ourlads.com/ncaa-football-depth-charts/depth-chart/florida-atlantic/90521","specialTeams":{"PT":[["91","Reed Chandley","JR/TR"],["49","Alex Grace","RS SO/TR"]],"PK":[["41","Collin Rogers","RS SR/TR"],["96","Lliam Peterson","FR"]],"KO":[["41","Collin Rogers","RS SR/TR"],["96","Lliam Peterson","FR"]],"LS":[["45","Walker Adkinson","GR/TR"],["46","Blake Thomas","FR"]],"H":[["91","Reed Chandley","JR/TR"]],"PR":[["8","Easton Messer","RS SR/TR"],["3","Tucker Holloway","RS SR/TR"]],"KR":[["9","Dominique Henry","RS SR/TR"],["4","Antojuan Woody","JR/TR"],["3","Derrick Rogers","RS JR/TR"]]}};
 
-    function selaDepthPage(){
-      const st=SELA_WEEK3_DEPTH.specialTeams||{};
+    function fauDepthPage(){
+      const st=FAU_WEEK4_DEPTH.specialTeams||{};
       const order=['PT','PK','KO','LS','H','PR','KR'];
       const entries=order.map(pos=>[pos,Array.isArray(st[pos])?st[pos]:[]]);
       const maxDepth=Math.max(3,...entries.map(([,arr])=>arr.length));
@@ -95,17 +84,24 @@
       const first=(pos)=>Array.isArray(st[pos])&&st[pos][0]?st[pos][0]:null;
       const chip=(label,e)=>e?'<span><b>'+label+'</b> '+(e[0]?'#'+esc(e[0])+' ':'')+esc(e[1])+'</span>':'';
       const chips=[chip('PR1',first('PR')),chip('KR1',first('KR')),chip('PK',first('PK')),chip('PT',first('PT'))].join('');
-      const source=SELA_WEEK3_DEPTH.source||'2026 Southeastern Louisiana Football Game Notes';
-      const updated=SELA_WEEK3_DEPTH.updated?String(SELA_WEEK3_DEPTH.updated).slice(0,10):'2026-09-12';
+      const source=FAU_WEEK4_DEPTH.source||'2026 Florida Atlantic Football Game Notes';
+      const updated=FAU_WEEK4_DEPTH.updated?String(FAU_WEEK4_DEPTH.updated).slice(0,10):'2026-09-11';
       return '<div class="depthChartPage">'+
-        '<div class="depthChartHero"><div class="depthChartHeroTop"><div><div class="eyebrow">WEEK 3 • SOUTHEASTERN LOUISIANA</div><h2>Special Teams Depth Chart</h2><div class="depthChartMeta">September 19, 2026 • 3:30 PM CT • Malone Stadium • ESPN+</div></div></div></div>'+
-        '<div class="card"><div class="depthChartQuick">'+chips+'</div><div class="depthChartTableWrap"><table class="depthChartTable"><thead><tr><th>POS</th>'+heads+'</tr></thead><tbody>'+body+'</tbody></table></div><div class="depthChartNote">Click any player name to open his Southeastern Louisiana roster profile. Source: '+esc(source)+(updated?' • Updated '+esc(updated):'')+'.</div></div></div>';
+        '<div class="depthChartHero"><div class="depthChartHeroTop"><div><div class="eyebrow">WEEK 4 • FLORIDA ATLANTIC</div><h2>Special Teams Depth Chart</h2><div class="depthChartMeta">September 26, 2026 • Time TBD • Malone Stadium</div></div></div></div>'+
+        '<div class="card"><div class="depthChartQuick">'+chips+'</div><div class="depthChartTableWrap"><table class="depthChartTable"><thead><tr><th>POS</th>'+heads+'</tr></thead><tbody>'+body+'</tbody></table></div><div class="depthChartNote">Click any player name to open his Florida Atlantic roster profile. Source: '+esc(source)+(updated?' • Updated '+esc(updated):'')+'.</div></div></div>';
     }
 
     try {
+      try {
+        const check=await fetch('/api/sela?route=fau-roster&v='+Date.now(),{cache:'no-store'});
+        if(!check.ok){
+          await fetch('/api/sela?route=fau-bootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        }
+      } catch (_rosterBootstrapError) {}
+
       const [templateResponse, depthResponse] = await Promise.all([
         fetch('/southeastern/week3-template.html', { cache: 'no-store' }),
-        fetch(SELA_PACKAGE_BASE + '/depth-chart.json?v=' + Date.now(), { cache: 'no-store' }).catch(()=>null)
+        fetch(FAU_PACKAGE_BASE + '/depth-chart.json?v=' + Date.now(), { cache: 'no-store' }).catch(()=>null)
       ]);
       if (!templateResponse.ok) throw new Error('Could not load Week 2 template.');
       let html = await templateResponse.text();
@@ -117,24 +113,24 @@
       // Week 2 has its own cloud row/local storage, but reads the already-built UAB
       // opponent package from Supabase. Week 1 remains frozen and untouched.
       const endpointMap = [
-        ['storage-project', 'storage-project-sela'],
-        ['sync-roster', 'sync-roster-sela'],
-        ['enrich-roster', 'enrich-roster-sela'],
-        ['roster', 'roster-sela']
+        ['storage-project', 'storage-project-fau'],
+        ['sync-roster', 'sync-roster-fau'],
+        ['enrich-roster', 'enrich-roster-fau'],
+        ['roster', 'roster-fau']
       ];
       endpointMap.forEach(([from, to]) => {
         const pattern = new RegExp('(^|[^A-Za-z0-9_-])(/?api/' + from + ')(?![A-Za-z0-9_-])', 'g');
         html = html.replace(pattern, (match, before, path) => before + path.replace(from, to));
       });
-      html = html.replace(/\/api\/storage-project-sela/g, '/api/sela?route=storage');
-      html = html.replace(/\/api\/sync-roster-sela/g, '/api/sela?route=sync');
-      html = html.replace(/\/api\/enrich-roster-sela/g, '/api/sela?route=enrich');
-      html = html.replace(/\/api\/roster-sela/g, '/api/sela?route=roster');
+      html = html.replace(/\/api\/storage-project-fau/g, '/api/sela?route=fau-storage');
+      html = html.replace(/\/api\/sync-roster-fau/g, '/api/sela?route=fau-sync');
+      html = html.replace(/\/api\/enrich-roster-fau/g, '/api/sela?route=fau-enrich');
+      html = html.replace(/\/api\/roster-fau/g, '/api/sela?route=fau-roster');
 
       // Point the restored Week 1 analytics engine at UAB's existing PFF package.
       html = html.replace(
         'https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Current',
-        SELA_PACKAGE_BASE
+        FAU_PACKAGE_BASE
       );
       html = html.replace(
         "files:['offense-side.csv','defense-side.csv']",
@@ -144,14 +140,14 @@
       // This is a dedicated UAB page, so ALBI is the PFF team identity from first boot.
       html = html.replace(
         "const DEFAULT_TEAM_SETTINGS={teamName:'',nickname:'',teamCode:'',rosterUrl:'',season:'2025'};",
-        "const DEFAULT_TEAM_SETTINGS={teamName:'Southeastern Louisiana',nickname:'Lions',teamCode:'LASE',rosterUrl:'https://lionsports.net/sports/football/roster',season:'2025'};"
+        "const DEFAULT_TEAM_SETTINGS={teamName:'Florida Atlantic',nickname:'Owls',teamCode:'FLAT',rosterUrl:'https://fausports.com/sports/football/roster',season:'2025'};"
       );
       html = html.replace(
         "if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings};",
-        "if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings,teamName:'Southeastern Louisiana',nickname:'Lions',teamCode:'LASE',rosterUrl:'https://lionsports.net/sports/football/roster'};"
+        "if(d.teamSettings)teamSettings={...DEFAULT_TEAM_SETTINGS,...d.teamSettings,teamName:'Florida Atlantic',nickname:'Owls',teamCode:'FLAT',rosterUrl:'https://fausports.com/sports/football/roster'};"
       );
-      html = html.replace("ULM:'ULM',LAMON:'ULM',", "ULM:'ULM',LAMON:'ULM',LASE:'Southeastern Louisiana',");
-      html = html.replace('Week 1 ST Depth Chart', 'Week 3 ST Depth Chart');
+      html = html.replace("ULM:'ULM',LAMON:'ULM',", "ULM:'ULM',LAMON:'ULM',FLAT:'Florida Atlantic',");
+      html = html.replace('Week 1 ST Depth Chart', 'Week 4 ST Depth Chart');
 
       // SELA_PLAYER_INTEL_DEPTH_PATCH
       // Week 2 Player Intelligence must always include the current UAB ST depth chart.
@@ -161,9 +157,9 @@
         "let playerCategory='depthChart',selectedSpecialist='';"
       );
 
-      const selaPlayerIntelPatch = String.raw`
-function selaDepthItems(roles){
-  var st=(typeof SELA_WEEK3_DEPTH!=='undefined'&&SELA_WEEK3_DEPTH&&SELA_WEEK3_DEPTH.specialTeams)||{};
+      const fauPlayerIntelPatch = String.raw`
+function fauDepthItems(roles){
+  var st=(typeof FAU_WEEK4_DEPTH!=='undefined'&&FAU_WEEK4_DEPTH&&FAU_WEEK4_DEPTH.specialTeams)||{};
   var seen={},out=[];
   (roles||[]).forEach(function(role){
     var arr=Array.isArray(st[role])?st[role]:[];
@@ -186,7 +182,7 @@ function selaDepthItems(roles){
   });
   return out;
 }
-function selaDepthRolesForCategory(cat){
+function fauDepthRolesForCategory(cat){
   if(cat==='kickReturners')return ['KR'];
   if(cat==='puntReturners')return ['PR'];
   if(cat==='kickers')return ['PK','KO'];
@@ -194,11 +190,11 @@ function selaDepthRolesForCategory(cat){
   if(cat==='depthChart')return ['PT','PK','KO','LS','H','PR','KR'];
   return [];
 }
-function selaMergeDepth(list,cat){
-  var roles=selaDepthRolesForCategory(cat);
+function fauMergeDepth(list,cat){
+  var roles=fauDepthRolesForCategory(cat);
   if(!roles.length)return (list||[]).slice();
   var out=(list||[]).slice();
-  selaDepthItems(roles).forEach(function(d){
+  fauDepthItems(roles).forEach(function(d){
     var dn=nameKey(d.p&&d.p.name);
     var exists=out.some(function(x){
       var xn=nameKey(x&&x.p&&x.p.name);
@@ -210,25 +206,25 @@ function selaMergeDepth(list,cat){
   });
   return out;
 }
-function selaDepthCard(x){
+function fauDepthCard(x){
   var p=x.p||{};
   var roles=(x.depthRoles||[]).join(' / ')||'ST';
   var stats=[['Depth Role',roles],['PFF Reps','—'],['Status','DEPTH']];
-  return '<div class="playerSelect" data-playernum="'+esc(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'Southeastern Louisiana player',null)+'</div>';
+  return '<div class="playerSelect" data-playernum="'+esc(x.num||p.number||'')+'">'+playerCard(p,stats,p.name||'Florida Atlantic player',null)+'</div>';
 }
-function selaSelectedProfile(a,cat,list){
-  if(!list.length)return '<div class="empty">No Southeastern Louisiana players are listed in this Player Intelligence category.</div>';
+function fauSelectedProfile(a,cat,list){
+  if(!list.length)return '<div class="empty">No Florida Atlantic players are listed in this Player Intelligence category.</div>';
   if(!selectedSpecialist||!list.some(function(x){return String(x.num)===String(selectedSpecialist);})){selectedSpecialist=String(list[0].num||'');}
   var x=list.find(function(z){return String(z.num)===String(selectedSpecialist);})||list[0];
   if(!x.depthOnly&&cat!=='depthChart')return selectedProfile(a,cat,list);
-  var p=x.p||{name:'Southeastern Louisiana player',number:x.num||'',bio:'Roster profile pending.'};
+  var p=x.p||{name:'Florida Atlantic player',number:x.num||'',bio:'Roster profile pending.'};
   var roles=(x.depthRoles||[]).join(' / ')||'ST';
   var meta=[p.position,[p.height,p.weight&&p.weight+' lbs'].filter(Boolean).join(' · '),p.class,p.hometown].filter(Boolean).join(' • ');
   var photo=playerPhoto(p);
   var link=p.profile?'<a class="profileLink" href="'+esc(p.profile)+'" target="_blank" rel="noopener">Official biography ↗</a>':'';
   var bio=esc(p.bio||'Official roster biography has not been loaded yet.');
-  return '<div class="pageBreak">'+reportBanner((p.name||'Southeastern Louisiana Player')+' Player Report')+
-    '<div class="card playerHero"><div class="playerPhoto">'+photo+'<div class="playerNo">#'+esc(p.number||x.num||'—')+'</div></div><div class="playerBioCard"><div class="eyebrow">SOUTHEASTERN LOUISIANA SPECIAL TEAMS DEPTH CHART</div><h2>'+esc(p.name||'Southeastern Louisiana player')+'</h2><div class="playerMeta">'+esc(meta||'Current Southeastern Louisiana roster')+'</div><div class="bioSnippet">'+bio+'</div>'+link+
+  return '<div class="pageBreak">'+reportBanner((p.name||'Florida Atlantic Player')+' Player Report')+
+    '<div class="card playerHero"><div class="playerPhoto">'+photo+'<div class="playerNo">#'+esc(p.number||x.num||'—')+'</div></div><div class="playerBioCard"><div class="eyebrow">FLORIDA ATLANTIC SPECIAL TEAMS DEPTH CHART</div><h2>'+esc(p.name||'Florida Atlantic player')+'</h2><div class="playerMeta">'+esc(meta||'Current Florida Atlantic roster')+'</div><div class="bioSnippet">'+bio+'</div>'+link+
     '<div class="metrics" style="margin-top:14px"><div class="mini"><b>'+esc(roles)+'</b><span>Depth role</span></div><div class="mini"><b>#'+esc(p.number||x.num||'—')+'</b><span>Jersey</span></div><div class="mini"><b>CURRENT</b><span>2026 depth chart</span></div><div class="mini"><b>—</b><span>PFF stats if untagged</span></div></div></div></div></div>';
 }
 function categoryTabs(){
@@ -244,26 +240,26 @@ function playerPage(a){
     koCoverageTacklers:kickoffTacklerStats(a,'coverage'),
     puntTeamTacklers:puntTacklerStats(a)
   };
-  var list=(playerCategory==='depthChart'?selaDepthItems(selaDepthRolesForCategory('depthChart')):selaMergeDepth(lists[playerCategory]||[],playerCategory));
-  var labels={depthChart:'Southeastern Louisiana Special Teams Depth Chart',kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers / Kickoff',punters:'Punters',koCoverageTacklers:'Kickoff Team Tacklers',puntTeamTacklers:'Punt Team Tacklers'};
-  var rosterNote=rosterData.length?'Southeastern Louisiana roster loaded: <b>'+rosterData.length+'</b> players.':'Southeastern Louisiana depth-chart players remain visible even when a roster profile has not yet been matched.';
-  var cards=list.length?list.map(function(x){return x.depthOnly?selaDepthCard(x):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>';
+  var list=(playerCategory==='depthChart'?fauDepthItems(fauDepthRolesForCategory('depthChart')):fauMergeDepth(lists[playerCategory]||[],playerCategory));
+  var labels={depthChart:'Florida Atlantic Special Teams Depth Chart',kickReturners:'Kick Returners',puntReturners:'Punt Returners',kickers:'Kickers / Kickoff',punters:'Punters',koCoverageTacklers:'Kickoff Team Tacklers',puntTeamTacklers:'Punt Team Tacklers'};
+  var rosterNote=rosterData.length?'Florida Atlantic roster loaded: <b>'+rosterData.length+'</b> players.':'Florida Atlantic depth-chart players remain visible even when a roster profile has not yet been matched.';
+  var cards=list.length?list.map(function(x){return x.depthOnly?fauDepthCard(x):cardForCategory(x,playerCategory);}).join(''):'<div class="empty">No player data match the active team, season and week filters.</div>';
   return reportBanner('Player Intelligence')+
-    title('Player Intelligence','Week 3 Southeastern Louisiana player intelligence. Every player on the current Southeastern Louisiana special-teams depth chart remains visible here, whether or not he has a tagged PFF statistic in the loaded historical data.')+
-    '<div class="card"><div class="context">Active team: <b>Southeastern Louisiana</b>. '+rosterNote+'</div></div>'+
+    title('Player Intelligence','Week 4 Florida Atlantic player intelligence. Every player on the current Florida Atlantic special-teams depth chart remains visible here, whether or not he has a tagged PFF statistic in the loaded historical data.')+
+    '<div class="card"><div class="context">Active team: <b>Florida Atlantic</b>. '+rosterNote+'</div></div>'+
     categoryTabs()+
-    '<div class="card"><div class="eyebrow">'+(labels[playerCategory]||'Southeastern Louisiana Players')+'</div><div class="playerCardGrid" style="margin-top:10px">'+cards+'</div></div><div style="margin-top:14px">'+selaSelectedProfile(a,playerCategory,list)+'</div>';
+    '<div class="card"><div class="eyebrow">'+(labels[playerCategory]||'Florida Atlantic Players')+'</div><div class="playerCardGrid" style="margin-top:10px">'+cards+'</div></div><div style="margin-top:14px">'+fauSelectedProfile(a,playerCategory,list)+'</div>';
 }
 `;
       html = html.replace(
         'function truthyResult(r,needle){',
-        selaPlayerIntelPatch + '\nfunction truthyResult(r,needle){'
+        fauPlayerIntelPatch + '\nfunction truthyResult(r,needle){'
       );
 
       // Replace only the Week 1 hard-coded depth-chart renderer. Chart Looks,
       // Look Library, field geometry, player positioning and unit logic are untouched.
-      const depthCode = 'const SELA_WEEK3_DEPTH=' + JSON.stringify(uabDepth) + ';\n' +
-        selaDepthPage.toString().replace(/^function selaDepthPage/, 'function week1DepthChartPage') +
+      const depthCode = 'const FAU_WEEK4_DEPTH=' + JSON.stringify(uabDepth) + ';\n' +
+        fauDepthPage.toString().replace(/^function fauDepthPage/, 'function week1DepthChartPage') +
         '\n\nfunction depthRosterPlayer';
       html = html.replace(
         /function week1DepthChartPage\(\)\{[\s\S]*?\n\}\n\nfunction depthRosterPlayer/,
@@ -273,11 +269,11 @@ function playerPage(a){
       // Keep the existing roster-card behavior, changing only Week 1/MSST copy in that card.
       html = html.replace(
         /function depthBioMarkup\(name,num\)\{[\s\S]*?\n\}\nfunction openDepthBio/,
-        (block) => block.replace(/MISSISSIPPI STATE/g,'SOUTHEASTERN LOUISIANA').replace(/Week 1/g,'Week 3')
+        (block) => block.replace(/MISSISSIPPI STATE/g,'FLORIDA ATLANTIC').replace(/Week 1/g,'Week 4')
       );
 
       html = html.replace(/<head([^>]*)>/i, '<head$1><base href="/">');
-      html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 3 • Southeastern Louisiana</title>');
+      html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>ULM Special Teams • Week 4 • Florida Atlantic</title>');
 
       const navStyle = `<style id="weekJumpStyle">
         .weekJumpBtn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #d1a53a;border-radius:9px;background:#6f1d2b;color:#fff;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.04em;white-space:nowrap}
@@ -285,17 +281,17 @@ function playerPage(a){
         @media(max-width:760px){.weekJumpBtn{width:100%;min-height:42px}}
       </style>`;
       html = html.replace('</head>', navStyle + '</head>');
-      const weekButtons = '<a class="weekJumpBtn" href="/week1/">WEEK 1 • MISSISSIPPI STATE</a><a class="weekJumpBtn" href="/uab/">WEEK 2 • UAB</a><span class="weekJumpBtn" style="border-color:#f0c85b;background:#8a2432">WEEK 3 • SOUTHEASTERN LA</span><a class="weekJumpBtn" href="/fau/">WEEK 4 • FLORIDA ATLANTIC →</a>';
+      const weekButtons = '<a class="weekJumpBtn" href="/week1/">WEEK 1 • MISSISSIPPI STATE</a><a class="weekJumpBtn" href="/uab/">WEEK 2 • UAB</a><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA</a><span class="weekJumpBtn" style="border-color:#f0c85b;background:#8a2432">WEEK 4 • FLORIDA ATLANTIC</span>';background:#8a2432">WEEK 4 • FLORIDA ATLANTIC</span>';
       const weekDock='<div id="weekJumpDockFixed" style="position:fixed;right:16px;top:96px;z-index:2147483647;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' + weekButtons + '</div>';
       const bodyClose=html.toLowerCase().lastIndexOf('</body>');
-      if(bodyClose<0)throw new Error('Week 3 app is missing its closing body tag.');
-      html=html.slice(0,bodyClose)+weekDock+html.slice(bodyClose);
+      if(bodyClose<0)throw new Error('Week 4 app is missing its closing body tag.');
+      html=html.slice(0,bodyClose)+'<script id="fauPhotoPatch">\n(function(){\n  function isFauPage(){return !!(window.__ULM_SPECIAL_TEAMS_WORKSPACE__&&window.__ULM_SPECIAL_TEAMS_WORKSPACE__.rawTeamCode===\'FLAT\');}\n  function escFau(v){return String(v==null?\'\':v).replace(/&/g,\'&amp;\').replace(/</g,\'&lt;\').replace(/>/g,\'&gt;\').replace(/"/g,\'&quot;\').replace(/\'/g,\'&#39;\');}\n  function initFauPhotos(){\n    if(!isFauPage()||typeof playerPhoto!==\'function\')return;\n    if(playerPhoto.__fauSharp)return;\n    const original=playerPhoto;\n    const sharp=function(p){\n      p=p||{};\n      const name=String(p.name||\'\').trim();\n      if(!name)return original(p);\n      const primary=\'/api/player-image?team=fau&name=\'+encodeURIComponent(name)+\'&hq=20260921a\';\n      const profile=String(p.profile||\'\').trim();\n      const fallback=profile?(\'/api/player-image?profile=\'+encodeURIComponent(profile)):\'\';\n      const initials=String(name).split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]||\'\').join(\'\').toUpperCase();\n      return \'<img src="\'+escFau(primary)+\'" data-fallback="\'+escFau(fallback)+\'" alt="\'+escFau(name)+\'" loading="lazy" onerror="if(this.dataset.fallback&&!this.dataset.triedFallback){this.dataset.triedFallback=\'1\';this.src=this.dataset.fallback}else{this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'block\'}"><div class="playerInitials" style="display:none">\'+escFau(initials)+\'</div>\';\n    };\n    sharp.__fauSharp=true;\n    playerPhoto=sharp;\n    try{if(typeof render===\'function\')render();}catch(_e){}\n  }\n  setTimeout(initFauPhotos,0);\n})();\n<\\/script>'+weekDock+html.slice(bodyClose);
 
       document.open();
       document.write(html);
       document.close();
     } catch (error) {
-      document.getElementById('boot').textContent = 'Week 3 Southeastern Louisiana could not load: ' + (error?.message || error);
+      document.getElementById('boot').textContent = 'Week 4 Florida Atlantic could not load: ' + (error?.message || error);
     }
   })();
   </script>

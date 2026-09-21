@@ -2,7 +2,11 @@ const HANDLERS = {
   storage: () => import('../lib/sela-storage.js'),
   roster: () => import('../lib/sela-roster.js'),
   sync: () => import('../lib/sela-sync.js'),
-  enrich: () => import('../lib/sela-enrich.js')
+  enrich: () => import('../lib/sela-enrich.js'),
+  'fau-storage': () => import('../lib/fau-storage.js'),
+  'fau-roster': () => import('../lib/fau-roster.js'),
+  'fau-sync': () => import('../lib/fau-sync.js'),
+  'fau-enrich': () => import('../lib/fau-enrich.js')
 };
 
 // Published Week 3 special-teams depth from Southeastern Louisiana's 2026 game notes.
@@ -93,6 +97,40 @@ export default async function handler(req, res) {
       return await mod.default(req, res);
     } catch (error) {
       console.error('SELA enrichment step failed', error);
+      if (!res.headersSent) res.status(500).json({ ok: false, error: error?.message || String(error) });
+      return;
+    }
+  }
+
+  if (route === 'fau-bootstrap') {
+    try {
+      const mod = await import('../lib/fau-sync.js');
+      req.method = 'POST';
+      req.__internalFauBootstrap = true;
+      req.body = {
+        url: 'https://fausports.com/sports/football/roster',
+        secondaryUrl: 'https://fausports.com/sports/football/roster/2025',
+        teamName: 'Florida Atlantic',
+        nickname: 'Owls',
+        teamCode: 'FLAT'
+      };
+      return await mod.default(req, res);
+    } catch (error) {
+      console.error('FAU roster bootstrap failed', error);
+      if (!res.headersSent) res.status(500).json({ ok: false, error: error?.message || String(error) });
+      return;
+    }
+  }
+
+  if (route === 'fau-enrich-step') {
+    try {
+      const mod = await import('../lib/fau-enrich.js');
+      req.method = 'POST';
+      req.__internalFauEnrich = true;
+      req.body = { batchSize: 8 };
+      return await mod.default(req, res);
+    } catch (error) {
+      console.error('FAU roster enrichment failed', error);
       if (!res.headersSent) res.status(500).json({ ok: false, error: error?.message || String(error) });
       return;
     }
