@@ -34,7 +34,7 @@ jobs:
           Path('/tmp/fau-wrapper.js').write_text(m.group(1))
           if "rawTeamCode: 'FLAT'" not in s or 'FAU_WEEK4_DEPTH' not in s:
               raise SystemExit('FAU identity/depth guardrail failed')
-          if ';background:#8a2432">WEEK 4' in s:
+          if "</span>';background:#8a2432" in s:
               raise SystemExit('Malformed Week 4 nav fragment remains')
           PY
           node --check /tmp/fau-wrapper.js
