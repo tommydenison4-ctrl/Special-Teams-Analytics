@@ -1,0 +1,46 @@
+name: Sync Florida Atlantic to Supabase
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sync-fau-supabase.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for production deployment
+        run: sleep 25
+      - name: Bootstrap Florida Atlantic roster into Supabase
+        run: |
+          set -euo pipefail
+          RESPONSE=$(curl -sS -X POST --retry 3 --retry-delay 5 --max-time 60 \
+            'https://special-teams-analytics.vercel.app/api/sela?route=fau-bootstrap' \
+            -H 'Content-Type: application/json' \
+            --data '{}')
+          echo "$RESPONSE"
+          python3 - "$RESPONSE" <<'PY'
+          import json,sys
+          data=json.loads(sys.argv[1])
+          if not data.get('ok'):
+              raise SystemExit('FAU bootstrap failed: '+json.dumps(data))
+          print('Stored',data.get('count'),'Florida Atlantic roster records at',data.get('storedAt'))
+          PY
+      - name: Verify Florida Atlantic roster reads back from Supabase
+        run: |
+          set -euo pipefail
+          RESPONSE=$(curl -sS --retry 3 --retry-delay 5 --max-time 60 \
+            'https://special-teams-analytics.vercel.app/api/sela?route=fau-roster')
+          echo "$RESPONSE" | head -c 1000
+          echo
+          python3 - "$RESPONSE" <<'PY'
+          import json,sys
+          data=json.loads(sys.argv[1])
+          players=data.get('players') if isinstance(data,dict) else data
+          if not isinstance(players,list) or len(players)<20:
+              raise SystemExit('FAU roster verification failed')
+          print('Verified',len(players),'Florida Atlantic players from Supabase')
+          PY
