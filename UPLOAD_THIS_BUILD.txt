@@ -1,0 +1,34 @@
+ULM SPECIAL TEAMS — FAU LIVE CORRECTED BUILD
+Build ID: 2026-09-21-FAU-LIVE-CORRECTED-1
+
+PURPOSE
+This package fixes the live-site problem where the root URL kept showing the Southeastern Louisiana Week 3 app.
+
+WHAT IS DIFFERENT
+1. index.html is the COMPLETE self-contained Florida Atlantic Week 4 app. It is not a wrapper.
+2. fau/index.html is the same complete app. It does not load southeastern/week3-template.html.
+3. vercel.json NO LONGER rewrites / to /fau/live.html. The normal root URL serves index.html directly.
+4. Florida Atlantic is physically present in PREP OPPONENT and forced as the Week 4 default.
+5. FAU data are embedded in the app, so FAU does not depend on Supabase loading before it can render.
+6. The package also includes the raw FAU data files under fau/data/.
+7. The configured Supabase folder label is aligned with the actual folder name: Opponents/Florida Atlantic.
+
+EXPECTED AFTER ONE DEPLOY
+- special-teams-analytics.vercel.app/ opens Florida Atlantic Week 4.
+- PREP OPPONENT includes Mississippi State, UAB, Southeastern Louisiana, Florida Atlantic.
+- Florida Atlantic is selected by default.
+- Header says Week 4 Florida Atlantic.
+- 48 uploaded PFF rows are available.
+- 15 official FG/PAT events are available.
+- Player Intelligence includes current FAU players/depth data.
+
+UPLOAD
+Upload/replace these paths in the EXISTING Special-Teams-Analytics repo:
+- /index.html
+- /vercel.json
+- /fau/index.html
+- /fau/data/*
+
+Do not delete the existing /api or /lib folders. They remain available for cloud save, older opponents, and player-image endpoints.
+
+Old files such as /fau/live.html and /fau/live-patch.js can remain in the repo; this vercel.json no longer routes traffic to them.
