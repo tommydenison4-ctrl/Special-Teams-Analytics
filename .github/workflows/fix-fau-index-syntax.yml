@@ -1,0 +1,51 @@
+name: Fix FAU Week 4 index syntax
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-fau-index-syntax.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Repair Week 4 wrapper and validate
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('fau/index.html')
+          s=p.read_text()
+          correct='      const weekButtons = \'<a class="weekJumpBtn" href="/week1/">WEEK 1 • MISSISSIPPI STATE</a><a class="weekJumpBtn" href="/uab/">WEEK 2 • UAB</a><a class="weekJumpBtn" href="/southeastern/">WEEK 3 • SOUTHEASTERN LA</a><span class="weekJumpBtn" style="border-color:#f0c85b;background:#8a2432">WEEK 4 • FLORIDA ATLANTIC</span>\';'
+          s,n=re.subn(r'^\s*const weekButtons = .*?;\s*$',correct,s,count=1,flags=re.M)
+          if n!=1:
+              raise SystemExit(f'Expected one weekButtons line, found {n}')
+          p.write_text(s)
+
+          m=re.search(r'<script>([\s\S]*?)</script>',s,re.I)
+          if not m:
+              raise SystemExit('Could not isolate FAU wrapper script')
+          Path('/tmp/fau-wrapper.js').write_text(m.group(1))
+          if "rawTeamCode: 'FLAT'" not in s or 'FAU_WEEK4_DEPTH' not in s:
+              raise SystemExit('FAU identity/depth guardrail failed')
+          if ';background:#8a2432">WEEK 4' in s:
+              raise SystemExit('Malformed Week 4 nav fragment remains')
+          PY
+          node --check /tmp/fau-wrapper.js
+      - name: Commit repair
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fau/index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Fix Florida Atlantic Week 4 wrapper syntax"
+          git push origin main
