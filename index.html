@@ -11,6 +11,11 @@
      if(n!==1)throw new Error('Week 5 build patch mismatch ('+n+')');
      html=html.replace(from,to);
    }
+   const playerIntelFrom="page==='players'?(prepOpponent==='FAU'?fauPlayerIntelligencePage(a):(prepOpponent==='MSST'?playerPage(a):prepPlayerIntelligencePage())):";
+   const playerIntelTo="page==='players'?(prepOpponent==='FAU'?fauPlayerIntelligencePage(a):((prepOpponent==='MSST'||prepOpponent==='USA')?playerPage(a):prepPlayerIntelligencePage())):";
+   const playerIntelCount=html.split(playerIntelFrom).length-1;
+   if(playerIntelCount!==1)throw new Error('Week 5 player-intel patch mismatch ('+playerIntelCount+')');
+   html=html.replace(playerIntelFrom,playerIntelTo);
    document.open(); document.write(html); document.close();
  }catch(e){document.getElementById('boot').textContent='South Alabama Week 5 could not load: '+(e&&e.message?e.message:e);}
 })();
