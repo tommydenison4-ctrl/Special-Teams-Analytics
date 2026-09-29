@@ -6,7 +6,8 @@ const HANDLERS = {
   'fau-storage': () => import('../lib/fau-storage.js'),
   'fau-roster': () => import('../lib/fau-roster.js'),
   'fau-sync': () => import('../lib/fau-sync.js'),
-  'fau-enrich': () => import('../lib/fau-enrich.js')
+  'fau-enrich': () => import('../lib/fau-enrich.js'),
+  'usa-image': () => import('../lib/usa-image.js')
 };
 
 const SELA_PUBLISHED_DEPTH = {
