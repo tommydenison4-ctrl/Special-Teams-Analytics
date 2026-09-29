@@ -3,6 +3,9 @@ import net from 'node:net';
 
 const TEAM_ROSTERS = {
   fau: 'https://fausports.com/sports/football/roster/',
+  usa: 'https://usajaguars.com/sports/football/roster/',
+  southalabama: 'https://usajaguars.com/sports/football/roster/',
+  'south-alabama': 'https://usajaguars.com/sports/football/roster/',
   sela: 'https://lionsports.net/sports/football/roster/2026',
   southeastern: 'https://lionsports.net/sports/football/roster/2026'
 };
@@ -12,6 +15,7 @@ function allowedHost(host='') {
   return host==='lionsports.net' || host.endsWith('.lionsports.net') ||
     host==='uabsports.com' || host.endsWith('.uabsports.com') ||
     host==='fausports.com' || host.endsWith('.fausports.com') ||
+    host==='usajaguars.com' || host.endsWith('.usajaguars.com') ||
     host==='images.sidearmdev.com' || host.endsWith('.sidearmdev.com') ||
     host==='images.sidearmsports.com' || host.endsWith('.sidearmsports.com') ||
     host.endsWith('.cloudfront.net');
@@ -70,6 +74,7 @@ async function validateProfileUrl(raw) {
   const host=url.hostname.toLowerCase();
   const hostOk=(host==='lionsports.net'||host.endsWith('.lionsports.net')||
                 host==='fausports.com'||host.endsWith('.fausports.com')||
+                host==='usajaguars.com'||host.endsWith('.usajaguars.com')||
                 host==='uabsports.com'||host.endsWith('.uabsports.com'));
   const rosterPath = url.pathname === '/sports/football/roster' ||
                      url.pathname === '/sports/football/roster/' ||
@@ -135,7 +140,7 @@ function attrs(tag,pageUrl) {
 
 function goodImage(url='') {
   const s=String(url).toLowerCase();
-  return /images\.sidearmdev\.com|images\.sidearmsports\.com|cloudfront\.net|lionsports\.net\/images\/|fausports\.com\/images\/|uabsports\.com\/images\//i.test(s) &&
+  return /images\.sidearmdev\.com|images\.sidearmsports\.com|cloudfront\.net|lionsports\.net\/images\/|fausports\.com\/images\/|usajaguars\.com\/images\/|uabsports\.com\/images\//i.test(s) &&
     !/(logo|wordmark|sponsor|icon|placeholder|default|story|stadium|facility|banner)/i.test(s);
 }
 
