@@ -9,6 +9,7 @@
   },
   "teamField": "either",
   "teamCodes": [
+    "LATC",
     "LATU"
   ],
   "rosterFile": "roster.json"

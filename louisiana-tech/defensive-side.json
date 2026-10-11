@@ -1,0 +1,248 @@
+{
+  "team": "Louisiana Tech Bulldogs",
+  "season": 2026,
+  "source": "https://latechsports.com/sports/football/roster",
+  "side": "defense",
+  "players": [
+    {
+      "number": 0,
+      "name": "Jordan McRae",
+      "position": "DB"
+    },
+    {
+      "number": 1,
+      "name": "Sam Fongang",
+      "position": "DB"
+    },
+    {
+      "number": 2,
+      "name": "Amari Butler",
+      "position": "DB"
+    },
+    {
+      "number": 3,
+      "name": "Kameron Carter",
+      "position": "DB"
+    },
+    {
+      "number": 4,
+      "name": "Kam Franklin",
+      "position": "DB"
+    },
+    {
+      "number": 5,
+      "name": "Ahkhari Johnson",
+      "position": "DB"
+    },
+    {
+      "number": 7,
+      "name": "Janard Lockhardt",
+      "position": "DB"
+    },
+    {
+      "number": 10,
+      "name": "Kolbe Fields",
+      "position": "LB"
+    },
+    {
+      "number": 11,
+      "name": "Emmanuel Oguns",
+      "position": "DL"
+    },
+    {
+      "number": 13,
+      "name": "MJ Moultrie II",
+      "position": "DB"
+    },
+    {
+      "number": 14,
+      "name": "Damien Richard II",
+      "position": "DB"
+    },
+    {
+      "number": 15,
+      "name": "Franklin Morgan Jr.",
+      "position": "DB"
+    },
+    {
+      "number": 16,
+      "name": "Taeden Rogers",
+      "position": "DB"
+    },
+    {
+      "number": 17,
+      "name": "Demario Bookhart",
+      "position": "DB"
+    },
+    {
+      "number": 18,
+      "name": "Jaitlin Hampton",
+      "position": "DB"
+    },
+    {
+      "number": 19,
+      "name": "AJ Tarvin",
+      "position": "DB"
+    },
+    {
+      "number": 20,
+      "name": "Ty Jones",
+      "position": "DB"
+    },
+    {
+      "number": 21,
+      "name": "Zheric Hill",
+      "position": "LB"
+    },
+    {
+      "number": 22,
+      "name": "Jadon Mayfield",
+      "position": "LB"
+    },
+    {
+      "number": 23,
+      "name": "Javari Lockhart",
+      "position": "DB"
+    },
+    {
+      "number": 24,
+      "name": "Alonzo Jackson Jr.",
+      "position": "LB"
+    },
+    {
+      "number": 25,
+      "name": "Colton Deckard",
+      "position": "LB"
+    },
+    {
+      "number": 26,
+      "name": "Nathan Green",
+      "position": "DB"
+    },
+    {
+      "number": 27,
+      "name": "Grayson Hardy",
+      "position": "LB"
+    },
+    {
+      "number": 28,
+      "name": "Jeremiah Smith",
+      "position": "LB"
+    },
+    {
+      "number": 30,
+      "name": "Zander Hayes",
+      "position": "LB"
+    },
+    {
+      "number": 32,
+      "name": "Emanual Collins",
+      "position": "DB"
+    },
+    {
+      "number": 33,
+      "name": "Jaylon Parnell",
+      "position": "LB"
+    },
+    {
+      "number": 35,
+      "name": "Cole Watson",
+      "position": "LB"
+    },
+    {
+      "number": 37,
+      "name": "Zachary Jackson",
+      "position": "DB"
+    },
+    {
+      "number": 39,
+      "name": "Jacoryian Crowe",
+      "position": "DB"
+    },
+    {
+      "number": 40,
+      "name": "Ayden Combs",
+      "position": "LB"
+    },
+    {
+      "number": 41,
+      "name": "Jake Kim",
+      "position": "DB"
+    },
+    {
+      "number": 43,
+      "name": "Justin Thomas",
+      "position": "DB"
+    },
+    {
+      "number": 44,
+      "name": "Kaleb Coleman",
+      "position": "DL"
+    },
+    {
+      "number": 46,
+      "name": "Daylin Page",
+      "position": "DL"
+    },
+    {
+      "number": 48,
+      "name": "Kaden McIver",
+      "position": "DL"
+    },
+    {
+      "number": 49,
+      "name": "James Predtechenskis",
+      "position": "LB"
+    },
+    {
+      "number": 51,
+      "name": "Amery Edwards",
+      "position": "DL"
+    },
+    {
+      "number": 54,
+      "name": "Justice Williams",
+      "position": "DL"
+    },
+    {
+      "number": 90,
+      "name": "Jojo Odom",
+      "position": "DL"
+    },
+    {
+      "number": 91,
+      "name": "Za'Qwaun Nunn",
+      "position": "DL"
+    },
+    {
+      "number": 92,
+      "name": "Lane Condry",
+      "position": "DL"
+    },
+    {
+      "number": 93,
+      "name": "Jacob Bradford",
+      "position": "DL"
+    },
+    {
+      "number": 94,
+      "name": "Amari Wilks",
+      "position": "DL"
+    },
+    {
+      "number": 96,
+      "name": "Ashton Dawson",
+      "position": "DL"
+    },
+    {
+      "number": 98,
+      "name": "Donovan Rieman",
+      "position": "DL"
+    },
+    {
+      "number": 99,
+      "name": "Judd Rouyea",
+      "position": "DL"
+    }
+  ]
+}
