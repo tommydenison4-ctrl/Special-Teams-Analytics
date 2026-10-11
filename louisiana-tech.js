@@ -13,11 +13,35 @@ window.LaTech = (() => {
   try{const r=await response('./louisiana-tech/upload-manifest.json');if(r.ok)state.config={...defaultConfig,...await r.json()}}catch(_){}
   const cfg=state.config;
   const url=name=>cfg.storageBase+encodeURIComponent(name)+'?v='+Date.now();
+  const bundledUrl=name=>'./louisiana-tech/'+encodeURIComponent(name);
   const data={},status={};
-  await Promise.all(Object.entries(cfg.files).map(async([key,names])=>{data[key]=[];for(const name of Array.isArray(names)?names:[names]){try{const r=await response(url(name));if(!r.ok){status[key]='Awaiting upload (HTTP '+r.status+')';continue}let rows=parse(await r.text());if(!rows.length){status[key]='Awaiting upload (empty file)';continue}
-    if(key==='plays'||cfg.teamField==='either'){rows=rows.filter(x=>(cfg.teamField==='either'?[x.pff_OFFTEAM,x.pff_DEFTEAM]:[x[cfg.teamField]]).some(t=>cfg.teamCodes.includes(String(t||'').trim()))&&String(x.pff_GAMESEASON)==='2026');if(!rows.length){status[key]='Rejected: no 2026 Louisiana Tech plays';continue}}
-    if(cfg.teamCodes.includes('LATU'))for(const row of rows){if(row.pff_OFFTEAM==='LATC')row.pff_OFFTEAM='LATU';if(row.pff_DEFTEAM==='LATC')row.pff_DEFTEAM='LATU'}data[key]=rows;status[key]='Loaded '+rows.length+' rows';break}catch(_){status[key]='Awaiting upload (unreachable)'}}}));
-  let rosterData=null;try{const r=await response(url(cfg.rosterFile||'roster.json'));if(r.ok){const x=await r.json();rosterData=Array.isArray(x)?x:x.players;if(!Array.isArray(rosterData))rosterData=null}}catch(_){}
+  await Promise.all(Object.entries(cfg.files).map(async([key,names])=>{
+    data[key]=[];
+    for(const name of Array.isArray(names)?names:[names]){
+      let lastStatus='Feed not found';
+      let loaded=false;
+      for(const [source,feedUrl] of [['Supabase',url(name)],['app files',bundledUrl(name)]]){
+        try{
+          const r=await response(feedUrl);
+          if(!r.ok){lastStatus=source+' returned HTTP '+r.status;continue}
+          let rows=parse(await r.text());
+          if(!rows.length){lastStatus=source+' file was empty';continue}
+          if(key==='plays'||cfg.teamField==='either'){
+            rows=rows.filter(x=>(cfg.teamField==='either'?[x.pff_OFFTEAM,x.pff_DEFTEAM]:[x[cfg.teamField]]).some(t=>cfg.teamCodes.includes(String(t||'').trim()))&&String(x.pff_GAMESEASON)==='2026');
+            if(!rows.length){lastStatus=source+' file had no 2026 Louisiana Tech plays';continue}
+          }
+          if(cfg.teamCodes.includes('LATU'))for(const row of rows){if(row.pff_OFFTEAM==='LATC')row.pff_OFFTEAM='LATU';if(row.pff_DEFTEAM==='LATC')row.pff_DEFTEAM='LATU'}
+          data[key]=rows;status[key]='Loaded '+rows.length+' rows ('+source+')';loaded=true;break;
+        }catch(_){lastStatus=source+' feed unreachable'}
+      }
+      if(loaded)break;
+      status[key]=lastStatus;
+    }
+  }));
+  let rosterData=null;
+  for(const rosterUrl of [url(cfg.rosterFile||'roster.json'),bundledUrl(cfg.rosterFile||'roster.json')]){
+    try{const r=await response(rosterUrl);if(r.ok){const x=await r.json();rosterData=Array.isArray(x)?x:x.players;if(Array.isArray(rosterData))break;rosterData=null}}catch(_){}
+  }
   if(version!==state.version)return null;Object.assign(state,{data,status,roster:rosterData,loading:false});return state;
  }
  function statusHTML(){return `<div class="card" style="padding:14px;margin:12px 0"><b>Louisiana Tech uploads</b><p>${state.loading?'Checking uploads…':Object.entries(state.status).map(([k,v])=>esc(k)+': '+esc(v)).join(' · ')||'Awaiting upload'}</p></div>`}
