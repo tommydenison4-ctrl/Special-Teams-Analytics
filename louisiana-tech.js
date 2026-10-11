@@ -42,6 +42,13 @@ window.LaTech = (() => {
   for(const rosterUrl of [url(cfg.rosterFile||'roster.json'),bundledUrl(cfg.rosterFile||'roster.json')]){
     try{const r=await response(rosterUrl);if(r.ok){const x=await r.json();rosterData=Array.isArray(x)?x:x.players;if(Array.isArray(rosterData))break;rosterData=null}}catch(_){}
   }
+  if(Array.isArray(rosterData))rosterData=rosterData.map(p=>{
+    if(!p||p.image)return p;
+    const image=p.profile
+      ?`/api/player-image?profile=${encodeURIComponent(p.profile)}&name=${encodeURIComponent(p.name||'')}`
+      :`/api/player-image?name=${encodeURIComponent(p.name||'')}&team=latech`;
+    return {...p,image};
+  });
   if(version!==state.version)return null;Object.assign(state,{data,status,roster:rosterData,loading:false});return state;
  }
  function statusHTML(){return `<div class="card" style="padding:14px;margin:12px 0"><b>Louisiana Tech uploads</b><p>${state.loading?'Checking uploads…':Object.entries(state.status).map(([k,v])=>esc(k)+': '+esc(v)).join(' · ')||'Awaiting upload'}</p></div>`}
