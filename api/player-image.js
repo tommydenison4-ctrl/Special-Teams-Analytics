@@ -6,6 +6,9 @@ const TEAM_ROSTERS = {
   usa: 'https://usajaguars.com/sports/football/roster/',
   southalabama: 'https://usajaguars.com/sports/football/roster/',
   'south-alabama': 'https://usajaguars.com/sports/football/roster/',
+  latech: 'https://latechsports.com/sports/football/roster',
+  'louisiana-tech': 'https://latechsports.com/sports/football/roster',
+  lt: 'https://latechsports.com/sports/football/roster',
   sela: 'https://lionsports.net/sports/football/roster/2026',
   southeastern: 'https://lionsports.net/sports/football/roster/2026'
 };
@@ -16,6 +19,7 @@ function allowedHost(host='') {
     host==='uabsports.com' || host.endsWith('.uabsports.com') ||
     host==='fausports.com' || host.endsWith('.fausports.com') ||
     host==='usajaguars.com' || host.endsWith('.usajaguars.com') ||
+    host==='latechsports.com' || host.endsWith('.latechsports.com') ||
     host==='images.sidearmdev.com' || host.endsWith('.sidearmdev.com') ||
     host==='images.sidearmsports.com' || host.endsWith('.sidearmsports.com') ||
     host.endsWith('.cloudfront.net');
@@ -75,6 +79,7 @@ async function validateProfileUrl(raw) {
   const hostOk=(host==='lionsports.net'||host.endsWith('.lionsports.net')||
                 host==='fausports.com'||host.endsWith('.fausports.com')||
                 host==='usajaguars.com'||host.endsWith('.usajaguars.com')||
+                host==='latechsports.com'||host.endsWith('.latechsports.com')||
                 host==='uabsports.com'||host.endsWith('.uabsports.com'));
   const rosterPath = url.pathname === '/sports/football/roster' ||
                      url.pathname === '/sports/football/roster/' ||
