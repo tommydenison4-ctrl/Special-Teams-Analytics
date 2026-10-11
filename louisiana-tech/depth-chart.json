@@ -1,0 +1,405 @@
+{
+  "team": "Louisiana Tech",
+  "nickname": "Bulldogs",
+  "season": 2026,
+  "week": 7,
+  "gameDate": "2026-10-17",
+  "updated": "10/10/2026 9:08 AM ET",
+  "source": "Ourlads",
+  "sourceUrl": "https://www.ourlads.com/ncaa-football-depth-charts/depth-chart/louisiana-tech/90889",
+  "retrieved": "2026-10-11",
+  "offense": {
+    "WR-X": [
+      [
+        "47",
+        "Jay Wilkerson",
+        "RS SR/TR"
+      ],
+      [
+        "6",
+        "Marcus Calwise Jr.",
+        "JR/TR"
+      ],
+      [
+        "83",
+        "Carter Harris",
+        "FR"
+      ]
+    ],
+    "WR-Z": [
+      [
+        "86",
+        "Talyn Shettron",
+        "RS SR/TR"
+      ],
+      [
+        "15",
+        "Luke Watkins",
+        "SO"
+      ]
+    ],
+    "WR-H": [
+      [
+        "11",
+        "Jalen Mickens",
+        "SO"
+      ],
+      [
+        "3",
+        "Dedrick Latulas",
+        "RS JR"
+      ],
+      [
+        "8",
+        "David Pierro",
+        "SR/TR"
+      ]
+    ],
+    "LT": [
+      [
+        "72",
+        "Hayden Christman",
+        "RS JR"
+      ],
+      [
+        "57",
+        "Tadan Bingham",
+        "FR"
+      ]
+    ],
+    "LG": [
+      [
+        "79",
+        "Ashanti Cole",
+        "RS SR/TR"
+      ],
+      [
+        "74",
+        "Jamon Lee Jr.",
+        "RS JR/TR"
+      ]
+    ],
+    "C": [
+      [
+        "60",
+        "Roy Brackins III",
+        "RS JR"
+      ],
+      [
+        "56",
+        "Andrew Richard",
+        "RS SO"
+      ]
+    ],
+    "RG": [
+      [
+        "53",
+        "Austin Ellis",
+        "RS SO"
+      ],
+      [
+        "66",
+        "Will Hutchens",
+        "RS JR/TR"
+      ]
+    ],
+    "RT": [
+      [
+        "52",
+        "Troy Smith III",
+        "RS JR"
+      ],
+      [
+        "58",
+        "Tye Hylton",
+        "RS SO/TR"
+      ]
+    ],
+    "TE": [
+      [
+        "84",
+        "Eli Finley",
+        "SR"
+      ],
+      [
+        "87",
+        "Brayden Bockler",
+        "JR/TR"
+      ]
+    ],
+    "QB": [
+      [
+        "5",
+        "Blake Baker",
+        "RS JR"
+      ],
+      [
+        "2",
+        "Trey Kukuk",
+        "SR/TR"
+      ],
+      [
+        "7",
+        "Jackson Bradley",
+        "RS FR"
+      ]
+    ],
+    "RB": [
+      [
+        "0",
+        "Jaden Miller",
+        "RS JR/TR"
+      ],
+      [
+        "26",
+        "Dylone Brooks",
+        "RS FR"
+      ]
+    ]
+  },
+  "defense": {
+    "LDE": [
+      [
+        "98",
+        "Donovan Rieman",
+        "RS SR/TR"
+      ],
+      [
+        "99",
+        "Judd Rouyea",
+        "RS JR"
+      ],
+      [
+        "90",
+        "Jojo Odom",
+        "SO"
+      ]
+    ],
+    "NT": [
+      [
+        "93",
+        "Jacob Bradford",
+        "RS SO"
+      ],
+      [
+        "54",
+        "Justice Williams",
+        "RS SR/TR"
+      ],
+      [
+        "91",
+        "Za'Qwaun Nunn",
+        "FR"
+      ]
+    ],
+    "RDE": [
+      [
+        "11",
+        "Emmanuel Oguns",
+        "RS SR/TR"
+      ],
+      [
+        "92",
+        "Lane Condry",
+        "RS SO/TR"
+      ],
+      [
+        "44",
+        "Kaleb Coleman",
+        "RS SO/TR"
+      ]
+    ],
+    "WLB": [
+      [
+        "10",
+        "Kolbe Fields",
+        "GR/TR"
+      ],
+      [
+        "22",
+        "Jadon Mayfield",
+        "RS SO"
+      ]
+    ],
+    "MLB": [
+      [
+        "21",
+        "Zheric Hill",
+        "SO"
+      ],
+      [
+        "40",
+        "Ayden Combs",
+        "FR"
+      ]
+    ],
+    "SLB": [
+      [
+        "24",
+        "Alonzo Jackson Jr.",
+        "RS SO"
+      ],
+      [
+        "35",
+        "Cole Watson",
+        "RS SO"
+      ]
+    ],
+    "LCB": [
+      [
+        "7",
+        "Janard Lockhardt",
+        "RS JR/TR"
+      ],
+      [
+        "3",
+        "Kameron Carter",
+        "SR/TR"
+      ]
+    ],
+    "SS": [
+      [
+        "1",
+        "Sam Fongang",
+        "SR/TR"
+      ],
+      [
+        "4",
+        "Kam Franklin",
+        "RS JR/TR"
+      ],
+      [
+        "39",
+        "Jacoryian Crowe",
+        "RS SO"
+      ]
+    ],
+    "FS": [
+      [
+        "16",
+        "Taeden Rogers",
+        "SO/TR"
+      ],
+      [
+        "13",
+        "MJ Moultrie II",
+        "RS JR/TR"
+      ],
+      [
+        "27",
+        "Grayson Hardy",
+        "FR"
+      ]
+    ],
+    "RCB": [
+      [
+        "2",
+        "Amari Butler",
+        "SR/TR"
+      ],
+      [
+        "17",
+        "Demario Bookhart",
+        "RS SO/TR"
+      ]
+    ],
+    "NB": [
+      [
+        "0",
+        "Jordan McRae",
+        "JR/TR"
+      ],
+      [
+        "20",
+        "Ty Jones",
+        "SR/TR"
+      ],
+      [
+        "5",
+        "Ahkhari Johnson",
+        "JR/TR"
+      ]
+    ]
+  },
+  "specialTeams": {
+    "PT": [
+      [
+        "29",
+        "Lexington Matthews",
+        "RS JR/TR"
+      ]
+    ],
+    "PK": [
+      [
+        "38",
+        "Kaegan Kent",
+        "RS FR"
+      ],
+      [
+        "31",
+        "Hunter Rioux",
+        "RS JR/TR"
+      ]
+    ],
+    "KO": [
+      [
+        "31",
+        "Hunter Rioux",
+        "RS JR/TR"
+      ]
+    ],
+    "LS": [
+      [
+        "41",
+        "Ean Burch",
+        "RS SR"
+      ],
+      [
+        "69",
+        "Trent Sims",
+        "RS SO/TR"
+      ],
+      [
+        "59",
+        "Jake Riggs",
+        "RS SO"
+      ]
+    ],
+    "H": [
+      [
+        "29",
+        "Lexington Matthews",
+        "RS JR/TR"
+      ]
+    ],
+    "PR": [
+      [
+        "3",
+        "Dedrick Latulas",
+        "RS JR"
+      ],
+      [
+        "0",
+        "Jaden Miller",
+        "RS JR/TR"
+      ]
+    ],
+    "KR": [
+      [
+        "3",
+        "Dedrick Latulas",
+        "RS JR"
+      ],
+      [
+        "26",
+        "Dylone Brooks",
+        "RS FR"
+      ],
+      [
+        "5",
+        "Ahkhari Johnson",
+        "JR/TR"
+      ]
+    ]
+  }
+}

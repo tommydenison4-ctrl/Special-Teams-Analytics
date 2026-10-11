@@ -1,0 +1,15 @@
+{
+  "team": "Louisiana Tech",
+  "season": 2026,
+  "week": 7,
+  "storageBase": "https://hzrosmevuejjlxigdxmg.supabase.co/storage/v1/object/public/Special%20Teams/Opponents/Louisiana%20Tech/",
+  "files": {
+    "offensive": "offensive-side.csv",
+    "defensive": "defensive-side.csv"
+  },
+  "teamField": "either",
+  "teamCodes": [
+    "LATU"
+  ],
+  "rosterFile": "roster.json"
+}
